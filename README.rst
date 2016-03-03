@@ -35,7 +35,7 @@ From BitBucket::
     $ python setup.py install
 
 Getting Started
-===============
+---------------
 This module is designed to manage lab projects...
 
 Change directory to local root for projects::
