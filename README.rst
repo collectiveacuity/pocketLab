@@ -32,7 +32,7 @@ From BitBucket::
 
     $ git clone https://bitbucket.org/collectiveacuity/labmgmt.git
     $ python setup.py sdist --format=gztar,zip bdist_wheel
-    $ python setup.py install
+    $ python setup.py develop  # for local on-the-fly file updates
 
 Getting Started
 ---------------
@@ -40,7 +40,7 @@ This module is designed to manage lab projects...
 
 Change directory to local root for projects::
 
-    lab home
+    $ lab home
 
 Documentation
 -------------
