@@ -11,8 +11,13 @@ import sys
 from argparse import ArgumentParser
 from labMgmt.commands import *
 
-def cli():
-    argv = sys.argv[1:]
+def cli(error=False):
+
+# handle optional error argument
+    if error:
+        argv = ['-h']
+    else:
+        argv = sys.argv[1:]
 # construct main module
     module_args = {
         'description': 'A sample command line input parser.',
@@ -26,12 +31,12 @@ def cli():
 # replace stderr message with help output
     def error_msg(err):
         print('Errr! %s\n' % err)
-        cli(['-h'])
+        cli(error=True)
         sys.exit(2)
     parser.error = error_msg
 
 # construct sub-command methods
-    subparsers = parser.add_subparsers(title='sub-commands', help='sub-command help')
+    subparsers = parser.add_subparsers(title='list of commands')
 
 # define start sub-command & options
     start_args = {
