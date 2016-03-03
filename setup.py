@@ -8,6 +8,7 @@ from setuptools import setup, find_packages
 References:
 https://python-packaging-user-guide.readthedocs.org/en/latest/
 https://docs.python.org/3.5/distutils/index.html
+https://github.com/jgehrcke/python-cmdline-bootstrap
 
 Installation Packages:
 pip install wheel
