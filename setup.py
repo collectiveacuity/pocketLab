@@ -1,6 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.02'
 
+import re
 from setuptools import setup, find_packages
 
 '''
@@ -33,11 +34,26 @@ python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 '''
 
+version = re.search(
+    "^__version__\s*=\s*'(.*)'",
+    open('labMgmt/cli.py').read(),
+    re.M
+    ).group(1)
+
+command = re.search(
+    "^__command__\s*=\s*'(.*)'",
+    open('labMgmt/cli.py').read(),
+    re.M
+    ).group(1)
+
 setup(
     name="labMgmt",
-    version="0.1.0",
+    version=version,
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
+    entry_points = {
+        "console_scripts": ['%s = labMgmt.cli:cli' % command]
+    },
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
     packages=find_packages(exclude=['cred','docs','keys','models','notes','tests']),  # Needed for bdist
     license="MIT",
