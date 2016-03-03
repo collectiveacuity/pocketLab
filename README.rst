@@ -42,6 +42,8 @@ Change directory to local root for projects::
 
     lab home
 
+Documentation
+-------------
 For more details about how to use labMgmt, refer to the
 `Reference Documentation on BitBucket
 <https://bitbucket.org/collectiveacuity/labMgmt/REFERENCE.rst>`_
