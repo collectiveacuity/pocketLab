@@ -3,7 +3,7 @@ labMgmt
 =======
 *A Collection of Methods for Managing Laboratory Projects*
 
-:Source: https://bitbucket.org/collectiveacuity/labsmgmt.git
+:Source: https://bitbucket.org/collectiveacuity/labmgmt.git
 
 High-Level Classes
 ------------------
