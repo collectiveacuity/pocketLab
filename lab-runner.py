@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+__author__ = 'rcj1492'
+__created__ = '2016.03'
 
 '''
 Convenience wrapper for running lab management directly from source tree.
