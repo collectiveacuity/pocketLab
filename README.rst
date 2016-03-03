@@ -44,4 +44,4 @@ Change directory to local root for projects::
 
 For more details about how to use labMgmt, refer to the
 `Reference Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/labScrape/REFERENCE.rst>`_
+<https://bitbucket.org/collectiveacuity/labMgmt/REFERENCE.rst>`_
