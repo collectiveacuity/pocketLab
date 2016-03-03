@@ -11,8 +11,8 @@ import sys
 from argparse import ArgumentParser
 from labMgmt.commands import *
 
-def cli(argv):
-
+def cli():
+    argv = sys.argv[1:]
 # construct main module
     module_args = {
         'description': 'A sample command line input parser.',
@@ -80,4 +80,4 @@ def cli(argv):
     args.func(**opt_dict)
 
 if __name__ == '__main__':
-    cli(sys.argv[1:])
+    cli()

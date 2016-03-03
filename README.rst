@@ -7,44 +7,40 @@ labMgmt
 
 High-Level Classes
 ------------------
-- **labScraper**: A class to manage various different scraping techniques
+- **start**: initiates the program
+- **stop**: terminates the program
+- **pause**: pauses the program
 
 Low-Level Classes
 -----------------
-- **seleniumMod**: A class to scrape data from websites based upon selenium
-- **splinterMod**: A class to scrape data from websites based upon splinter
-- **morphAPI**: A class to manage requests to Morph.io to scrape data from websites
+- **start**: placeholder
+- **stop**: placeholder
+- **pause**: placeholder
 
 Features
 --------
 -
 
-System Requirements
+Python Requirements
 -------------------
-- **pycrypto**: https://pypi.python.org/pypi/pycrypto
-- - Windows requires Microsoft Visual Studio packages
-- - Linux requires C compiler (often in dev distro)
-- **phantomjs**: http://phantomjs.org/
+- **jsonmodel**: https://pypi.python.org/pypi/jsonmodel
 
 Installation
 ============
 From BitBucket::
 
-    $ git clone https://bitbucket.org/collectiveacuity/labscrape.git
-    $ python setup.py sdist --format=gztar
-    $ python setup.py develop  # for local on-the-fly file updates
+    $ git clone https://bitbucket.org/collectiveacuity/labmgmt.git
+    $ python setup.py sdist --format=gztar,zip bdist_wheel
+    $ python setup.py install
 
 Getting Started
 ^^^^^^^^^^^^^^^
-This module is designed to manage...
+This module is designed to manage lab projects...
 
-Run a string validation tool::
-.. code-block:: python
+Change directory to local root for projects::
 
-    from labScrape.webscrapers import labScraper
+    lab home
 
-    scraper = labScraper()
-
-For more details about how to use labScrape, refer to the
+For more details about how to use labMgmt, refer to the
 `Reference Documentation on BitBucket
 <https://bitbucket.org/collectiveacuity/labScrape/REFERENCE.rst>`_
