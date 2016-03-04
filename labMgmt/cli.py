@@ -20,7 +20,7 @@ def cli(error=False):
         argv = sys.argv[1:]
 # construct main module
     module_args = {
-        'description': 'A sample command line input parser.',
+        'description': 'A laboratory assistant bot.',
         'epilog': '%s can also make coffee.' % __command__,
         'usage': '%s command [options]' % __command__
     }
@@ -37,6 +37,24 @@ def cli(error=False):
 
 # construct sub-command methods
     subparsers = parser.add_subparsers(title='list of commands')
+
+# define build sub-command & options
+    start_args = {
+        'usage': '%s build [options]' % __command__,
+        'description': 'builds an image from project components',
+        'help': 'builds an image from project components'
+    }
+    parser_start = subparsers.add_parser('build', **start_args)
+    parser_start.set_defaults(func=build, command='build', service='aws')
+    parser_start.add_argument(
+        '-q', '--quiet', default=True,
+        dest='verbose', help='turn off status messages from (default: %(default)s)',
+        action='store_false'
+    )
+    parser_start.add_argument(
+        '-f', '--file', type=str, default='lab-project.json', metavar='FILE',
+        dest='projectFile', help='path to project settings FILE (default: %(default)s)'
+    )
 
 # define start sub-command & options
     start_args = {

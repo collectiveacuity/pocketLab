@@ -1,0 +1,20 @@
+{
+  "schema": {
+    "credentials_files": [
+      {
+        "file_path": "labCredentials/admin/credentials-aws.json",
+        "service": "aws",
+        "type": "cloud"
+      }
+    ],
+    "project_components": [
+      {
+        "root_path": "flaskServer",
+        "component_file": "lab-component.json"
+      }
+    ],
+    "deployment_files": {
+      "path": ""
+    }
+  }
+}
