@@ -29,6 +29,6 @@ def build(**kwargs):
     for cred_file in project_details['credentials_files']:
         if cred_file['service'] == 'aws':
             credential_details = configFile(cred_file['file_path'])
-            aws_credentials = credModel(credential_details, 'rules/aws-cred-model.json')
+            aws_credentials = credModel(credential_details, 'rules/aws-cred-model.json', 'aws')
     pprint(aws_credentials)
 
