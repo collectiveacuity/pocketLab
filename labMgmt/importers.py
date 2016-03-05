@@ -3,9 +3,6 @@ __created__ = '2016.03'
 
 from os import path
 from re import compile
-import json
-import yaml
-from configparser import ConfigParser
 from labMgmt.exceptions import LabException
 
 def configFile(file_name):
@@ -20,16 +17,19 @@ def configFile(file_name):
     yaml_pattern = compile('\\.ya?ml$')
     ini_pattern = compile('\\.ini$')
     if json_pattern.findall(file_name):
+        import json
         try:
             file_dict = json.loads(open(file_name).read())
         except:
             raise LabException('%s is not a valid json file.' % file_name, error='invalid_type')
     elif yaml_pattern.findall(file_name):
+        import yaml
         try:
             file_dict = yaml.load(open(file_name).read())
         except:
             raise LabException('%s is not a valid yaml file.' % file_name, error='invalid_type')
     elif ini_pattern.findall(file_name):
+        from configparser import ConfigParser
         try:
             config = ConfigParser()
             config.optionxform = str

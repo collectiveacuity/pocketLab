@@ -2,6 +2,8 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 __command__ = 'lab'
 __version__ = '0.1.0'
+__module__ = 'labMgmt'
+__testing__ = False
 
 '''
 https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argparse
@@ -9,7 +11,6 @@ https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argp
 
 import sys
 from argparse import ArgumentParser
-from labMgmt.commands import *
 
 def cli(error=False):
 
@@ -38,69 +39,35 @@ def cli(error=False):
 # construct sub-command methods
     subparsers = parser.add_subparsers(title='list of commands')
 
-# define build sub-command & options
-    start_args = {
-        'usage': '%s build [options]' % __command__,
-        'description': 'builds an image from project components',
-        'help': 'builds an image from project components'
-    }
-    parser_start = subparsers.add_parser('build', **start_args)
-    parser_start.set_defaults(func=build, command='build', service='aws')
-    parser_start.add_argument(
-        '-q', '--quiet', default=True,
-        dest='verbose', help='turn off status messages from (default: %(default)s)',
-        action='store_false'
-    )
-    parser_start.add_argument(
-        '-f', '--file', type=str, default='lab-project.json', metavar='FILE',
-        dest='projectFile', help='path to project settings FILE (default: %(default)s)'
-    )
+# define command scope & valid sub-command model
+    command_list = ['build','home','start','stop']
+    cmdModel = None
+    if __testing__:
+        from jsonmodel.validators import jsonModel
+        from jsonmodel.loader import jsonLoader
+        cmdModel = jsonModel(jsonLoader(__module__,'rules/cmd-model.json'))
 
-# define start sub-command & options
-    start_args = {
-        'usage': '%s start [options]' % __command__,
-        'description': 'initiates the program',
-        'help': 'initiates the program'
-    }
-    parser_start = subparsers.add_parser('start', **start_args)
-    parser_start.set_defaults(func=start, command='start')
-    parser_start.add_argument(
-        '-q', '--quiet', default=True,
-        dest='verbose', help="don't print status messages to stdout (default: %(default)s)",
-        action='store_false'
-    )
-    parser_start.add_argument(
-        '-g', '--group', type=int, default=1,
-        dest='gid', help='group id %(type)s for billing (default: %(default)s)'
-    )
+# construct sub-commands & options
+    for command in command_list:
+        command_module = __import__("labMgmt.commands.%s" % command, fromlist=["labMgmt.commands"])
+        sub_cmd = command_module._cmd_details
+        if __testing__:
+            sub_cmd = cmdModel.validate(sub_cmd)
+        cmd_details = {
+            'usage': '%s %s' % (__command__, sub_cmd['usage']),
+            'description': sub_cmd['description'],
+            'help': sub_cmd['description']
+        }
+        sub_commands = subparsers.add_parser(sub_cmd['command'], **cmd_details)
+        sub_commands.set_defaults(command=sub_cmd['command'], **sub_cmd['defaults'])
+        for option in sub_cmd['options']:
+            sub_commands.add_argument(*option['args'], **option['kwargs'])
 
-# define stop sub-command & options
-    stop_args = {
-        'usage': '%s stop [options]' % __command__,
-        'description': 'terminates the program',
-        'help': 'terminates the program'
-    }
-    parser_stop = subparsers.add_parser('stop', **stop_args)
-    parser_stop.set_defaults(func=stop, command='stop')
-    parser_stop.add_argument(
-        '-f', '--file', type=str, default='',
-        dest='filename', help='write log report to FILE',
-        metavar='FILE'
-    )
-
-# define pause sub-command
-    pause_args = {
-        'usage': '%s pause [options]' % __command__,
-        'description': 'pauses the program',
-        'help': 'pauses the program'
-    }
-    parser_pause = subparsers.add_parser('pause', **pause_args)
-    parser_pause.set_defaults(func=pause, command='pause')
-
-# call parsing function and print output as dictionary
+# call parsing function and run corresponding sub-command function with keyword arguments
     args = parser.parse_args(argv)
     opt_dict = vars(args)
-    args.func(**opt_dict)
+    run_module = __import__("labMgmt.commands.%s" % args.command, fromlist=["labMgmt.commands"])
+    run_module.run(**opt_dict)
 
 if __name__ == '__main__':
     cli()
