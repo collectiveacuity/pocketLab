@@ -3,13 +3,16 @@ __created__ = '2016.03'
 __command__ = 'lab'
 __version__ = '0.1.0'
 __module__ = 'labMgmt'
-__testing__ = False
 
 '''
 https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argparse
 '''
 
 import sys
+from importlib import import_module
+from importlib.util import find_spec
+from os import listdir
+from re import compile
 from argparse import ArgumentParser
 
 def cli(error=False):
@@ -19,6 +22,7 @@ def cli(error=False):
         argv = ['-h']
     else:
         argv = sys.argv[1:]
+
 # construct main module
     module_args = {
         'description': 'A laboratory assistant bot.',
@@ -39,34 +43,36 @@ def cli(error=False):
 # construct sub-command methods
     subparsers = parser.add_subparsers(title='list of commands')
 
-# define command scope & valid sub-command model
-    command_list = ['build','home','start','stop']
-    cmdModel = None
-    if __testing__:
-        from jsonmodel.validators import jsonModel
-        from jsonmodel.loader import jsonLoader
-        cmdModel = jsonModel(jsonLoader(__module__,'rules/cmd-model.json'))
+# define sub-command scope from commands sub-folder
+    command_list = []
+    module_path = find_spec(__module__).submodule_search_locations[0]
+    commands_folder = listdir('%s/commands/' % module_path)
+    py_file = compile('\\.pyc?$')
+    for file in commands_folder:
+         if py_file.findall(file):
+            command_list.append(py_file.sub('',file))
 
 # construct sub-commands & options
     for command in command_list:
-        command_module = __import__("labMgmt.commands.%s" % command, fromlist=["labMgmt.commands"])
-        sub_cmd = command_module._cmd_details
-        if __testing__:
-            sub_cmd = cmdModel.validate(sub_cmd)
-        cmd_details = {
-            'usage': '%s %s' % (__command__, sub_cmd['usage']),
-            'description': sub_cmd['description'],
-            'help': sub_cmd['description']
-        }
-        sub_commands = subparsers.add_parser(sub_cmd['command'], **cmd_details)
-        sub_commands.set_defaults(command=sub_cmd['command'], **sub_cmd['defaults'])
-        for option in sub_cmd['options']:
-            sub_commands.add_argument(*option['args'], **option['kwargs'])
+        command_module = import_module('%s.commands.%s' % (__module__, command))
+        try:
+            sub_cmd = command_module._cmd_details
+            cmd_details = {
+                'usage': '%s %s' % (__command__, sub_cmd['usage']),
+                'description': sub_cmd['description'],
+                'help': sub_cmd['description']
+            }
+            sub_commands = subparsers.add_parser(sub_cmd['command'], **cmd_details)
+            sub_commands.set_defaults(command=sub_cmd['command'], **sub_cmd['defaults'])
+            for option in sub_cmd['options']:
+                sub_commands.add_argument(*option['args'], **option['kwargs'])
+        except:
+            pass
 
 # call parsing function and run corresponding sub-command function with keyword arguments
     args = parser.parse_args(argv)
     opt_dict = vars(args)
-    run_module = __import__("labMgmt.commands.%s" % args.command, fromlist=["labMgmt.commands"])
+    run_module = import_module('%s.commands.%s' % (__module__, args.command))
     run_module.run(**opt_dict)
 
 if __name__ == '__main__':

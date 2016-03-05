@@ -47,8 +47,14 @@ command = re.search(
     re.M
     ).group(1)
 
+module = re.search(
+    "^__module__\s*=\s*'(.*)'",
+    open('labMgmt/cli.py').read(),
+    re.M
+    ).group(1)
+
 setup(
-    name="labMgmt",
+    name=module,
     version=version,
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
