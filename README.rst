@@ -5,17 +5,11 @@ labMgmt
 
 :Source: https://bitbucket.org/collectiveacuity/labmgmt.git
 
-High-Level Classes
-------------------
+Commands
+--------
 - **start**: initiates the program
 - **stop**: terminates the program
-- **pause**: pauses the program
-
-Low-Level Classes
------------------
-- **start**: placeholder
-- **stop**: placeholder
-- **pause**: placeholder
+- **home**: returns active location to project home
 
 Features
 --------
