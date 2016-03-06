@@ -19,7 +19,7 @@ python setup.py sdist --format=gztar,zip bdist_wheel
 
 Upload Distributions to PyPi:
 twine register dist/*
-twine upload dist/*
+twine upload dist/[module-version]*
 
 Installation:
 pip install [module]
@@ -59,7 +59,7 @@ setup(
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
     entry_points = {
-        "console_scripts": ['%s = labMgmt.cli:cli' % command]
+        "console_scripts": ['%s = %s.cli:cli' % (command, module)]
     },
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
     packages=find_packages(exclude=['cred','docs','keys','models','notes','tests']),  # Needed for bdist
@@ -67,7 +67,7 @@ setup(
     description="A Collection of Methods for Managing Laboratory Projects",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.0"
+        "jsonmodel>=1.1"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

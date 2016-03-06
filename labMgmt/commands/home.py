@@ -4,7 +4,8 @@ __created__ = '2016.03'
 _cmd_details = {
     'command': 'home',
     'usage': 'home [options]',
-    'description': 'transports you to the project home',
+    'description': 'transports you to the project root folder',
+    'brief': 'transports you to the project root folder',
     'defaults': {},
     'options': [
         {   'args': [ '-s', '--set' ],

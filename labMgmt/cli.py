@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 __command__ = 'lab'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 __module__ = 'labMgmt'
 
 '''
@@ -27,7 +27,7 @@ def cli(error=False):
     module_args = {
         'description': 'A laboratory assistant bot.',
         'epilog': '%s can also make coffee.' % __command__,
-        'usage': '%s command [options]' % __command__
+        'usage': '%s <command> [options]' % __command__
     }
     parser = ArgumentParser(**module_args)
     current_version = '%s %s' % (__command__, __version__)
@@ -60,7 +60,7 @@ def cli(error=False):
             cmd_details = {
                 'usage': '%s %s' % (__command__, sub_cmd['usage']),
                 'description': sub_cmd['description'],
-                'help': sub_cmd['description']
+                'help': sub_cmd['brief']
             }
             sub_commands = subparsers.add_parser(sub_cmd['command'], **cmd_details)
             sub_commands.set_defaults(command=sub_cmd['command'], **sub_cmd['defaults'])

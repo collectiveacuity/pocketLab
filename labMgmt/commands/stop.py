@@ -5,6 +5,7 @@ _cmd_details = {
     'command': 'stop',
     'usage': 'stop [options]',
     'description': 'terminates container running a project component',
+    'brief': 'terminates container running a project component',
     'defaults': { },
     'options': [
         {   'args': [ '-f', '--file' ],

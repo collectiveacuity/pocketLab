@@ -1,0 +1,19 @@
+{
+  "schema": {
+    "container_alias": "main",
+    "docker_image": "rc42/flaskserver",
+    "run_command": "gunicorn --chdir server -w 3 launch:app -b 0.0.0.0:5000",
+    "mapped_volumes": [ "cred/" ],
+    "injected_variables": { },
+    "tunnelme_subdomain": "",
+    "docker_token": ""
+  },
+  "components": {
+    ".injected_variables": {
+      "extra_fields": true
+    },
+    ".mapped_volumes": {
+      "min_size": 0
+    }
+  }
+}

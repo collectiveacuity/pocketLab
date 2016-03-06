@@ -3,6 +3,7 @@
     "command": "home",
     "usage": "home [options]",
     "description": "transports you to the project home",
+    "brief": "transports you to the project home",
     "defaults": { },
     "options": [
       {

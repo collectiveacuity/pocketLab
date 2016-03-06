@@ -10,7 +10,6 @@ class LabException(Exception):
         text = 'Errr! %s' % message
         self.error = error
         print(text)
-        # super(LabException, self).__init__(text)
         sys.exit(2)
 
 class LabPrettyException(Exception):
@@ -21,5 +20,4 @@ class LabPrettyException(Exception):
         print(text)
         if printout:
             pprint(printout)
-        # super(LabException, self).__init__(text)
         sys.exit(2)

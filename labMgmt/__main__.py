@@ -3,7 +3,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 '''
-labMgmt.__main__: executed when labMgmt directory is called as script.
+when module is called directly as script.
 '''
 
 from .cli import cli
