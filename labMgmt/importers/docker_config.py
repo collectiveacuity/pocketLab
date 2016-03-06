@@ -4,7 +4,7 @@ __created__ = '2016.03'
 from os import devnull, environ
 from re import compile
 from subprocess import check_output, call, PIPE, Popen
-from labMgmt.exceptions import LabException
+from labMgmt.exceptions.lab_exception import LabException
 
 class dockerConfig(object):
 
@@ -15,7 +15,7 @@ class dockerConfig(object):
             sys_command = 'docker --help'
             call(sys_command, stdout=open(devnull, 'wb'))
         except:
-            raise Exception('docker not installed. GoTo: https://www.docker.com')
+            raise LabException('"docker" not installed. GoTo: https://www.docker.com', error='missing_module')
 
     # validate installation of docker-machine
         if vbox_name:
@@ -23,11 +23,10 @@ class dockerConfig(object):
                 sys_command = 'docker-machine --help'
                 call(sys_command, stdout=open(devnull, 'wb'))
             except:
-                raise Exception('docker-machine not installed. GoTo: https://www.docker.com')
+                raise LabException('"docker-machine" not installed. GoTo: https://www.docker.com', error='missing_module')
 
     # construct basic methods
         self.vbox = vbox_name
-        # self.eval = 'eval "$(docker-machine env %s)"; ' % self.vbox
 
     # test status of virtualbox
         if self.vbox:
@@ -36,11 +35,11 @@ class dockerConfig(object):
                 vbox_status = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8').replace('\n','')
             except:
                 if self.vbox == "default":
-                    raise LabException('Virtualbox "default" not found. Container will not start without a valid virtualbox.')
+                    raise LabException('Virtualbox "default" not found. Container will not start without a valid virtualbox.', error="missing_resource")
                 else:
-                    raise LabException('Virtualbox "%s" not found. Try using "default" instead.' % self.vbox)
+                    raise LabException('Virtualbox "%s" not found. Try using "default" instead.' % self.vbox, error="missing_resource")
             if 'Stopped' in vbox_status:
-                raise LabException('Virtualbox "%s" is stopped. Try first running: docker-machine start %s' % (self.vbox, self.vbox))
+                raise LabException('Virtualbox "%s" is stopped. Try first running: docker-machine start %s' % (self.vbox, self.vbox), error="unavailable_resource")
 
     # inject variables to connect to docker
             if not environ.get('DOCKER_CERT_PATH'):

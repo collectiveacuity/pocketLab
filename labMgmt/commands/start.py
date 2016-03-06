@@ -53,7 +53,7 @@ def run(**kwargs):
     from labMgmt.importers.docker_config import dockerConfig
     from labMgmt.validators.config_model import configModel
     from labMgmt.validators.file_path import filePath
-    from labMgmt.exceptions import LabException
+    from labMgmt.exceptions.lab_exception import LabException
     from pprint import pprint
 
 # ingest verbose options

@@ -5,7 +5,7 @@ __module__ = 'labMgmt'
 from jsonmodel.loader import jsonLoader
 from jsonmodel.validators import jsonModel
 from jsonmodel.exceptions import InputValidationError
-from labMgmt.exceptions import LabPrettyException
+from labMgmt.exceptions.lab_pretty_exception import LabPrettyException
 
 def configModel(config_details, model_file, title=''):
     config_model = jsonLoader(__module__, model_file)

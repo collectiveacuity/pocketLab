@@ -29,8 +29,8 @@ _cmd_details = {
 def run(**kwargs):
 
 # import dependencies
-    from labMgmt.importers import configFile
-    from labMgmt.validators import configModel
+    from labMgmt.importers.config_file import configFile
+    from labMgmt.validators.config_model import configModel
     from pprint import pprint
 
     verbose = kwargs['verbose']
