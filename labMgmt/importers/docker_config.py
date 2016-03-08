@@ -3,7 +3,8 @@ __created__ = '2016.03'
 
 from os import devnull, environ
 from re import compile
-from subprocess import check_output, call, PIPE, Popen
+import json
+from subprocess import check_output, call
 from labMgmt.exceptions.lab_exception import LabException
 
 class dockerConfig(object):
@@ -67,21 +68,67 @@ class dockerConfig(object):
 
     def images(self):
 
+        gap_pattern = compile('\t|\s{2,}')
         image_list = []
         sys_command = 'docker images'
         output_lines = check_output(sys_command).decode('utf-8').split('\n')
-        column_headers = output_lines[0].split()
+        column_headers = gap_pattern.split(output_lines[0])
         for i in range(1,len(output_lines)):
-            columns = output_lines[i].split()
-            if len(columns) > 2:
+            columns = gap_pattern.split(output_lines[i])
+            if len(columns) == len(column_headers):
                 image_details = {}
-                for j in range(0,3):
+                for j in range(len(columns)):
                     image_details[column_headers[j]] = columns[j]
                 image_list.append(image_details)
 
         return image_list
 
-    def settings(self):
-        settings = ''
+    def containers(self):
+
+        gap_pattern = compile('\t|\s{2,}')
+        container_list = []
+        sys_command = 'docker ps -a'
+        output_lines = check_output(sys_command).decode('utf-8').split('\n')
+        column_headers = gap_pattern.split(output_lines[0])
+        for i in range(1,len(output_lines)):
+            columns = gap_pattern.split(output_lines[i])
+            if len(columns) == len(column_headers):
+                container_details = {}
+                for j in range(len(columns)):
+                    container_details[column_headers[j]] = columns[j]
+                container_list.append(container_details)
+
+        return container_list
+
+    def inspect(self, container_alias):
+
+        sys_command = 'docker inspect %s' % container_alias
+        output_dict = json.loads(check_output(sys_command).decode('utf-8'))
+        container_settings = output_dict[0]
+
+        return container_settings
+
+    def synopsis(self, container_settings):
+
+        settings = {
+            'container_status': container_settings['State']['Status'],
+            'container_ip': container_settings['NetworkSettings']['IPAddress'],
+            'docker_image': container_settings['Config']['Image'],
+            'container_alias': container_settings['Name'].replace('/',''),
+            'container_variables': {},
+            'mapped_ports': {},
+            'mounted_volumes': {}
+        }
+        num_pattern = compile('\d+')
+        for key, value in container_settings['NetworkSettings']['Ports'].items():
+            port = num_pattern.findall(value[0]['HostPort'])[0]
+            settings['mapped_ports'][port] = num_pattern.findall(key)[0]
+        for variable in container_settings['Config']['Env']:
+            k, v = variable.split('=')
+            settings['container_variables'][k] = v
+        for volume in container_settings['Mounts']:
+            system_path = volume['Source']
+            container_path = volume['Destination']
+            settings['mounted_volumes'][system_path] = container_path
 
         return settings

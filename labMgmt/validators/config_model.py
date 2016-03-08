@@ -14,5 +14,5 @@ def configModel(config_details, model_file, title=''):
         config_details = valid_model.validate(config_details)
     except InputValidationError as err:
         error_report = err.error
-        raise LabPrettyException('Schema of %s file is invalid. File should follow this schema:\n' % title, printout=error_report['model_schema'], error='invalid_schema')
+        raise LabPrettyException('%s in %s file failed %s test. File should follow this schema:\n' % (error_report['error_value'], title, error_report['failed_test']), printout=error_report['model_schema'], error='invalid_schema')
     return config_details

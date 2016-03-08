@@ -1,10 +1,12 @@
 {
   "schema": {
-    "container_alias": "main",
+    "container_alias": "flask",
     "docker_image": "rc42/flaskserver",
+    "image_tag": "",
     "run_command": "gunicorn --chdir server -w 3 launch:app -b 0.0.0.0:5000",
-    "mapped_volumes": [ "cred/" ],
+    "mounted_volumes": [ "cred/" ],
     "injected_variables": { },
+    "exposed_ports": [ 5000 ],
     "tunnelme_subdomain": "",
     "docker_token": ""
   },
@@ -12,8 +14,11 @@
     ".injected_variables": {
       "extra_fields": true
     },
-    ".mapped_volumes": {
-      "min_size": 0
+    ".mounted_volumes": {
+      "unique_values": true
+    },
+    ".exposed_ports": {
+      "unique_values": true
     }
   }
 }
