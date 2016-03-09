@@ -5,42 +5,71 @@ from os import devnull, environ
 from re import compile
 import json
 from subprocess import check_output, call
-from labMgmt.exceptions.lab_exception import LabException
+from copy import deepcopy
+from labMgmt.exceptions.lab_exception import labException
 
-class dockerConfig(object):
+class dockerSession(object):
 
-    def __init__(self, vbox_name=''):
+    def __init__(self, cmd_kwargs, vbox_name=''):
+
+        '''
+
+        :param cmd_kwargs: dictionary with request keywords
+        :param vbox_name: string with name of virtualbox (on Mac & Windows)
+        :return: dockerConfig object
+
+        self.error : dictionary with error handling information
+        self.vbox : string with name of virtual box (on Mac & Windows)
+        '''
+
+    # construct error method and add kwargs
+        self.error = { 'kwargs': cmd_kwargs, }
 
     # validate installation of docker
+        sys_command = 'docker --help'
         try:
-            sys_command = 'docker --help'
             call(sys_command, stdout=open(devnull, 'wb'))
-        except:
-            raise LabException('"docker" not installed. GoTo: https://www.docker.com', error='missing_module')
+        except Exception as err:
+            self.error['exception'] = err
+            self.error['error_value'] = sys_command
+            self.error['failed_test'] = 'required_module'
+            self.error['message'] = '"docker" not installed. GoTo: https://www.docker.com'
+            raise labException(**self.error)
 
     # validate installation of docker-machine
         if vbox_name:
+            sys_command = 'docker-machine --help'
             try:
-                sys_command = 'docker-machine --help'
                 call(sys_command, stdout=open(devnull, 'wb'))
-            except:
-                raise LabException('"docker-machine" not installed. GoTo: https://www.docker.com', error='missing_module')
+            except Exception as err:
+                self.error['exception'] = err
+                self.error['error_value'] = sys_command
+                self.error['failed_test'] = 'required_module'
+                self.error['message'] = '"docker-machine" not installed. GoTo: https://www.docker.com'
+                raise labException(**self.error)
 
     # construct basic methods
         self.vbox = vbox_name
 
     # test status of virtualbox
         if self.vbox:
+            sys_command = 'docker-machine status %s' % self.vbox
+            self.error['error_value'] = sys_command
             try:
-                sys_command = 'docker-machine status %s' % self.vbox
                 vbox_status = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8').replace('\n','')
-            except:
+            except Exception as err:
+                self.error['exception'] = err
+                self.error['failed_test'] = 'required_resource'
                 if self.vbox == "default":
-                    raise LabException('Virtualbox "default" not found. Container will not start without a valid virtualbox.', error="missing_resource")
+                    self.error['message'] = 'Virtualbox "default" not found. Container will not start without a valid virtualbox.'
+                    raise labException(**self.error)
                 else:
-                    raise LabException('Virtualbox "%s" not found. Try using "default" instead.' % self.vbox, error="missing_resource")
+                    self.error['message'] = 'Virtualbox "%s" not found. Try using "default" instead.' % self.vbox
+                    raise labException(**self.error)
             if 'Stopped' in vbox_status:
-                raise LabException('Virtualbox "%s" is stopped. Try first running: docker-machine start %s' % (self.vbox, self.vbox), error="unavailable_resource")
+                self.error['failed_test'] = 'required_resource'
+                self.error['message'] = 'Virtualbox "%s" is stopped. Try first running: docker-machine start %s' % (self.vbox, self.vbox)
+                raise labException(**self.error)
 
     # inject variables to connect to docker
             if not environ.get('DOCKER_CERT_PATH'):
@@ -58,6 +87,11 @@ class dockerConfig(object):
 
     def localhost(self):
 
+        '''
+
+        :return: string with ip address of system
+        '''
+
         if self.vbox:
             sys_command = 'docker-machine ip %s' % self.vbox
             system_ip = check_output(sys_command).decode('utf-8').replace('\n','')
@@ -67,6 +101,19 @@ class dockerConfig(object):
         return system_ip
 
     def images(self):
+
+        '''
+
+        :return: list of docker images available
+
+        [ {
+            'CREATED': '7 days ago',
+            'TAG': 'latest',
+            'IMAGE ID': '2298fbaac143',
+            'VIRTUAL SIZE': '302.7 MB',
+            'REPOSITORY': 'test1'
+        } ]
+        '''
 
         gap_pattern = compile('\t|\s{2,}')
         image_list = []
@@ -85,6 +132,21 @@ class dockerConfig(object):
 
     def containers(self):
 
+        '''
+
+        :return: list of active docker containers
+
+        [{
+            'CREATED': '6 minutes ago',
+            'NAMES': 'flask',
+            'PORTS': '0.0.0.0:5000->5000/tcp',
+            'CONTAINER ID': '38eb0bbeb2e5',
+            'STATUS': 'Up 6 minutes',
+            'COMMAND': '"gunicorn --chdir ser"',
+            'IMAGE': 'rc42/flaskserver'
+        }]
+        '''
+
         gap_pattern = compile('\t|\s{2,}')
         container_list = []
         sys_command = 'docker ps -a'
@@ -92,15 +154,29 @@ class dockerConfig(object):
         column_headers = gap_pattern.split(output_lines[0])
         for i in range(1,len(output_lines)):
             columns = gap_pattern.split(output_lines[i])
-            if len(columns) == len(column_headers):
-                container_details = {}
-                for j in range(len(columns)):
-                    container_details[column_headers[j]] = columns[j]
+            container_details = {}
+            if len(columns) > 1:
+                for j in range(len(column_headers)):
+                    container_details[column_headers[j]] = ''
+                    if j <= len(columns) - 1:
+                        container_details[column_headers[j]] = columns[j]
+        # stupid hack for possible empty port column
+                if container_details['PORTS'] and not container_details['NAMES']:
+                    container_details['NAMES'] = deepcopy(container_details['PORTS'])
+                    container_details['PORTS'] = ''
                 container_list.append(container_details)
 
         return container_list
 
     def inspect(self, container_alias):
+
+        '''
+
+        :param container_alias: string with name of container
+        :return: dictionary of settings of container
+
+        { TOO MANY TO LIST }
+        '''
 
         sys_command = 'docker inspect %s' % container_alias
         output_dict = json.loads(check_output(sys_command).decode('utf-8'))
@@ -109,6 +185,12 @@ class dockerConfig(object):
         return container_settings
 
     def synopsis(self, container_settings):
+
+        '''
+
+        :param container_settings: dictionary returned from dockerConfig.inspect
+        :return: dictionary with values required for module configurations
+        '''
 
         settings = {
             'container_status': container_settings['State']['Status'],
@@ -132,3 +214,17 @@ class dockerConfig(object):
             settings['mounted_volumes'][system_path] = container_path
 
         return settings
+
+    def run(self, run_script):
+
+        output_lines = check_output(run_script).decode('utf-8').split('\n')
+        container_id = output_lines[0]
+
+        return container_id
+
+    def remove(self, container_alias):
+
+        sys_cmd = 'docker rm -f %s' % container_alias
+        output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
+
+        return output_lines[0]

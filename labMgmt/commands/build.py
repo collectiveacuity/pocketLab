@@ -38,13 +38,13 @@ def run(**kwargs):
 
 # ingest & validate project file
     project_file = kwargs['projectFile']
-    project_details = configFile(project_file)
-    project_details = configModel(project_details, 'rules/lab-project-model.json', 'project settings')
+    project_details = configFile(project_file, kwargs)
+    project_details = configModel(project_details, 'rules/lab-project-model.json', kwargs, 'project settings')
 
 # construct credentials dictionaries
     aws_credentials = {}
     for cred_file in project_details['credentials_files']:
         if cred_file['service'] == 'aws':
-            credential_details = configFile(cred_file['file_path'])
-            aws_credentials = configModel(credential_details, 'rules/aws-cred-model.json', 'aws credentials')
+            credential_details = configFile(cred_file['file_path'], kwargs)
+            aws_credentials = configModel(credential_details, 'rules/aws-cred-model.json', kwargs, 'aws credentials')
     pprint(aws_credentials)

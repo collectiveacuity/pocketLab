@@ -39,16 +39,15 @@ def run(**kwargs):
 
 # import dependencies
     from os import path
-    from subprocess import check_output
     from copy import deepcopy
     from labMgmt.importers.config_file import configFile
     from labMgmt.importers.local_os import localOS
-    from labMgmt.importers.docker_config import dockerConfig
+    from labMgmt.clients.docker_session import dockerSession
     from labMgmt.validators.config_model import configModel
     from labMgmt.validators.absolute_path import absolutePath
+    from labMgmt.validators.available_image import availableImage
     from labMgmt.compilers.docker_run import dockerRun
-    from labMgmt.exceptions.lab_exception import LabException
-    from pprint import pprint
+    from labMgmt.exceptions.lab_exception import labException
 
 # ingest verbose options
     verbose = kwargs['verbose']
@@ -58,8 +57,8 @@ def run(**kwargs):
 
 # ingest & validate component file
     component_file = kwargs['componentFile']
-    comp_details = configFile(component_file)
-    comp_details = configModel(comp_details, 'rules/lab-component-model.json', 'component settings')
+    comp_details = configFile(component_file, kwargs)
+    comp_details = configModel(comp_details, 'rules/lab-component-model.json', kwargs, 'component settings')
 
 # determine component root from component file
     root_path, file_name = path.split(path.abspath(component_file))
@@ -67,7 +66,7 @@ def run(**kwargs):
 # construct path details to mounted volumes
     mounted_volumes = {}
     for volume in comp_details['mounted_volumes']:
-        host_path = absolutePath(volume, root_path, 'mounted volume')
+        host_path = absolutePath(volume, root_path, kwargs, 'mounted volume')
         system_path = host_path.replace('\\','/').replace('C:','//c')
         absolute_path = deepcopy(host_path)
         docker_path = absolute_path.replace(root_path,'')
@@ -80,31 +79,33 @@ def run(**kwargs):
         vbox_name = ''
 
 # check for docker installation
-    docker_config = dockerConfig(vbox_name)
+    docker_session = dockerSession(kwargs, vbox_name)
 
 # check that docker image is available locally
-    image_list = docker_config.images()
-    available_images = []
-    for image in image_list:
-        available_images.append(image['REPOSITORY'])
-    if not comp_details['docker_image'] in available_images:
-        raise LabException('Image "%s" not found. Try first running: "docker pull %s"' % (comp_details['docker_image'], comp_details['docker_image']), error='unavailable_resource')
+    image_list = docker_session.images()
+    availableImage(comp_details['docker_image'], comp_details['image_tag'], image_list, kwargs)
 
 # retrieve list of active container aliases & busy ports
-    container_list = docker_config.containers()
+    container_list = docker_session.containers()
     busy_ports = []
     active_containers = []
     for container in container_list:
         active_containers.append(container['NAMES'])
-        container_settings = docker_config.inspect(container['NAMES'])
-        container_synopsis = docker_config.synopsis(container_settings)
+        container_settings = docker_session.inspect(container['NAMES'])
+        container_synopsis = docker_session.synopsis(container_settings)
         if container_synopsis['mapped_ports']:
             for key in container_synopsis['mapped_ports'].keys():
                 busy_ports.append(key)
 
 # check that alias name is available
     if comp_details['container_alias'] in active_containers:
-        raise LabException('Container "%s" already in use.' % comp_details['container_alias'], error='unavailable_resource')
+        error = {
+            'kwargs': kwargs,
+            'message': 'Container "%s" already in use.' % comp_details['container_alias'],
+            'error_value': comp_details['container_alias'],
+            'failed_test': 'unavailable_resource'
+        }
+        raise labException(**error)
 
 # construct port mappings for mapped ports
     mapped_ports = {}
@@ -115,7 +116,7 @@ def run(**kwargs):
         mapped_ports[str(open_port)] = str(port)
 
 # add system_ip to injected variables
-    system_ip = docker_config.localhost()
+    system_ip = docker_session.localhost()
     injected_variables = {
         'SYSTEM_LOCALHOST': system_ip
     }
@@ -135,8 +136,7 @@ def run(**kwargs):
     run_script = dockerRun(run_details)
 
 # start container
-    output_lines = check_output(run_script).decode('utf-8').split('\n')
-    container_id = output_lines[0]
+    container_id = docker_session.run(run_script)
     if verbose:
         start_text = 'Sweet! Container "%s" started' % comp_details['container_alias']
         if run_details['mapped_ports']:

@@ -5,14 +5,27 @@ __module__ = 'labMgmt'
 from jsonmodel.loader import jsonLoader
 from jsonmodel.validators import jsonModel
 from jsonmodel.exceptions import InputValidationError
-from labMgmt.exceptions.lab_pretty_exception import LabPrettyException
+from labMgmt.exceptions.lab_exception import labException
 
-def configModel(config_details, model_file, title=''):
+def configModel(config_details, model_file, kwargs, title=''):
+
+# construct error dictionary with keywords
+    error = { 'kwargs': kwargs }
+
     config_model = jsonLoader(__module__, model_file)
     valid_model = jsonModel(config_model)
     try:
         config_details = valid_model.validate(config_details)
     except InputValidationError as err:
-        error_report = err.error
-        raise LabPrettyException('%s in %s file failed %s test. File should follow this schema:\n' % (error_report['error_value'], title, error_report['failed_test']), printout=error_report['model_schema'], error='invalid_schema')
+        if err.error['input_path'] == '.':
+            field = 'Top level dictionary'
+        else:
+            field = 'Field %s' % err.error['input_path']
+        error['exception'] = err.error
+        error['message'] = '%s in %s file failed %s test. File should follow this schema:' % (field, title, err.error['failed_test'])
+        error['failed_test'] = 'invalid_schema'
+        error['error_value'] = err.error['error_value']
+        error['pprint'] = err.error['model_schema']
+        raise labException(**error)
+
     return config_details
