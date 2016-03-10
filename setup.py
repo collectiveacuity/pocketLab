@@ -29,6 +29,7 @@ python setup.py install  # when possessing distribution files
 Uninstall:
 pip uninstall [module]
 python setup.py develop --uninstall # for removing symbolic link
+# remove command line tool in ../Python/Python35-32/Scripts/
 
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
@@ -37,19 +38,19 @@ pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 
 version = re.search(
     "^__version__\s*=\s*'(.*)'",
-    open('labMgmt/cli.py').read(),
+    open('pocketLab/cli.py').read(),
     re.M
     ).group(1)
 
 command = re.search(
     "^__command__\s*=\s*'(.*)'",
-    open('labMgmt/cli.py').read(),
+    open('pocketLab/cli.py').read(),
     re.M
     ).group(1)
 
 module = re.search(
     "^__module__\s*=\s*'(.*)'",
-    open('labMgmt/cli.py').read(),
+    open('pocketLab/cli.py').read(),
     re.M
     ).group(1)
 
@@ -64,7 +65,7 @@ setup(
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
     packages=find_packages(exclude=['cred','docs','keys','models','notes','tests']),  # Needed for bdist
     license="MIT",
-    description="A Collection of Methods for Managing Laboratory Projects",
+    description="A Command Line Tool for Managing Laboratory Projects",
     long_description=open('README.rst').read(),
     install_requires=[
         "jsonmodel>=1.1"

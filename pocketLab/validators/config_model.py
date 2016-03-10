@@ -1,11 +1,11 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
-__module__ = 'labMgmt'
+__module__ = 'pocketLab'
 
 from jsonmodel.loader import jsonLoader
 from jsonmodel.validators import jsonModel
 from jsonmodel.exceptions import InputValidationError
-from labMgmt.exceptions.lab_exception import labException
+from pocketLab.exceptions.lab_exception import labException
 
 def configModel(config_details, model_file, kwargs, title=''):
 

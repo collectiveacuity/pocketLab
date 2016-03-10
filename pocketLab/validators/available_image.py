@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from labMgmt.exceptions.lab_exception import labException
+from pocketLab.exceptions.lab_exception import labException
 
 def availableImage(image_name, image_tag, image_list, kwargs):
 

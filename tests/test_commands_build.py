@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from labMgmt.commands.build import *
+from pocketLab.commands.build import *
 
 class testCommandsBuild(object):
 

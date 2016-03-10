@@ -29,8 +29,8 @@ _cmd_details_build = {
 def build(**kwargs):
 
 # import dependencies
-    from labMgmt.importers.config_file import configFile
-    from labMgmt.validators.config_model import configModel
+    from pocketLab.importers.config_file import configFile
+    from pocketLab.validators.config_model import configModel
     from pprint import pprint
 
     verbose = kwargs['verbose']

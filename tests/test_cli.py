@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 import sys
-from labMgmt.cli import cli
+from pocketLab.cli import cli
 
 class testCli(object):
 

@@ -6,7 +6,7 @@ from re import compile
 import json
 from subprocess import check_output, call
 from copy import deepcopy
-from labMgmt.exceptions.lab_exception import labException
+from pocketLab.exceptions.lab_exception import labException
 
 class dockerSession(object):
 

@@ -12,7 +12,7 @@ _cmd_details_home = {
             'kwargs': {
                 'type': str,
                 'metavar': 'PATH',
-                'dest': 'path',
+                'dest': 'newPath',
                 'help': '(re)set path to project root (default: %(default)s)' }
         }
     ]

@@ -1,8 +1,8 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 __command__ = 'lab'
-__version__ = '0.1.1'
-__module__ = 'labMgmt'
+__version__ = '0.1'
+__module__ = 'pocketLab'
 
 '''
 https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argparse

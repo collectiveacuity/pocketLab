@@ -1,23 +1,31 @@
-=======
-labMgmt
-=======
-*A Collection of Methods for Managing Laboratory Projects*
+=========
+pocketLab
+=========
+*A Command Line Tool for Managing Laboratory Projects*
 
-:Source: https://bitbucket.org/collectiveacuity/labmgmt.git
+:Source: https://bitbucket.org/collectiveacuity/pocketlab.git
 
 Commands
 --------
-- **start**: initiates the program
-- **stop**: terminates the program
+- **start**: initiates a container with a project component
+- **stop**: terminates container running a project component
 - **home**: returns active location to project home
+- **install**: installs files for a new component in the project
+- **tunnel**:
+- **monitor**:
 
 Features
 --------
 -
 
+System Requirements
+-------------------
+- **docker**: `https://www.docker.com/<https://www.docker.com/>`_
+- **virtualbox**: (on Mac & Windows)
+
 Python Requirements
 -------------------
-- **jsonmodel**: https://pypi.python.org/pypi/jsonmodel
+- **jsonmodel**: `https://pypi.python.org/pypi/jsonmodel<https://pypi.python.org/pypi/jsonmodel>`_
 
 ============
 Installation
@@ -38,6 +46,6 @@ Change directory to local root for projects::
 
 Documentation
 -------------
-For more details about how to use labMgmt, refer to the
+For more details about how to use pocketLab, refer to the
 `Reference Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/labMgmt/REFERENCE.rst>`_
+<https://bitbucket.org/collectiveacuity/pocketlab/REFERENCE.rst>`_

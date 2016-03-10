@@ -31,11 +31,11 @@ _cmd_details_stop = {
 def stop(**kwargs):
 
 # import dependencies
-    from labMgmt.importers.config_file import configFile
-    from labMgmt.importers.local_os import localOS
-    from labMgmt.clients.docker_session import dockerSession
-    from labMgmt.validators.config_model import configModel
-    from labMgmt.exceptions.lab_exception import labException
+    from pocketLab.importers.config_file import configFile
+    from pocketLab.importers.local_os import localOS
+    from pocketLab.clients.docker_session import dockerSession
+    from pocketLab.validators.config_model import configModel
+    from pocketLab.exceptions.lab_exception import labException
 
 # determine system properties
     local_os = localOS()
@@ -63,7 +63,7 @@ def stop(**kwargs):
 
 # check that container exists
     if not alias_name in alias_list:
-        from labMgmt.compilers.table_print import tablePrint
+        from pocketLab.compilers.table_print import tablePrint
         header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,

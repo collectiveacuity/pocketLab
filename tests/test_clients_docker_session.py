@@ -1,8 +1,8 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from labMgmt.clients.docker_session import dockerConfig
-from labMgmt.importers.local_os import localOS
+from pocketLab.clients.docker_session import dockerConfig
+from pocketLab.importers.local_os import localOS
 
 
 class testImportersDockerConfig(dockerConfig):

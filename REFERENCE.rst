@@ -1,7 +1,7 @@
-===========================
-labMgmt Reference Materials
-===========================
-*Documentation for labMgmt Module*
+=============================
+pocketLab Reference Materials
+=============================
+*Documentation for pocketLab Module*
 
 
 

@@ -3,7 +3,7 @@ __created__ = '2016.03'
 
 from os import path
 from re import compile
-from labMgmt.exceptions.lab_exception import labException
+from pocketLab.exceptions.lab_exception import labException
 
 def configFile(file_name, kwargs):
 
