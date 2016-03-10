@@ -20,12 +20,12 @@ Features
 
 System Requirements
 -------------------
-- **docker**: `https://www.docker.com/<https://www.docker.com/>`_
+- **docker**: https://www.docker.com
 - **virtualbox**: (on Mac & Windows)
 
 Python Requirements
 -------------------
-- **jsonmodel**: `https://pypi.python.org/pypi/jsonmodel<https://pypi.python.org/pypi/jsonmodel>`_
+- **jsonmodel**: https://pypi.python.org/pypi/jsonmodel
 
 ============
 Installation
