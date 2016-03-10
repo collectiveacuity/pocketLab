@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details = {
+_cmd_details_build = {
     'command': 'build',
     'usage': 'build [options]',
     'description': 'builds an image from project components',
@@ -26,7 +26,7 @@ _cmd_details = {
     ]
 }
 
-def run(**kwargs):
+def build(**kwargs):
 
 # import dependencies
     from labMgmt.importers.config_file import configFile

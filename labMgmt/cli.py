@@ -56,7 +56,7 @@ def cli(error=False):
     for command in command_list:
         command_module = import_module('%s.commands.%s' % (__module__, command))
         try:
-            sub_cmd = command_module._cmd_details
+            sub_cmd = getattr(command_module, '_cmd_details_%s' % command)
             cmd_details = {
                 'usage': '%s %s' % (__command__, sub_cmd['usage']),
                 'description': sub_cmd['description'],
@@ -72,8 +72,9 @@ def cli(error=False):
 # call parsing function and run corresponding sub-command function with keyword arguments
     args = parser.parse_args(argv)
     opt_dict = vars(args)
-    run_module = import_module('%s.commands.%s' % (__module__, args.command))
-    run_module.run(**opt_dict)
+    command_module = import_module('%s.commands.%s' % (__module__, args.command))
+    run_cmd = getattr(command_module, args.command)
+    run_cmd(**opt_dict)
 
 if __name__ == '__main__':
     cli()

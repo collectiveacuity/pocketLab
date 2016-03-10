@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details = {
+_cmd_details_start = {
     'command': 'start',
     'usage': 'start [options]',
     'description': 'initiates a container with a project component',
@@ -35,7 +35,7 @@ _cmd_details = {
     ]
 }
 
-def run(**kwargs):
+def start(**kwargs):
 
 # import dependencies
     from os import path
@@ -99,9 +99,11 @@ def run(**kwargs):
 
 # check that alias name is available
     if comp_details['container_alias'] in active_containers:
+        from labMgmt.compilers.table_print import tablePrint
+        header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,
-            'message': 'Container "%s" already in use.' % comp_details['container_alias'],
+            'message': 'Container "%s" already in use. Containers currently active: \n\n%s' % (comp_details['container_alias'], tablePrint(header_list, container_list)),
             'error_value': comp_details['container_alias'],
             'failed_test': 'unavailable_resource'
         }
@@ -151,4 +153,11 @@ def run(**kwargs):
                 previous_port = True
             start_text += '.'
         print(start_text)
-        # print('To stop container: docker rm -f %s' % comp_details['container_alias'])
+
+    container_details = {
+        'mapped_ports': mapped_ports,
+        'container_alias': comp_details['container_alias'],
+        'container_id': container_id
+    }
+
+    return container_details

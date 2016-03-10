@@ -100,6 +100,16 @@ class dockerSession(object):
 
         return system_ip
 
+    def command(self, sys_command):
+
+        '''
+
+        :param sys_command: string with docker command
+        :return: raw output from docker
+        '''
+
+        return check_output(sys_command).decode('utf-8')
+
     def images(self):
 
         '''

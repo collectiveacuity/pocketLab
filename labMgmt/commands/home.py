@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details = {
+_cmd_details_home = {
     'command': 'home',
     'usage': 'home [options]',
     'description': 'transports you to the project root folder',
@@ -18,5 +18,5 @@ _cmd_details = {
     ]
 }
 
-def run(**kwargs):
+def home(**kwargs):
     print(kwargs)

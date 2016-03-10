@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details = {
+_cmd_details_stop = {
     'command': 'stop',
     'usage': 'stop [options]',
     'description': 'terminates container running a project component',
@@ -28,7 +28,7 @@ _cmd_details = {
     ]
 }
 
-def run(**kwargs):
+def stop(**kwargs):
 
 # import dependencies
     from labMgmt.importers.config_file import configFile
@@ -63,9 +63,11 @@ def run(**kwargs):
 
 # check that container exists
     if not alias_name in alias_list:
+        from labMgmt.compilers.table_print import tablePrint
+        header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,
-            'message': 'Container "%s" does not exist.' % alias_name,
+            'message': 'Container "%s" does not exist. Containers currently active: \n\n%s' % (alias_name, tablePrint(header_list, container_list)),
             'error_value': alias_name,
             'failed_test': 'required_resource'
         }
