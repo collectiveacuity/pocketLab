@@ -9,6 +9,7 @@ References:
 https://python-packaging-user-guide.readthedocs.org/en/latest/
 https://docs.python.org/3.5/distutils/index.html
 https://github.com/jgehrcke/python-cmdline-bootstrap
+http://www.pyinstaller.org/
 
 Installation Packages:
 pip install wheel
@@ -30,6 +31,16 @@ Uninstall:
 pip uninstall [module]
 python setup.py develop --uninstall # for removing symbolic link
 # remove command line tool in ../Python/Python35-32/Scripts/
+
+CLI Installation:
+command = 'name of command'
+module = 'name of module'
+    entry_points = {
+        "console_scripts": ['%s = %s.cli:cli' % (command, module)]
+    },
+
+System Installation:
+# http://www.pyinstaller.org/
 
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi

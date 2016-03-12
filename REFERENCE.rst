@@ -17,7 +17,7 @@ Objects
 :build: **[-b, --build]** instantiation of the assembled project components in a set of docker containers
 :platform: **[--platform]** location where a build of the project is assembled
 :image: **[-i, --image]** docker image with component dependencies
-:repo: **[-r, --repo]** file repository containing a project component
+:repo: **[-r, --repo]** repository containing files for a project component
 :file: **[-f, --file]** path to a file with configuration settings
 :virtualbox: **[--virtualbox]** oracle virtualbox boot2docker image (on Mac & Windows)
 :tag: **[-t, --tag]** metatag associated with an object
@@ -27,7 +27,7 @@ Toggles
 
 -s, --set  save current instructions in project configurations
 -q, --quiet  quiet the stdout from command processes
--l, --log  enabling of logging of stdout from container
+-l, --log  enable logging of stdout from container
 --username USERNAME  add a USERNAME to a resource request
 --password PASSWORD  add a PASSWORD to a resource request
 
