@@ -8,19 +8,19 @@ Terminology
 Commands
 ^^^^^^^^
 
-==========  =================   ======================================================
-Objects     Option              Description
-==========  =================   ======================================================
-project     [-p, --project]     arrangement of an application or service
-component   [-c, --component]   modular component of the project
-container   [-a, --alias]       instantiation of a single component
-build       [-b, --build]       instantiation of the assembled project components
-platform    [--platform]        location where a build is assembled
-image       [-i, --image]       docker image with component dependencies
-repo        [-r, --repo]        file repository containing a project component
-file        [-f, --file]        path (or url) to a file with configuration settings
-virtualbox  [--virtualbox]      oracle virtualbox boot2docker image (on Mac & Windows)
-==========  =================   ======================================================
+Objects
+^^^^^^^
+
+:project:       **[-p, --project]**     arrangement of an application or service
+:component:     **[-c, --component]**   modular component of the project
+:container:     **[-a, --alias]**       instantiation of a single component
+:build:         **[-b, --build]**       instantiation of the assembled project components
+:platform:      **[--platform]**        location where a build is assembled
+:image:         **[-i, --image]**       docker image with component dependencies
+:repo:          **[-r, --repo]**        file repository containing a project component
+:file:          **[-f, --file]**        path (or url) to a file with configuration settings
+:virtualbox:    **[--virtualbox]**     oracle virtualbox boot2docker image (on Mac & Windows)
+
 
 Toggles
 ^^^^^^^
