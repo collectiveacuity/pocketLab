@@ -25,12 +25,11 @@ Resources
 Toggles
 ^^^^^^^
 
--s, --set  **set** save current instructions in project configurations
--t, --tag  **tag** add a tag to an object
-
-:quiet [-q, --quiet]: quiet the stdout from command processes
-:log [-l, --log]: enabling of logging of stdout from container
-:username [--username]: add a username to a resource request
-:password [--password]: add a password to a resource request
+-s, --set  save current instructions in project configurations
+-t TAG, --tag TAG  add a TAG to an object
+-q, --quiet  quiet the stdout from command processes
+-l, --log  enabling of logging of stdout from container
+--username USERNAME  add a USERNAME to a resource request
+--password PASSWORD  add a PASSWORD to a resource request
 
 
