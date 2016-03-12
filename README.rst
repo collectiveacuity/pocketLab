@@ -77,4 +77,4 @@ Documentation
 -------------
 For more details about how to use pocketLab, refer to the
 `Reference Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/pocketlab/src/REFERENCE.rst>`_
+<https://bitbucket.org/collectiveacuity/pocketlab/blob/master/REFERENCE.rst>`_
