@@ -26,7 +26,7 @@ Toggles
 ^^^^^^^
 
 -s, --set  save current instructions in project configurations
--t=TAG, --tag=TAG  add a TAG to an object
+-t TAG, --tag=TAG  add a TAG to an object
 -q, --quiet  quiet the stdout from command processes
 -l, --log  enabling of logging of stdout from container
 --username=USERNAME  add a USERNAME to a resource request
