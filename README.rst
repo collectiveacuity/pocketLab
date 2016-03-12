@@ -7,16 +7,45 @@ pocketLab
 
 Commands
 --------
-- **start**: initiates a container with a project component
-- **stop**: terminates container running a project component
-- **home**: returns active location to project home
-- **install**: installs files for a new component in the project
-- **tunnel**:
-- **monitor**:
+
+:**new**: create a new project
+:**home**: changes working directory to project home
+:**add**: downloads image and files for a project component
+:start: initiates a container with a project component
+:enter: opens up a shell cli inside a running container
+:stop: terminates container running a project component
+:**reboot**: restart a container running a project component
+:**tunnel**: creates a local tunnel to <sub-domain>.localtunnel.me
+:**monitor**: creates a scheduled request to url endpoint
+:**setup**: creates required account resources on a remote service
+:**compose**: creates a set of containers from components in project
+:**connect**: opens up a direct ssh connection to remote build
+:**test**: performs tests on a project set to determine health
+:**deploy**: places a project set into production
+:**renew**: retrieves a new ssl certificate for url endpoint
+:**update**: updates the components in an active project set
+:**import**: import a pre-existing project from a remote repo
+
+Low-Level Commands
+------------------
+
+:**images**: lists the images installed locally
+:**containers**: lists the containers running currently
+:**pull**: downloads an image or folder from a remote VCS repository
+:**remove**: deletes an image or folder from the local environment
+:**build**: creates a new image from Dockerfile in project component
+:**clean**: removes broken images and stopped containers
 
 Features
 --------
--
+- Docker Wrapper
+- GitHub & BitBucket Repos
+- OS Independence
+- AWS Deployment Management
+- Let's Encrypt SSL Certificates
+- LocalTunnel.me
+- PingAPI Monitoring
+- Test Sequencing
 
 System Requirements
 -------------------

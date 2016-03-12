@@ -41,19 +41,18 @@ def start(**kwargs):
     from os import path
     from copy import deepcopy
     from pocketLab.importers.config_file import configFile
-    from pocketLab.importers.local_os import localOS
+    from pocketLab.clients.localhost_session import localhostSession
     from pocketLab.clients.docker_session import dockerSession
     from pocketLab.validators.config_model import configModel
     from pocketLab.validators.absolute_path import absolutePath
     from pocketLab.validators.available_image import availableImage
     from pocketLab.compilers.docker_run import dockerRun
-    from pocketLab.exceptions.lab_exception import labException
 
 # ingest verbose options
     verbose = kwargs['verbose']
 
 # determine system properties
-    local_os = localOS()
+    local_os = localhostSession().os
 
 # ingest & validate component file
     component_file = kwargs['componentFile']
@@ -99,11 +98,12 @@ def start(**kwargs):
 
 # check that alias name is available
     if comp_details['container_alias'] in active_containers:
-        from pocketLab.compilers.table_print import tablePrint
+        from pocketLab.exceptions.lab_exception import labException
         header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,
-            'message': 'Container "%s" already in use. Containers currently active: \n\n%s' % (comp_details['container_alias'], tablePrint(header_list, container_list)),
+            'message': 'Container "%s" already in use. Containers currently active:' % comp_details['container_alias'],
+            'tprint': { 'headers': header_list, 'rows': container_list },
             'error_value': comp_details['container_alias'],
             'failed_test': 'unavailable_resource'
         }

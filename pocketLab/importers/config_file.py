@@ -3,7 +3,6 @@ __created__ = '2016.03'
 
 from os import path
 from re import compile
-from pocketLab.exceptions.lab_exception import labException
 
 def configFile(file_name, kwargs):
 
@@ -12,6 +11,7 @@ def configFile(file_name, kwargs):
 
 # validate existence of file
     if not path.exists(file_name):
+        from pocketLab.exceptions.lab_exception import labException
         error['message'] = '%s does not exist.' % file_name
         error['failed_test'] = 'missing_file'
         error['error_value'] = file_name
@@ -27,6 +27,7 @@ def configFile(file_name, kwargs):
         try:
             file_dict = json.loads(open(file_name).read())
         except Exception as err:
+            from pocketLab.exceptions.lab_exception import labException
             error['exception'] = err
             error['message'] = '%s is not a valid json file.' % file_name
             error['failed_test'] = 'invalid_type'
@@ -37,6 +38,7 @@ def configFile(file_name, kwargs):
         try:
             file_dict = yaml.load(open(file_name).read())
         except Exception as err:
+            from pocketLab.exceptions.lab_exception import labException
             error['exception'] = err
             error['message'] = '%s is not a valid yaml file.' % file_name
             error['failed_test'] = 'invalid_type'
@@ -52,12 +54,14 @@ def configFile(file_name, kwargs):
             for section in section_list:
                 file_dict[section] = dict(config.items(section))
         except Exception as err:
+            from pocketLab.exceptions.lab_exception import labException
             error['exception'] = err
             error['message'] = '%s is not a valid ini file.' % file_name
             error['failed_test'] = 'invalid_type'
             error['error_value'] = file_name
             raise labException(**error)
     else:
+        from pocketLab.exceptions.lab_exception import labException
         error['message'] = '%s is not a valid configuration file type.' % file_name
         error['failed_test'] = 'invalid_type'
         error['error_value'] = file_name
@@ -65,6 +69,7 @@ def configFile(file_name, kwargs):
 
 # validate data in file and return dictionary
     if not file_dict:
+        from pocketLab.exceptions.lab_exception import labException
         error['message'] = '%s contains no data.' % file_name
         error['failed_test'] = 'empty_file'
         error['error_value'] = file_name

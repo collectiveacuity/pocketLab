@@ -1,11 +1,11 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details_build = {
-    'command': 'build',
-    'usage': 'build [options]',
-    'description': 'builds an image from project components',
-    'brief': 'builds an image from project components',
+_cmd_details_compose = {
+    'command': 'compose',
+    'usage': 'compose [options]',
+    'description': 'assembles a build from project components',
+    'brief': 'assembles a build from project components',
     'defaults': { 'service': 'aws' },
     'options': [
         {   'args': [ '-q', '--quiet' ],
@@ -26,7 +26,7 @@ _cmd_details_build = {
     ]
 }
 
-def build(**kwargs):
+def compose(**kwargs):
 
 # import dependencies
     from pocketLab.importers.config_file import configFile

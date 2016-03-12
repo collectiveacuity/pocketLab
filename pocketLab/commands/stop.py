@@ -17,11 +17,11 @@ _cmd_details_stop = {
                 'help': 'name of container ALIAS (default: "container_alias" value in local lab-component.json)'
             }
         },
-        {   'args': [ '-b', '--box' ],
+        {   'args': [ '-v', '--virtualbox' ],
             'kwargs': {
                 'type': str,
                 'default': 'default',
-                'metavar': 'VBOX',
+                'metavar': '',
                 'dest': 'virtualbox',
                 'help': 'name of docker virtualbox (default: %(default)s)' }
         }
@@ -32,13 +32,12 @@ def stop(**kwargs):
 
 # import dependencies
     from pocketLab.importers.config_file import configFile
-    from pocketLab.importers.local_os import localOS
+    from pocketLab.clients.localhost_session import localhostSession
     from pocketLab.clients.docker_session import dockerSession
     from pocketLab.validators.config_model import configModel
-    from pocketLab.exceptions.lab_exception import labException
 
 # determine system properties
-    local_os = localOS()
+    local_os = localhostSession().os
 
 # ingest & validate virtualbox property
     vbox_name = kwargs['virtualbox']
@@ -63,11 +62,12 @@ def stop(**kwargs):
 
 # check that container exists
     if not alias_name in alias_list:
-        from pocketLab.compilers.table_print import tablePrint
+        from pocketLab.exceptions.lab_exception import labException
         header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,
-            'message': 'Container "%s" does not exist. Containers currently active: \n\n%s' % (alias_name, tablePrint(header_list, container_list)),
+            'message': 'Container "%s" does not exist. Containers currently active:' % alias_name,
+            'tprint': { 'headers': header_list, 'rows': container_list },
             'error_value': alias_name,
             'failed_test': 'required_resource'
         }

@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 from pocketLab.clients.docker_session import dockerConfig
-from pocketLab.importers.local_os import localOS
+from pocketLab.clients.localhost_session import localhostSession
 
 
 class testImportersDockerConfig(dockerConfig):
@@ -15,6 +15,6 @@ class testImportersDockerConfig(dockerConfig):
 
 if __name__ == '__main__':
     testBox = ''
-    if localOS() in ('Windows','Mac'):
+    if localhostSession() in ('Windows', 'Mac'):
         testBox = 'default'
     testImportersDockerConfig(testBox).unitTests()

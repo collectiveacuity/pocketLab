@@ -10,10 +10,16 @@ _cmd_details_home = {
     'options': [
         {   'args': [ '-s', '--set' ],
             'kwargs': {
+                'action': 'store_true',
+                'dest': 'resetPath',
+                'help': 'reset path of project root to workdir' }
+        },
+        {   'args': [ '-p', '--project' ],
+            'kwargs': {
                 'type': str,
-                'metavar': 'PATH',
-                'dest': 'newPath',
-                'help': '(re)set path to project root (default: %(default)s)' }
+                'metavar': 'NAME',
+                'dest': 'projectName',
+                'help': 'NAME of project to reset as default home' }
         }
     ]
 }

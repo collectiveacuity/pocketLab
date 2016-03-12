@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from os import devnull, environ
+from os import devnull, environ, system
 from re import compile
 import json
 from subprocess import check_output, call
@@ -238,3 +238,11 @@ class dockerSession(object):
         output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
 
         return output_lines[0]
+
+    def enter(self, local_os, container_alias):
+
+        sys_cmd = 'docker exec -it %s sh' % container_alias
+        if local_os in ('Windows'):
+            sys_cmd = 'winpty %s' % sys_cmd
+
+        system(sys_cmd)

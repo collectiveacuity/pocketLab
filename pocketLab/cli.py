@@ -13,7 +13,7 @@ from importlib import import_module
 from importlib.util import find_spec
 from os import listdir
 from re import compile
-from argparse import ArgumentParser
+from argparse import ArgumentParser, HelpFormatter
 
 def cli(error=False):
 
@@ -60,7 +60,8 @@ def cli(error=False):
             cmd_details = {
                 'usage': '%s %s' % (__command__, sub_cmd['usage']),
                 'description': sub_cmd['description'],
-                'help': sub_cmd['brief']
+                'help': sub_cmd['brief'],
+                'formatter_class': lambda prog: HelpFormatter(prog, max_help_position=30, width=80)
             }
             sub_commands = subparsers.add_parser(sub_cmd['command'], **cmd_details)
             sub_commands.set_defaults(command=sub_cmd['command'], **sub_cmd['defaults'])
