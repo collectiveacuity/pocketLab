@@ -16,7 +16,7 @@ _cmd_details_start = {
                 'action': 'store_false'
             }
         },
-        {   'args': [ '-b', '--box' ],
+        {   'args': [ '--virtualbox' ],
             'kwargs': {
                 'type': str,
                 'default': 'default',
@@ -27,7 +27,7 @@ _cmd_details_start = {
         {   'args': [ '-f', '--file' ],
             'kwargs': {
                 'type': str,
-                'default': 'lab-component.json',
+                'default': 'labComponent.yaml',
                 'metavar': 'FILE',
                 'dest': 'componentFile',
                 'help': 'path to component settings FILE (default: %(default)s)' }
@@ -122,7 +122,7 @@ def start(**kwargs):
     injected_variables = {
         'SYSTEM_LOCALHOST': system_ip
     }
-    for key, value in comp_details['injected_variables']:
+    for key, value in comp_details['injected_variables'].items():
         injected_variables[key] = value
 
 # compile docker run script from settings

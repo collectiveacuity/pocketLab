@@ -235,9 +235,10 @@ class dockerSession(object):
             'mounted_volumes': {}
         }
         num_pattern = compile('\d+')
-        for key, value in container_settings['NetworkSettings']['Ports'].items():
-            port = num_pattern.findall(value[0]['HostPort'])[0]
-            settings['mapped_ports'][port] = num_pattern.findall(key)[0]
+        if container_settings['NetworkSettings']['Ports']:
+            for key, value in container_settings['NetworkSettings']['Ports'].items():
+                port = num_pattern.findall(value[0]['HostPort'])[0]
+                settings['mapped_ports'][port] = num_pattern.findall(key)[0]
         for variable in container_settings['Config']['Env']:
             k, v = variable.split('=')
             settings['container_variables'][k] = v

@@ -18,7 +18,7 @@ _cmd_details_compose = {
         {   'args': [ '-f', '--file' ],
             'kwargs': {
                 'type': str,
-                'default': 'lab-project.json',
+                'default': 'labProject.yaml',
                 'metavar': 'FILE',
                 'dest': 'projectFile',
                 'help': 'path to project settings FILE (default: %(default)s)' }

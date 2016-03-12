@@ -23,5 +23,5 @@ if __name__ == '__main__':
     testBox = ''
     if localhost.os in ('Windows', 'Mac'):
         testBox = 'default'
-    testKwargs = {'command': 'start', 'virtualbox': 'default', 'verbose': True, 'componentFile': 'lab-component.json', 'componentRoot': '$(pwd)'}
+    testKwargs = {'command': 'start', 'virtualbox': 'default', 'verbose': True, 'componentFile': 'lab-component.json'}
     testClientsDockerSession(testKwargs, testBox).unitTests()
