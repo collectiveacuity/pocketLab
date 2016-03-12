@@ -25,7 +25,7 @@ Objects
 Toggles
 ^^^^^^^
 
-:set: [-s, --set] save current instructions in project configurations
+:set: **[-s, --set]** save current instructions in project configurations
 :tag: [-t, --tag] add a tag to an object
 :quiet: [-q, --quiet] quiet the stdout from command processes
 :log: [-l, --log] enabling of logging of stdout from container
