@@ -37,18 +37,18 @@ def stop(**kwargs):
     from pocketLab.validators.config_model import configModel
 
 # determine system properties
-    local_os = localhostSession().os
+    localhost = localhostSession()
 
 # ingest & validate virtualbox property
     vbox_name = kwargs['virtualbox']
-    if not local_os in ('Windows','Mac'):
+    if not localhost.os in ('Windows','Mac'):
         vbox_name = ''
 
 # check for docker installation
     docker_session = dockerSession(kwargs, vbox_name)
 
 # retrieve list of container aliases
-    container_list = docker_session.containers()
+    container_list = docker_session.ps()
     alias_list = []
     for container in container_list:
         alias_list.append(container['NAMES'])
@@ -74,7 +74,7 @@ def stop(**kwargs):
         raise labException(**error)
 
 # remove container
-    end_command = docker_session.remove(alias_name)
+    end_command = docker_session.rm(alias_name)
     start_text = 'Sweet! Container "%s" stopped.' % alias_name
     print(start_text)
 

@@ -38,18 +38,18 @@ def enter(**kwargs):
     from pocketLab.exceptions.lab_exception import labException
 
 # determine system properties
-    local_os = localhostSession().os
+    localhost = localhostSession()
 
 # ingest & validate virtualbox property
     vbox_name = kwargs['virtualbox']
-    if not local_os in ('Windows','Mac'):
+    if not localhost.os in ('Windows','Mac'):
         vbox_name = ''
 
 # check for docker installation
     docker_session = dockerSession(kwargs, vbox_name)
 
 # retrieve list of container aliases
-    container_list = docker_session.containers()
+    container_list = docker_session.ps()
     alias_list = []
     for container in container_list:
         alias_list.append(container['NAMES'])
@@ -74,6 +74,6 @@ def enter(**kwargs):
         raise labException(**error)
 
 # tty command
-    docker_session.enter(local_os, alias_name)
+    docker_session.enter(localhost.os, alias_name)
 
     return True

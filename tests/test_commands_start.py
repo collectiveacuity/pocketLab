@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.commands.start import *
+from pocketLab.commands.start import start
 
 class testCommandsStart(object):
 
@@ -9,7 +9,7 @@ class testCommandsStart(object):
         self.kwargs = kwargs
 
     def unitTests(self):
-        run(**self.kwargs)
+        start(**self.kwargs)
         return self
 
 if __name__ == '__main__':

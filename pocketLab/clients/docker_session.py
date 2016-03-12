@@ -3,10 +3,7 @@ __created__ = '2016.03'
 
 from os import devnull, environ, system
 from re import compile
-import json
 from subprocess import check_output, call
-from copy import deepcopy
-from pocketLab.exceptions.lab_exception import labException
 
 class dockerSession(object):
 
@@ -30,6 +27,7 @@ class dockerSession(object):
         try:
             call(sys_command, stdout=open(devnull, 'wb'))
         except Exception as err:
+            from pocketLab.exceptions.lab_exception import labException
             self.error['exception'] = err
             self.error['error_value'] = sys_command
             self.error['failed_test'] = 'required_module'
@@ -42,6 +40,7 @@ class dockerSession(object):
             try:
                 call(sys_command, stdout=open(devnull, 'wb'))
             except Exception as err:
+                from pocketLab.exceptions.lab_exception import labException
                 self.error['exception'] = err
                 self.error['error_value'] = sys_command
                 self.error['failed_test'] = 'required_module'
@@ -55,11 +54,12 @@ class dockerSession(object):
         if self.vbox:
             sys_command = 'docker-machine status %s' % self.vbox
             self.error['error_value'] = sys_command
+            self.error['failed_test'] = 'required_resource'
             try:
                 vbox_status = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8').replace('\n','')
             except Exception as err:
+                from pocketLab.exceptions.lab_exception import labException
                 self.error['exception'] = err
-                self.error['failed_test'] = 'required_resource'
                 if self.vbox == "default":
                     self.error['message'] = 'Virtualbox "default" not found. Container will not start without a valid virtualbox.'
                     raise labException(**self.error)
@@ -67,7 +67,7 @@ class dockerSession(object):
                     self.error['message'] = 'Virtualbox "%s" not found. Try using "default" instead.' % self.vbox
                     raise labException(**self.error)
             if 'Stopped' in vbox_status:
-                self.error['failed_test'] = 'required_resource'
+                from pocketLab.exceptions.lab_exception import labException
                 self.error['message'] = 'Virtualbox "%s" is stopped. Try first running: docker-machine start %s' % (self.vbox, self.vbox)
                 raise labException(**self.error)
 
@@ -84,31 +84,6 @@ class dockerSession(object):
                     env_statement = env_pattern.findall(cmd_output)
                     env_var = env_statement[0].replace(env_start,'').replace('"\n','')
                     environ[variable] = env_var
-
-    def localhost(self):
-
-        '''
-
-        :return: string with ip address of system
-        '''
-
-        if self.vbox:
-            sys_command = 'docker-machine ip %s' % self.vbox
-            system_ip = check_output(sys_command).decode('utf-8').replace('\n','')
-        else:
-            system_ip = 'hostname --ip-address'
-
-        return system_ip
-
-    def command(self, sys_command):
-
-        '''
-
-        :param sys_command: string with docker command
-        :return: raw output from docker
-        '''
-
-        return check_output(sys_command).decode('utf-8')
 
     def images(self):
 
@@ -140,7 +115,7 @@ class dockerSession(object):
 
         return image_list
 
-    def containers(self):
+    def ps(self):
 
         '''
 
@@ -172,6 +147,7 @@ class dockerSession(object):
                         container_details[column_headers[j]] = columns[j]
         # stupid hack for possible empty port column
                 if container_details['PORTS'] and not container_details['NAMES']:
+                    from copy import deepcopy
                     container_details['NAMES'] = deepcopy(container_details['PORTS'])
                     container_details['PORTS'] = ''
                 container_list.append(container_details)
@@ -188,11 +164,58 @@ class dockerSession(object):
         { TOO MANY TO LIST }
         '''
 
+        import json
         sys_command = 'docker inspect %s' % container_alias
         output_dict = json.loads(check_output(sys_command).decode('utf-8'))
         container_settings = output_dict[0]
 
         return container_settings
+
+    def run(self, run_script):
+
+        output_lines = check_output(run_script).decode('utf-8').split('\n')
+        container_id = output_lines[0]
+
+        return container_id
+
+    def rm(self, container_alias):
+
+        sys_cmd = 'docker rm -f %s' % container_alias
+        output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
+
+        return output_lines[0]
+
+    def rmi(self, image_id):
+
+        sys_cmd = 'docker rmi %s' % image_id
+        output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
+
+        return output_lines
+
+    def ip(self):
+
+        '''
+
+        :return: string with ip address of system
+        '''
+
+        if self.vbox:
+            sys_command = 'docker-machine ip %s' % self.vbox
+            system_ip = check_output(sys_command).decode('utf-8').replace('\n','')
+        else:
+            system_ip = 'hostname --ip-address'
+
+        return system_ip
+
+    def command(self, sys_command):
+
+        '''
+
+        :param sys_command: string with docker command
+        :return: raw output from docker
+        '''
+
+        return check_output(sys_command).decode('utf-8')
 
     def synopsis(self, container_settings):
 
@@ -225,20 +248,6 @@ class dockerSession(object):
 
         return settings
 
-    def run(self, run_script):
-
-        output_lines = check_output(run_script).decode('utf-8').split('\n')
-        container_id = output_lines[0]
-
-        return container_id
-
-    def remove(self, container_alias):
-
-        sys_cmd = 'docker rm -f %s' % container_alias
-        output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
-
-        return output_lines[0]
-
     def enter(self, local_os, container_alias):
 
         sys_cmd = 'docker exec -it %s sh' % container_alias
@@ -246,3 +255,13 @@ class dockerSession(object):
             sys_cmd = 'winpty %s' % sys_cmd
 
         system(sys_cmd)
+
+    def cleanup(self):
+
+        '''
+            a method to remove all Exited containers and <none> Images
+
+        :return: boolean
+        '''
+
+        return True

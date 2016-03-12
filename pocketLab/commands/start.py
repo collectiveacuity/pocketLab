@@ -52,7 +52,7 @@ def start(**kwargs):
     verbose = kwargs['verbose']
 
 # determine system properties
-    local_os = localhostSession().os
+    localhost = localhostSession()
 
 # ingest & validate component file
     component_file = kwargs['componentFile']
@@ -74,7 +74,7 @@ def start(**kwargs):
 
 # ingest & validate virtualbox property
     vbox_name = kwargs['virtualbox']
-    if not local_os in ('Windows','Mac'):
+    if not localhost.os in ('Windows','Mac'):
         vbox_name = ''
 
 # check for docker installation
@@ -85,7 +85,7 @@ def start(**kwargs):
     availableImage(comp_details['docker_image'], comp_details['image_tag'], image_list, kwargs)
 
 # retrieve list of active container aliases & busy ports
-    container_list = docker_session.containers()
+    container_list = docker_session.ps()
     busy_ports = []
     active_containers = []
     for container in container_list:
@@ -118,7 +118,7 @@ def start(**kwargs):
         mapped_ports[str(open_port)] = str(port)
 
 # add system_ip to injected variables
-    system_ip = docker_session.localhost()
+    system_ip = docker_session.ip()
     injected_variables = {
         'SYSTEM_LOCALHOST': system_ip
     }
