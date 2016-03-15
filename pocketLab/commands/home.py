@@ -28,9 +28,17 @@ _cmd_model_home = {
             'kwargs': {
                 'type': str,
                 'default': '',
-                'metavar': 'NAME',
+                'metavar': 'PROJ',
                 'dest': 'project',
-                'help': '(re)set project NAME to workdir' }
+                'help': '(re)set PROJect home to workdir' }
+        },
+        {   'args': [ '--print_path' ],
+            'kwargs': {
+                'type': str,
+                'default': '',
+                'metavar': 'PROJ',
+                'dest': 'print_path',
+                'help': 'prints path to PROJect home' }
         }
     ]
 }
@@ -41,6 +49,18 @@ def home(**kwargs):
     from re import compile
     from os import path
     from pocketLab.clients.registry_session import registrySession
+
+# handle goto command
+    print_path = kwargs['print_path']
+    if print_path:
+        home_path = './'
+        import sys
+        rS = registrySession(**kwargs).load()
+        for project in rS.regDetails['project_list']:
+            if print_path == project['project_name']:
+                home_path = project['project_home']
+        print(home_path)
+        sys.exit()
 
 # determine project name
     lab_logging = kwargs['labLogging']

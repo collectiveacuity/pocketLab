@@ -60,7 +60,7 @@ class registrySession(localhostSession):
 
     # ingest & validate the home registry file
         self.regDetails = configFile(self.regPath, self.kwargs)
-        self.regDetails = validFile(self.regDetails, self.regModel, self.kwargs, 'home registry')
+        self.regDetails = validFile(self.regDetails, self.regModel, self.kwargs, 'lab registry')
 
         return self
 
