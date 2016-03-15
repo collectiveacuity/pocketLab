@@ -10,10 +10,13 @@ class testClientsDockerSession(dockerSession):
         dockerSession.__init__(self, kwargs, vbox_name)
 
     def unitTests(self):
+        from pprint import pprint
         self.images()
         container_list = self.ps()
         if container_list:
-            self.inspect(container_list[0]['NAMES'])
+            settings = self.inspect(container_list[0]['NAMES'])
+            synopsis = self.synopsis(settings)
+            pprint(settings)
         # run_script = ''
         # self.run(run_script)
         return self

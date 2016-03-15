@@ -13,5 +13,5 @@ class testCommandsStart(object):
         return self
 
 if __name__ == '__main__':
-    testKwargs = {'command': 'start', 'virtualbox': 'default', 'verbose': True, 'componentFile': 'lab-component.json', 'componentRoot': '$(pwd)'}
+    testKwargs = {'command': 'start', 'virtualbox': 'default', 'verbose': True, 'componentFile': 'labComponent.yaml' }
     testCommandsStart(testKwargs).unitTests()
