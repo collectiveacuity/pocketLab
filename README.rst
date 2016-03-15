@@ -8,10 +8,14 @@ pocketLab
 Commands
 --------
 
-:home: creates a project home in working directory
-:list: report a list of project resources of a given type **TODO**
-:add: downloads image and files for a project component **TODO**
-:remove: remove a specific project resource **TODO**
+home
+    creates a project home in working directory
+list
+    report a list of project resources of a given type **TODO**
+add
+    downloads image and files for a project component **TODO**
+remove
+    remove a specific project resource **TODO**
 :start: initiates a container with a project component
 :enter: opens up a shell cli inside a running container
 :stop: terminates container running a project component
