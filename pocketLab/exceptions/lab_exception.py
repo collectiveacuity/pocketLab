@@ -6,42 +6,71 @@ import sys
 class labException(Exception):
 
     '''
-        a class for parsing exception context and reporting messages
+        a class for logging and reporting error events
     '''
 
     def __init__(self, **kwargs):
-        self.error = {
+
+    # construct default class methods
+        self.labLogging = True
+        self.context = {
+            'verbose': True,
             'message': '',
+            'reaction': '',
             'tprint': None,
             'pprint': None,
-            'exception': None,
             'kwargs': None,
-            'error_value': None,
+            'exception': None,
+            'input_criteria': None,
             'failed_test': '',
+            'error_value': '',
+            'error_code': 0,
+            'operation': '',
+            'outcome': 'error',
             'thread': None
         }
+
+    # update class method values from kwargs
         for key, value in kwargs.items():
-            if key in self.error.keys():
-                self.error[key] = value
+            if key in self.context.keys():
+                self.context[key] = value
+
+    # determine printing and logging toggles from kwargs
+        if self.context['kwargs']:
+            if 'verbose' in self.context['kwargs'].keys():
+                if not self.context['kwargs']['verbose']:
+                    self.context['verbose'] = False
+            if 'labLogging' in self.context['kwargs'].keys():
+                if not self.context['kwargs']['labLogging']:
+                    self.labLogging = False
+
+    # create a log of the event
+        if self.labLogging:
+            from pocketLab.clients.logging_session import loggingSession
+            loggingSession().save(**self.context)
+
+    # format printing
         self.print = ''
         self.tprint = None
         self.pprint = None
-        if self.error['message']:
-            if isinstance(self.error['message'], str):
-                self.print = self.error['message']
-        if self.error['tprint']:
-            if isinstance(self.error['tprint'], dict):
-                t_keys = self.error['tprint'].keys()
+        if self.context['message']:
+            if isinstance(self.context['message'], str):
+                self.print = self.context['message']
+        if self.context['tprint']:
+            if isinstance(self.context['tprint'], dict):
+                t_keys = self.context['tprint'].keys()
                 if not ('headers','rows') in t_keys:
-                    if isinstance(self.error['tprint']['headers'], list):
-                        if isinstance(self.error['tprint']['rows'], list):
-                            if not self.error['tprint']['rows']:
-                                self.error['tprint']['rows'] = [{}]
-                            if isinstance(self.error['tprint']['rows'][0], dict):
+                    if isinstance(self.context['tprint']['headers'], list):
+                        if isinstance(self.context['tprint']['rows'], list):
+                            if not self.context['tprint']['rows']:
+                                self.context['tprint']['rows'] = [{}]
+                            if isinstance(self.context['tprint']['rows'][0], dict):
                                 from pocketLab.compilers.table_print import tablePrint
-                                self.tprint =  tablePrint(self.error['tprint']['headers'], self.error['tprint']['rows'])
-        if self.error['pprint']:
-            self.pprint = self.error['pprint']
+                                self.tprint =  tablePrint(self.context['tprint']['headers'], self.context['tprint']['rows'])
+        if self.context['pprint']:
+            self.pprint = self.context['pprint']
+
+    # print error messages and exit
         text = 'Errr! %s' % self.print
         print(text)
         if self.tprint:
