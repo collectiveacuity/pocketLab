@@ -1,0 +1,17 @@
+{
+  "schema": {
+    "default_project": 0,
+    "project_list": [
+      {
+        "project_name": "lab",
+        "project_home": "~/lab/",
+        "project_remote": ""
+      }
+    ]
+  },
+  "components": {
+    ".default_project": {
+      "required_field": true
+    }
+  }
+}

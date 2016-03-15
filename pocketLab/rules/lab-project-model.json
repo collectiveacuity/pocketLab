@@ -2,7 +2,7 @@
   "schema": {
     "credentials_files": [
       {
-        "file_path": "labCredentials/admin/credentials-aws.json",
+        "file_path": "labMgmt/admin/credentialsAWS.yaml",
         "service": "aws",
         "type": "cloud"
       }
@@ -10,7 +10,7 @@
     "project_components": [
       {
         "root_path": "flaskServer",
-        "component_file": "lab-component.json"
+        "component_file": "labComponent.yaml"
       }
     ],
     "deployment_files": {
