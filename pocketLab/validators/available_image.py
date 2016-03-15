@@ -9,7 +9,7 @@ def availableImage(image_name, image_tag, image_list, kwargs):
     error = {
         'kwargs': kwargs,
         'error_value': image_name,
-        'failed_test': 'unavailable_resource'
+        'failed_test': 'available_resource'
     }
 
 # check list of images for image name and tag values
