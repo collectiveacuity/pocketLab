@@ -33,3 +33,25 @@ class localhostSession(object):
         env_username = environ.get('USERNAME')
         if env_username:
             self.username = env_username
+
+    def userData(self, org_name, prod_name):
+
+        data_path = ''
+
+        if self.os == 'Windows':
+            from re import compile
+            xp_pattern = compile('^C:\\Documents and Settings')
+            if xp_pattern.findall(environ.get('APPDATA')):
+                data_path = 'C:\\Documents and Settings\\%sLocal Settings\\Application Data\\%s\\%s\\User Data' % (self.username, org_name, prod_name)
+            else:
+                data_path = 'C:\\Users\\%s\\AppData\\Local\\%s\\%s\\User Data' % (self.username, org_name, prod_name)
+
+        elif self.os == 'Mac':
+            data_path = '~/Library/Application Support/%s/%s' % (org_name, prod_name)
+
+        elif self.os in ('Linux', 'FreeBSD', 'Solaris'):
+            org_format = org_name.replace(' ','-').lower()
+            prod_format = prod_name.replace(' ', '-').lower()
+            data_path = '~/.config/%s-%s/' % (org_format, prod_format)
+
+        return data_path

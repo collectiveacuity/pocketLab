@@ -154,7 +154,7 @@ class dockerSession(object):
 
         return container_list
 
-    def inspect(self, container_alias):
+    def inspect(self, container_alias='', docker_image='', image_tag=''):
 
         '''
 
@@ -164,8 +164,13 @@ class dockerSession(object):
         { TOO MANY TO LIST }
         '''
 
+        sys_arg = container_alias
+        if docker_image:
+            sys_arg = docker_image
+            if image_tag:
+                sys_arg += ':%s' % image_tag
         import json
-        sys_command = 'docker inspect %s' % container_alias
+        sys_command = 'docker inspect %s' % sys_arg
         output_dict = json.loads(check_output(sys_command).decode('utf-8'))
         container_settings = output_dict[0]
 
@@ -239,9 +244,10 @@ class dockerSession(object):
             for key, value in container_settings['NetworkSettings']['Ports'].items():
                 port = num_pattern.findall(value[0]['HostPort'])[0]
                 settings['mapped_ports'][port] = num_pattern.findall(key)[0]
-        for variable in container_settings['Config']['Env']:
-            k, v = variable.split('=')
-            settings['container_variables'][k] = v
+        if container_settings['Config']['Env']:
+            for variable in container_settings['Config']['Env']:
+                k, v = variable.split('=')
+                settings['container_variables'][k] = v
         for volume in container_settings['Mounts']:
             system_path = volume['Source']
             container_path = volume['Destination']
