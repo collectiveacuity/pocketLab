@@ -1,6 +1,3 @@
-__author__ = 'rcj1492'
-__created__ = '2016.02'
-
 import re
 from setuptools import setup, find_packages
 
@@ -47,30 +44,20 @@ python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 '''
 
-version = re.search(
-    "^__version__\s*=\s*'(.*)'",
-    open('pocketLab/cli.py').read(),
-    re.M
-    ).group(1)
-
-command = re.search(
-    "^__command__\s*=\s*'(.*)'",
-    open('pocketLab/cli.py').read(),
-    re.M
-    ).group(1)
-
-module = re.search(
-    "^__module__\s*=\s*'(.*)'",
-    open('pocketLab/cli.py').read(),
-    re.M
-    ).group(1)
+config_file = open('pocketLab/__init__.py').read()
+version = re.search("^__version__\s*=\s*'(.*)'", config_file, re.M).group(1)
+command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
+module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
+author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
+email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
+author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
 
 setup(
     name=module,
     version=version,
-    author = __author__,
-    maintainer_email="support@collectiveacuity.com",
-    entry_points = {
+    author=author,
+    maintainer_email=email,
+    entry_points={
         "console_scripts": ['%s = %s.cli:cli' % (command, module)]
     },
     include_package_data=True,  # Checks MANIFEST.in for explicit rules

@@ -1,14 +1,12 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
-__command__ = 'lab'
-__version__ = '0.1'
-__module__ = 'pocketLab'
 
 '''
 https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argparse
 '''
 
 import sys
+from pocketLab import __command__, __module__, __version__
 from importlib import import_module
 from importlib.util import find_spec
 from os import listdir
