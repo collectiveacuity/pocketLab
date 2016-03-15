@@ -1,30 +1,30 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details_compose = {
-    'command': 'compose',
-    'usage': 'compose [options]',
-    'description': 'assembles a build from project components',
-    'brief': 'assembles a build from project components',
-    'defaults': { 'service': 'aws' },
-    'options': [
-        {   'args': [ '-q', '--quiet' ],
-            'kwargs': {
-                'default': True,
-                'dest': 'verbose',
-                'help': 'turn off status messages during build',
-                'action': 'store_false' }
-        },
-        {   'args': [ '-f', '--file' ],
-            'kwargs': {
-                'type': str,
-                'default': 'labProject.yaml',
-                'metavar': 'FILE',
-                'dest': 'projectFile',
-                'help': 'path to project settings FILE (default: %(default)s)' }
-        }
-    ]
-}
+# _cmd_details_compose = {
+#     'command': 'compose',
+#     'usage': 'compose [options]',
+#     'description': 'assembles a build from project components',
+#     'brief': 'assembles a build from project components',
+#     'defaults': { 'service': 'aws' },
+#     'options': [
+#         {   'args': [ '-q', '--quiet' ],
+#             'kwargs': {
+#                 'default': True,
+#                 'dest': 'verbose',
+#                 'help': 'turn off status messages during build',
+#                 'action': 'store_false' }
+#         },
+#         {   'args': [ '-f', '--file' ],
+#             'kwargs': {
+#                 'type': str,
+#                 'default': 'labProject.yaml',
+#                 'metavar': 'FILE',
+#                 'dest': 'projectFile',
+#                 'help': 'path to project settings FILE (default: %(default)s)' }
+#         }
+#     ]
+# }
 
 def compose(**kwargs):
 

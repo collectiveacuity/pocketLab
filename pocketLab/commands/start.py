@@ -20,7 +20,7 @@ _cmd_details_start = {
             'kwargs': {
                 'type': str,
                 'default': 'default',
-                'metavar': 'VBOX',
+                'metavar': 'VIRTUALBOX',
                 'dest': 'virtualbox',
                 'help': 'name of docker virtualbox (default: %(default)s)' }
         },
@@ -90,7 +90,7 @@ def start(**kwargs):
     active_containers = []
     for container in container_list:
         active_containers.append(container['NAMES'])
-        container_settings = docker_session.inspect(container['NAMES'])
+        container_settings = docker_session.inspect(container_alias=container['NAMES'])
         container_synopsis = docker_session.synopsis(container_settings)
         if container_synopsis['mapped_ports']:
             for key in container_synopsis['mapped_ports'].keys():

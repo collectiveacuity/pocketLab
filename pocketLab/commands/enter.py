@@ -1,6 +1,11 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
+'''
+    local (no platform option) - opens up a pseudo-tty to a running container
+    # TODO: remote - opens up a pseudo-tty to a running instance
+'''
+
 _cmd_details_enter = {
     'command': 'enter',
     'usage': 'enter [options]',
@@ -13,17 +18,17 @@ _cmd_details_enter = {
                 'type': str,
                 'default': '',
                 'metavar': 'ALIAS',
-                'dest': 'containerAlias',
-                'help': 'name of container ALIAS (default: "container_alias" value in local lab-component.json)'
+                'dest': 'alias',
+                'help': 'name of container ALIAS (default: "container_alias" value in local labComponent.yaml)'
             }
         },
-        {   'args': [ '-b', '--box' ],
+        {   'args': [ '--virtualbox' ],
             'kwargs': {
                 'type': str,
                 'default': 'default',
-                'metavar': 'VBOX',
+                'metavar': 'IMAGE',
                 'dest': 'virtualbox',
-                'help': 'name of docker virtualbox (default: %(default)s)' }
+                'help': 'name of docker virtualbox IMAGE (default: %(default)s)' }
         }
     ]
 }
@@ -35,7 +40,7 @@ def enter(**kwargs):
     from pocketLab.clients.localhost_session import localhostSession
     from pocketLab.clients.docker_session import dockerSession
     from pocketLab.validators.config_model import configModel
-    from pocketLab.exceptions.lab_exception import labException
+    from pocketLab.validators.available_container import availableContainer
 
 # determine system properties
     localhost = localhostSession()
@@ -50,28 +55,16 @@ def enter(**kwargs):
 
 # retrieve list of container aliases
     container_list = docker_session.ps()
-    alias_list = []
-    for container in container_list:
-        alias_list.append(container['NAMES'])
 
 # ingest & validate alias name
-    alias_name = kwargs['containerAlias']
+    alias_name = kwargs['alias']
     if alias_name == '':
-        comp_details = configFile('lab-component.json', kwargs)
+        comp_details = configFile('labComponent.yaml', kwargs)
         comp_details = configModel(comp_details, 'rules/lab-component-model.json', kwargs, 'component settings')
         alias_name = comp_details['container_alias']
 
-# check that container exists
-    if not alias_name in alias_list:
-        header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
-        error = {
-            'kwargs': kwargs,
-            'message': 'Container "%s" does not exist. Containers currently active:' % alias_name,
-            'tprint': { 'headers': header_list, 'rows': container_list },
-            'error_value': alias_name,
-            'failed_test': 'required_resource'
-        }
-        raise labException(**error)
+# validate availability of container
+    availableContainer(alias_name, container_list, kwargs)
 
 # tty command
     docker_session.enter(localhost.os, alias_name)
