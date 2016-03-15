@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details_start = {
+_cmd_model_start = {
     'command': 'start',
     'usage': 'start [options]',
     'description': 'initiates a container with a project component',

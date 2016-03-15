@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details_stop = {
+_cmd_model_stop = {
     'command': 'stop',
     'usage': 'stop [options]',
     'description': 'terminates container running a project component',

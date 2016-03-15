@@ -1,59 +1,59 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-# _cmd_details_cleanup = {
-#     'command': 'cleanup',
-#     'usage': 'cleanup [options]',
-#     'description': 'removes stranded resources in an environment',
-#     'brief': 'removes stranded resources in an environment',
-#     'defaults': { },
-#     'options': [
-#         {   'args': [ '--environment' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': '',
-#                 'metavar': 'TAG',
-#                 'dest': 'environment',
-#                 'help': 'value of an environment TAG (ie. dev, test, prod)'
-#             }
-#         },
-#         {   'args': [ '--layer' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': '',
-#                 'metavar': 'TAG',
-#                 'dest': 'layer',
-#                 'help': 'value of a layer TAG (interface, processor, persistence)'
-#             }
-#         },
-#         {   'args': [ '--platform' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': 'local',
-#                 'metavar': 'SERVICE',
-#                 'dest': 'platform',
-#                 'help': 'name of platform SERVICE (ie. local, aws, github.io)'
-#             }
-#         },
-#         {   'args': [ '--virtualbox' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': 'default',
-#                 'metavar': 'IMAGE',
-#                 'dest': 'virtualbox',
-#                 'help': 'name of docker virtualbox IMAGE (default: %(default)s)' }
-#         },
-#         {   'args': [ '--region' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': 'service default',
-#                 'metavar': 'REGION',
-#                 'dest': 'region',
-#                 'help': 'name of platform service REGION (default: %(default)s)'
-#             }
-#         },
-#     ]
-# }
+_cmd_details_cleanup = {
+    'command': 'cleanup',
+    'usage': 'cleanup [options]',
+    'description': 'removes stranded resources in an environment',
+    'brief': 'removes stranded resources in an environment',
+    'defaults': { },
+    'options': [
+        {   'args': [ '--environment' ],
+            'kwargs': {
+                'type': str,
+                'default': '',
+                'metavar': 'TAG',
+                'dest': 'environment',
+                'help': 'value of an environment TAG (ie. dev, test, prod)'
+            }
+        },
+        {   'args': [ '--layer' ],
+            'kwargs': {
+                'type': str,
+                'default': '',
+                'metavar': 'TAG',
+                'dest': 'layer',
+                'help': 'value of a layer TAG (interface, processor, persistence)'
+            }
+        },
+        {   'args': [ '--platform' ],
+            'kwargs': {
+                'type': str,
+                'default': 'local',
+                'metavar': 'SERVICE',
+                'dest': 'platform',
+                'help': 'name of platform SERVICE (ie. local, aws, github.io)'
+            }
+        },
+        {   'args': [ '--virtualbox' ],
+            'kwargs': {
+                'type': str,
+                'default': 'default',
+                'metavar': 'IMAGE',
+                'dest': 'virtualbox',
+                'help': 'name of docker virtualbox IMAGE (default: %(default)s)' }
+        },
+        {   'args': [ '--region' ],
+            'kwargs': {
+                'type': str,
+                'default': 'service default',
+                'metavar': 'REGION',
+                'dest': 'region',
+                'help': 'name of platform service REGION (default: %(default)s)'
+            }
+        },
+    ]
+}
 
 def cleanup(**kwargs):
 

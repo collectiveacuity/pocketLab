@@ -1,32 +1,32 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-# _cmd_details_new = {
-#     'command': 'new',
-#     'usage': 'new [options]',
-#     'description': 'creates a new project in workdir',
-#     'brief': 'creates a new project in workdir',
-#     'defaults': { },
-#     'options': [
-#         {   'args': [ '-q', '--quiet' ],
-#             'kwargs': {
-#                 'dest': 'verbose',
-#                 'default': True,
-#                 'help': 'turn off setup process messages',
-#                 'action': 'store_false'
-#             }
-#         },
-#         {   'args': [ '-p', '--project' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': '',
-#                 'metavar': 'NAME',
-#                 'dest': 'project',
-#                 'help': 'name of new project'
-#             }
-#         }
-#     ]
-# }
+_cmd_details_new = {
+    'command': 'new',
+    'usage': 'new [options]',
+    'description': 'creates a new project in workdir',
+    'brief': 'creates a new project in workdir',
+    'defaults': { },
+    'options': [
+        {   'args': [ '-q', '--quiet' ],
+            'kwargs': {
+                'dest': 'verbose',
+                'default': True,
+                'help': 'turn off setup process messages',
+                'action': 'store_false'
+            }
+        },
+        {   'args': [ '-p', '--project' ],
+            'kwargs': {
+                'type': str,
+                'default': '',
+                'metavar': 'NAME',
+                'dest': 'project',
+                'help': 'name of new project'
+            }
+        }
+    ]
+}
 
 def new(**kwargs):
 

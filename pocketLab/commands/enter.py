@@ -6,7 +6,7 @@ __created__ = '2016.03'
     # TODO: remote - opens up a pseudo-tty to a running instance
 '''
 
-_cmd_details_enter = {
+_cmd_model_enter = {
     'command': 'enter',
     'usage': 'enter [options]',
     'description': 'opens up a shell cli inside a running container',

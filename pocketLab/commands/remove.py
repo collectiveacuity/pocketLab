@@ -9,41 +9,41 @@ possible objects to remove
 
 '''
 
-# _cmd_details_remove = {
-#     'command': 'remove',
-#     'usage': 'remove [options]',
-#     'description': 'removes an image or component from an environment',
-#     'brief': 'removes an image or component from an environment',
-#     'defaults': { },
-#     'options': [
-#         {   'args': [ '-i, --image' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': '',
-#                 'metavar': 'IMAGE',
-#                 'dest': 'image',
-#                 'help': 'name of a local docker IMAGE'
-#             }
-#         },
-#         {   'args': [ '-t, --tag' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': '',
-#                 'metavar': 'TAG',
-#                 'dest': 'tag',
-#                 'help': 'TAG associated with a docker image'
-#             }
-#         },
-#         {   'args': [ '--virtualbox' ],
-#             'kwargs': {
-#                 'type': str,
-#                 'default': 'default',
-#                 'metavar': 'IMAGE',
-#                 'dest': 'virtualbox',
-#                 'help': 'name of docker virtualbox IMAGE (default: %(default)s)' }
-#         }
-#     ]
-# }
+_cmd_details_remove = {
+    'command': 'remove',
+    'usage': 'remove [options]',
+    'description': 'removes an image or component from an environment',
+    'brief': 'removes an image or component from an environment',
+    'defaults': { },
+    'options': [
+        {   'args': [ '-i, --image' ],
+            'kwargs': {
+                'type': str,
+                'default': '',
+                'metavar': 'IMAGE',
+                'dest': 'image',
+                'help': 'name of a local docker IMAGE'
+            }
+        },
+        {   'args': [ '-t, --tag' ],
+            'kwargs': {
+                'type': str,
+                'default': '',
+                'metavar': 'TAG',
+                'dest': 'tag',
+                'help': 'TAG associated with a docker image'
+            }
+        },
+        {   'args': [ '--virtualbox' ],
+            'kwargs': {
+                'type': str,
+                'default': 'default',
+                'metavar': 'IMAGE',
+                'dest': 'virtualbox',
+                'help': 'name of docker virtualbox IMAGE (default: %(default)s)' }
+        }
+    ]
+}
 
 def remove(**kwargs):
 

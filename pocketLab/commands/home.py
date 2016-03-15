@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_details_home = {
+_cmd_model_home = {
     'command': 'home',
     'usage': 'home [options]',
     'description': 'creates a project home in workdir',
