@@ -32,8 +32,8 @@ Toggles
 -s, --set  save current instructions in project configurations
 -q, --quiet  turn off stdout lab messages
 -z, --zzz  turn off lab logging (logging helps lab bot learn)
---username USERNAME  add a USERNAME to a resource request
---password PASSWORD  add a PASSWORD to a resource request
+--username  add a USERNAME to a resource request
+--password  add a PASSWORD to a resource request
 
 Common Sys Options
 ^^^^^^^^^^^^^^^^^^
