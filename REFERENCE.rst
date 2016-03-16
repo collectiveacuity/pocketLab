@@ -23,7 +23,7 @@ Objects
 :repo: **[-r, --repo]** repository containing files for a project component
 :file: **[-f, --file]** path to a file with configuration settings
 :virtualbox: **[--virtualbox]** oracle virtualbox boot2docker image (on Mac & Windows)
-:tag: **[-t, --tag]** metatag associated with an object
+:tag: **[-t, --tag]** metatag associated with a resource
 :log: **[-l, --log]** file or service in which to log stdout from container
 
 Toggles

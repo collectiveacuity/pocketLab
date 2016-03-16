@@ -1,0 +1,16 @@
+{
+  "schema": {
+    "messages": [
+      {
+        "message": "Hmm... What should we call it: ",
+        "media": "",
+        "data": "",
+        "metadata": {},
+        "dT": 79.56,
+        "sender": "labBot",
+        "recipient": "user"
+      }
+    ],
+    "open": true
+  }
+}

@@ -68,9 +68,9 @@ def new(**kwargs):
     registry_path = path.join(data_path, registry_name)
     if path.exists(registry_path):
         registry_details = configFile(registry_path, kwargs)
-        registry_details = configModel(registry_details, 'rules/project-registry-model.json', kwargs, 'project registry')
+        registry_details = configModel(registry_details, 'rules/lab-registry-model.json', kwargs, 'project registry')
     else:
-        registry_rules = jsonLoader(__module__, 'rules/project-registry-model.json')
+        registry_rules = jsonLoader(__module__, 'rules/lab-registry-model.json')
         registry_details = registry_rules['schema']
         registry_details['project_list'].pop()
         with open(registry_path, 'wb') as f:

@@ -10,29 +10,35 @@ class testClientsRegistrySession(registrySession):
 
     def unitTests(self):
 
-        self.verbose = False
-        header_list, project_list = self.list()
-        assert project_list
-        self.delete('unittestPlaceholder')
-        self.update('unittestPlaceholder','C:\\Users\\Lab\\Test')
-        assert self.details('unittestPlaceholder')
-        assert self.home() == 'C:\\Users\\Lab\\Test'
-        self.update('unittestPlaceholder','C:\\Users\\Lab\\New')
-        self.delete('unittestPlaceholder')
-        home = self.home()
+        self.verbose = True
+        resource_details = {
+            'resource_name': 'unittestPlaceholder',
+            'resource_type': 'project',
+            'resource_home': 'C:\\Users\\Lab\\Test'
+        }
+        self.delete(resource_details['resource_name'])
+        self.update(**resource_details)
+        assert self.find(resource_details['resource_name'])
+        assert self.default()['resource_home'] == 'C:\\Users\\Lab\\Test'
+        resource_details['resource_home'] = 'C:\\Users\\Lab\\New'
+        resource_details['resource_tags'] = [ 'unittestPlaceholder' ]
+        self.update(**resource_details)
+        home = self.default()
         assert home
-        header_list, project_list = self.list()
-        assert project_list
-        # print(home)
-        # print(project_list)
+        resource_list = self.find(resource_tags=['unittestPlaceholder'])
+        assert resource_list
+        self.delete(resource_details['resource_name'])
+        print(home)
+        print(resource_list)
 
         return self
 
 if __name__ == '__main__':
     testKwargs = {
         'command': 'home',
-        'project': 'unittest',
+        'project': 'unittestPlaceholder',
         'verbose': True,
-        'logging': True
+        'labLogging': True,
+        'print_path': ''
     }
     testClientsRegistrySession(**testKwargs).unitTests()

@@ -1,7 +1,6 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab import __team__, __module__
 from os import path
 from pocketLab.clients.localhost_session import localhostSession
 
@@ -10,14 +9,8 @@ class loggingSession(localhostSession):
     def __init__(self):
         localhostSession.__init__(self)
 
-    # validate existence of module local user data folder (or create)
-        self.regFolder = self.userData(org_name=__team__, prod_name=__module__)
-        if not path.exists(self.regFolder):
-            from os import makedirs
-            makedirs(self.regFolder)
-
-    # validate existence of log subfolder in user data folder (or create)
-        self.logFolder = path.join(self.regFolder,'logs')
+    # validate existence of log folder in app data (or create)
+        self.logFolder = self.sessionData(session_name='Log Data')
         if not path.exists(self.logFolder):
             from os import makedirs
             makedirs(self.logFolder)

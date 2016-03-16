@@ -50,15 +50,25 @@ def home(**kwargs):
     from os import path
     from pocketLab.clients.registry_session import registrySession
 
-# handle goto command
+# handle print_path request
     print_path = kwargs['print_path']
     if print_path:
         home_path = './'
         import sys
-        rS = registrySession(**kwargs).load()
-        for project in rS.regDetails['project_list']:
-            if print_path == project['project_name']:
-                home_path = project['project_home']
+        rS = registrySession(**kwargs)
+        resource_list = rS.find(resource_name=print_path)
+        if resource_list:
+            if path.exists(resource_list[0]['resource_home']):
+                home_path = resource_list[0]['resource_home']
+        from pocketLab.handlers.success_handler import successHandler
+        success = {
+            'verbose': False,
+            'kwargs': kwargs,
+            'message': '',
+            'operation': 'home.print_path',
+            'outcome': 'success'
+        }
+        successHandler(**success)
         print(home_path)
         sys.exit()
 
@@ -94,7 +104,11 @@ def home(**kwargs):
             project_name = nameProject(input_msg, lab_logging, cmd_kwargs)
         return project_name
 
-    if not project_name:
+# differentiate between resource options
+
+# validate the resource value
+    space_pattern = compile('\s')
+    if not project_name or len(project_name) > 64 or space_pattern.findall(project_name):
         from pocketLab.handlers.input_handler import inputHandler
         input_kwargs = {
             'message': 'Name for project (short & sweet): ',
@@ -112,7 +126,14 @@ def home(**kwargs):
 
 # update project registry
     rS = registrySession(**kwargs)
-    rS.update(project_name=project_name, project_home=project_home)
+    project_details = {
+        'resource_name': project_name,
+        'resource_type': 'project',
+        'resource_home': project_home
+    }
+    rS.update(**project_details)
 
-# update home alias in bash config
+# add home alias to .bashrc or .bash_profile (or create)
+    home_alias = "alias home='function _home(){ file_path=\"$(lab home --print_path $1)\"; cd \"$file_path\"; };_home'"
+
 
