@@ -4,12 +4,12 @@ __created__ = '2016.03'
 from os import path, listdir
 from re import compile
 from jsonmodel.validators import jsonModel
-from pocketLab.clients.localhost_session import localhostSession
+from pocketLab.clients.localhost_client import localhostClient
 
-class loggingClient(localhostSession):
+class loggingClient(localhostClient):
 
     def __init__(self, client_name=''):
-        localhostSession.__init__(self)
+        localhostClient.__init__(self)
 
     # validate existence of log folder in app data (or create)
         if not client_name:
@@ -36,37 +36,58 @@ class loggingClient(localhostSession):
         class_fields = {
             'schema': {
                 'key_string': 'obs-terminal-2016-03-17T17-24-51-687845Z.yaml',
-                'body_dict': { 'dT': 1458235492.311154 }
+                'body_dict': { 'dT': 1458235492.311154 },
+                'key_query': [ 'terminal' ],
+                'body_query': { 'key': [ 'regex' ] },
+                'results': 1
             },
             'components': {
                 '.key_string': {
-                    'must_not_contain': [ '[^\\w/\\-_\\.]' ]
+                    'must_not_contain': [ '[^\\w/\\-_\\.]' ],
+                    'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
                 },
                 '.body_dict': {
                     'extra_fields': True
                 },
                 '.body_dict.dT': {
                     'required_field': False
+                },
+                '.key_query': {
+                    'min_size': 1
+                },
+                '.results': {
+                    'min_value': 0,
+                    'integer_only': True
+                },
+                '.body_query': {
+                    'extra_fields': True,
+                },
+                '.body_query.key': {
+                    'required_field': False,
+                    'min_size': 1
                 }
             }
         }
-        self.valid = jsonModel(class_fields)
+        self.validInput = jsonModel(class_fields)
 
     def put(self, key_string, body_dict, override=True):
+
+        '''
+            a method to create a file in log folder
+
+        :param key_string: string with name to assign file
+        :param body_dict: dictionary with log data body
+        :param override: boolean to overwrite files with same name
+        :return: self
+        '''
 
         __name__ = '%s.put' % self.__class__.__name__
         _key_arg = '%s(key_string="%s")' % (__name__, key_string)
         _body_arg = '%s(body_dict={...}' % {__name__}
 
     # validate inputs
-    #     file_char = compile('[^\w/\-_\.]')
-    #     bad_char = file_char.findall(key_string)
-    #     if bad_char:
-    #         raise Exception('%s may not contain %s.' % (_key_arg, bad_char))
-    #     elif not isinstance(body_dict, dict):
-    #         raise Exception('%s must be a dictionary.' % (_body_arg))
-        self.valid.string(key_string, '.key_string')
-        self.valid.dict(body_dict, self.valid.schema['body_dict'], '.body_dict')
+        key_string = self.validInput.component(key_string, '.key_string')
+        body_dict = self.validInput.component(body_dict, '.body_dict')
 
     # construct log file path
         log_path = ''
@@ -96,9 +117,6 @@ class loggingClient(localhostSession):
             log_path = path.join(self.logFolder, key_string)
             private_key, log_data, drep_index = drep.dump(body_dict)
 
-        if not log_path:
-            raise Exception('%s must end with one of %s file type extensions.' % (_key_arg, self.ext.types))
-
     # save details to log file
         if not override:
             if path.exists(log_path):
@@ -109,7 +127,19 @@ class loggingClient(localhostSession):
 
         return self
 
-    def find(self, key_query=None, body_query=None, results=0):
+    def find(self, key_query=None, body_query=None, results=0, reverse=True):
+
+        '''
+            a method to find files from query parameters
+
+        :param key_query: list of regex expressions
+        :param body_query: dictionary of keys and values which are lists of regex
+        :param results: integer of results to return
+        :param reverse: boolean to search from last file in log folder first
+        :return: list of file names
+        '''
+
+    # TODO: Look into declarative query language architecture instead
 
         __name__ = '%s.find' % self.__class__.__name__
         _key_arg = '%s(key_query=[...])' % __name__
@@ -117,37 +147,89 @@ class loggingClient(localhostSession):
 
     # construct regex list for key_query
         if key_query:
-            if not isinstance(key_query, list):
-                raise Exception('%s must be a list of regex strings.' % key_query)
-            elif not key_query:
-                raise Exception('%s cannot be empty.' % key_query)
+            key_query = self.validInput.component(key_query, '.key_query')
+        if body_query:
+            body_query = self.validInput.component(body_query, '.body_query')
+            for key, value in body_query.items():
+                self.validInput.component(value, '.body_query.key')
+        results = self.validInput.component(results, '.results')
 
-    # construct empty result list and log file list
-        parse_list = []
-        log_list = listdir(self.logFolder)
-        for file in reversed(log_list):
-            for extension in self.ext.names:
-                regex_pattern = getattr(self.ext, extension)
-                if regex_pattern.findall(file):
-                    parse_list.append(file)
-
-    # TODO: incorporate key and body queries
+    # construct search resource variables
         result_list = []
-        sorted_list = sorted(parse_list)
-        recent_file = sorted_list[-1]
+        log_list = listdir(self.logFolder)
+        if not results:
+            results = len(log_list)
+        if reverse:
+            log_list = reversed(log_list)
 
-        return recent_file
+    # conduct search over log list and return results
+        for file in log_list:
+            add_file = True
+
+    # add files whose name match each regex expression in key query
+            if key_query:
+                for regex in key_query:
+                    regex_pattern = compile(regex)
+                    if not regex_pattern.findall(file):
+                        add_file = False
+
+    # add files whose top level values match each regex expression in body query
+            if add_file and body_query:
+                valid_file = False
+                for extension in self.ext.names:
+                    regex_pattern = getattr(self.ext, extension)
+                    if regex_pattern.findall(file):
+                        valid_file = True
+                if not valid_file:
+                    add_file = False
+                else:
+                    file_details = self.get(file)
+                    for key, value in body_query.items():
+                        if not key in file_details.keys():
+                            add_file = False
+                        else:
+                            if not isinstance(file_details[key], str) and \
+                                    not isinstance(file_details[key], int) and \
+                                    not isinstance(file_details[key], float) and \
+                                    not isinstance(file_details[key], bool):
+                                add_file = False
+                            else:
+                                try:
+                                    v = str(file_details[key])
+                                    for regex in value:
+                                        regex_pattern = compile(regex)
+                                        if not regex_pattern.findall(v):
+                                            add_file = False
+                                except:
+                                    add_file = False
+
+    # add file that passes all query tests
+            if add_file:
+                for extension in self.ext.names:
+                    regex_pattern = getattr(self.ext, extension)
+                    if regex_pattern.findall(file):
+                        result_list.append(file)
+
+    # end search if results match desired result number
+            if len(result_list) == results:
+                return result_list
+
+        return result_list
 
     def get(self, key_string):
+
+        '''
+            a method to retrieve body data from a log file
+
+        :param key_string: string with name of file
+        :return: dictionary with body data
+        '''
 
         __name__ = '%s.get' % self.__class__.__name__
         _key_arg = '%s(key_string="%s")' % (__name__, key_string)
 
     # validate inputs
-        file_char = compile('[^\w/\-_\.]')
-        bad_char = file_char.findall(key_string)
-        if bad_char:
-            raise Exception('%s may not contain %s.' % (_key_arg, bad_char))
+        key_string = self.validInput.component(key_string, '.key_string')
 
     # construct path to file
         log_path = path.join(self.logFolder, key_string)
@@ -202,21 +284,22 @@ class loggingClient(localhostSession):
             except:
                 raise Exception('%s is not valid drep data.' % _key_arg)
 
-        if not log_details:
-            raise Exception('%s must be one of %s file types.' % (_key_arg, self.ext.types))
-
         return log_details
 
     def delete(self, key_string):
+
+        '''
+            a method to delete a log file
+
+        :param key_string: string with name of file
+        :return: string reporting outcome
+        '''
 
         __name__ = '%s.delete' % self.__class__.__name__
         _key_arg = '%s(key_string="%s")' % (__name__, key_string)
 
     # validate inputs
-        file_char = compile('[^\w/\-_\.]')
-        bad_char = file_char.findall(key_string)
-        if bad_char:
-            raise Exception('%s may not contain %s.' % (_key_arg, bad_char))
+        key_string = self.validInput.component(key_string, '.key_string')
 
     # construct path to file
         log_path = path.join(self.logFolder, key_string)

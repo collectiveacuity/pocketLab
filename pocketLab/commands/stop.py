@@ -32,13 +32,13 @@ def stop(**kwargs):
 
 # import dependencies
     from pocketLab.importers.config_file import configFile
-    from pocketLab.clients.localhost_session import localhostSession
+    from pocketLab.clients.localhost_client import localhostClient
     from pocketLab.clients.docker_session import dockerSession
     from pocketLab.validators.config_model import configModel
     from pocketLab.validators.removable_container import removableContainer
 
 # determine system properties
-    localhost = localhostSession()
+    localhost = localhostClient()
 
 # ingest & validate virtualbox property
     vbox_name = kwargs['virtualbox']

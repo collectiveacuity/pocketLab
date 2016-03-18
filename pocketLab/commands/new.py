@@ -36,7 +36,7 @@ def new(**kwargs):
     from jsonmodel.loader import jsonLoader
     from os import path, makedirs
     from pocketLab.importers.config_file import configFile
-    from pocketLab.clients.localhost_session import localhostSession
+    from pocketLab.clients.localhost_client import localhostClient
     from pocketLab.validators.config_model import configModel
 
 # determine project name
@@ -56,7 +56,7 @@ def new(**kwargs):
         project_name = nameProject('Name for project (short & sweet): ')
 
 # construct localhost session
-    localhost = localhostSession()
+    localhost = localhostClient()
 
 # validate existence of module local user data folder (or create)
     data_path = localhost.userData(org_name=__team__, prod_name=__module__)

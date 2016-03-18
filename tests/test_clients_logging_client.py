@@ -18,12 +18,12 @@ class testClientsLoggingClient(loggingClient):
             test_details = deepcopy(testDetails)
             test_details['type'] = type
             test_details['time'] = time()
-            test_key = '%s$-%s%s' % (testKey, str(test_details['time']), type)
+            test_key = '%s-%s%s' % (testKey, str(test_details['time']), type)
             self.put(test_key, test_details)
             assert self.get(test_key)
             assert self.delete(test_key)
-        recent_file = self.find()
-        print(recent_file)
+        query_results = self.find(key_query=['exp-'], body_query={'dT': ['1458181174']})
+        print(query_results)
 
         return self
 

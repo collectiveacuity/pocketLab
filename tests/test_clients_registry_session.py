@@ -1,12 +1,12 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.clients.registry_session import registrySession
+from pocketLab.clients.registry_session import registryClient
 
-class testClientsRegistrySession(registrySession):
+class testClientsRegistrySession(registryClient):
 
     def __init__(self, **kwargs):
-        registrySession.__init__(self, **kwargs)
+        registryClient.__init__(self, **kwargs)
 
     def unitTests(self):
 

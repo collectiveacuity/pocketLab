@@ -7,12 +7,12 @@ import json
 from jsonmodel.validators import jsonModel
 from importlib.util import find_spec
 from copy import deepcopy
-from pocketLab.clients.localhost_session import localhostSession
+from pocketLab.clients.localhost_client import localhostClient
 
-class labBot(localhostSession):
+class labBot(localhostClient):
 
     def __init__(self, **observation_kwargs):
-        localhostSession.__init__(self)
+        localhostClient.__init__(self)
 
     # discover module path
         self.modPath = find_spec(__module__).submodule_search_locations[0]

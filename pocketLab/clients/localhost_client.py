@@ -6,7 +6,7 @@ from os import environ, path
 from subprocess import check_output
 from pocketLab import __team__, __module__
 
-class localhostSession(object):
+class localhostClient(object):
 
     def __init__(self):
 

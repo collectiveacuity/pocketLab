@@ -1,12 +1,12 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.clients.localhost_session import localhostSession
+from pocketLab.clients.localhost_client import localhostClient
 
-class testClientsLocalhostSession(localhostSession):
+class testClientsLocalhostClient(localhostClient):
 
     def __init__(self):
-        localhostSession.__init__(self)
+        localhostClient.__init__(self)
 
     def unitTests(self):
 
@@ -26,4 +26,4 @@ class testClientsLocalhostSession(localhostSession):
         return self
 
 if __name__ == '__main__':
-    testClientsLocalhostSession().unitTests()
+    testClientsLocalhostClient().unitTests()

@@ -50,7 +50,7 @@ command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
-author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
+# author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
 
 setup(
     name=module,

@@ -3,13 +3,13 @@ __created__ = '2016.03'
 
 from pocketLab import __team__, __module__
 from os import path
-from pocketLab.clients.localhost_session import localhostSession
+from pocketLab.clients.localhost_client import localhostClient
 
-class registrySession(localhostSession):
+class registryClient(localhostClient):
 
     def __init__(self, **kwargs):
 
-        localhostSession.__init__(self)
+        localhostClient.__init__(self)
         self.kwargs = kwargs
         self.error = { 'kwargs': kwargs }
         self.verbose = True

@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 from pocketLab.clients.docker_session import dockerSession
-from pocketLab.clients.localhost_session import localhostSession
+from pocketLab.clients.localhost_client import localhostClient
 
 class testClientsDockerSession(dockerSession):
 
@@ -22,7 +22,7 @@ class testClientsDockerSession(dockerSession):
         return self
 
 if __name__ == '__main__':
-    localhost = localhostSession()
+    localhost = localhostClient()
     testBox = ''
     if localhost.os in ('Windows', 'Mac'):
         testBox = 'default'

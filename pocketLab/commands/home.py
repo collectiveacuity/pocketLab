@@ -48,14 +48,14 @@ def home(**kwargs):
 # import dependencies
     from re import compile
     from os import path
-    from pocketLab.clients.registry_session import registrySession
+    from pocketLab.clients.registry_session import registryClient
 
 # handle print_path request
     print_path = kwargs['print_path']
     if print_path:
         home_path = './'
         import sys
-        rS = registrySession(**kwargs)
+        rS = registryClient(**kwargs)
         resource_list = rS.find(resource_name=print_path)
         if resource_list:
             if path.exists(resource_list[0]['resource_home']):
@@ -125,7 +125,7 @@ def home(**kwargs):
 # determine project remote
 
 # update project registry
-    rS = registrySession(**kwargs)
+    rS = registryClient(**kwargs)
     project_details = {
         'resource_name': project_name,
         'resource_type': 'project',
