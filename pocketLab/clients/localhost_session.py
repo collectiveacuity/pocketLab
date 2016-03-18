@@ -58,7 +58,7 @@ class localhostSession(object):
 
         return data_path
     
-    def sessionData(self, session_name, org_name='', prod_name=''):
+    def clientData(self, client_name, org_name='', prod_name=''):
 
         if not org_name:
             org_name = __team__
@@ -66,7 +66,7 @@ class localhostSession(object):
             prod_name = __module__
         app_path = self.appData(org_name, prod_name)
         if self.os in ('Linux', 'FreeBSD', 'Solaris'):
-            session_name = session_name.replace(' ','-').lower()
-        data_path = path.join(app_path, session_name)
+            client_name = client_name.replace(' ', '-').lower()
+        data_path = path.join(app_path, client_name)
         
         return data_path

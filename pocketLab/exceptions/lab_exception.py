@@ -1,6 +1,23 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
+# class labException(Exception):
+#
+#     def __init__(self, message='', error=None):
+#         self.msg = '\nlabException'
+#         self.error = None
+#         if message:
+#             if isinstance(message, str):
+#                 self.msg += ': %s' % message
+#         if error:
+#             self.error = error
+#         super(labException, self).__init__(self.msg)
+#
+# try:
+#     open('text').read()
+# except Exception as err:
+#     raise labException('test', error={ 'key': 'value' })
+
 import sys
 
 class labException(Exception):
@@ -46,8 +63,8 @@ class labException(Exception):
 
     # create a log of the event
         if self.labLogging:
-            from pocketLab.clients.logging_session import loggingSession
-            loggingSession().save(**self.context)
+            from pocketLab.clients.logging_client import loggingClient
+            loggingClient().put(**self.context)
 
     # format printing
         self.print = ''

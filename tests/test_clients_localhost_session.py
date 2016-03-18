@@ -14,13 +14,13 @@ class testClientsLocalhostSession(localhostSession):
         assert os
         username = self.username
         assert username
-        data_path = self.userData('Collective Acuity', 'pocketLab')
+        data_path = self.appData('Collective Acuity', 'pocketLab')
         assert data_path
         self.os = 'Linux'
-        data_path = self.userData('Collective Acuity', 'pocketLab')
+        data_path = self.appData('Collective Acuity', 'pocketLab')
         assert data_path
         self.os = 'Mac'
-        data_path = self.userData('Collective Acuity', 'pocketLab')
+        data_path = self.appData('Collective Acuity', 'pocketLab')
         assert data_path
 
         return self

@@ -2,13 +2,15 @@
   "schema": {
     "verbose": false,
     "logging": false,
-    "reaction": "",
+    "event": "observation",
+    "channel": "terminal",
+    "msg": "",
     "tprint": {
       "headers": [ "column1" ],
       "rows": [ { } ]
     },
     "pprint": { },
-    "message": "",
+    "data": { },
     "kwargs": { },
     "operation": "",
     "outcome": "",

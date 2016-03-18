@@ -18,7 +18,7 @@ class registrySession(localhostSession):
                 self.verbose = False
 
     # validate existence of module local user data folder (or create)
-        self.regFolder = self.sessionData(session_name='Registry Data')
+        self.regFolder = self.clientData(client_name='Registry Data')
         if not path.exists(self.regFolder):
             from os import makedirs
             makedirs(self.regFolder)
@@ -121,6 +121,8 @@ class registrySession(localhostSession):
                     resource_list = []
                     resource_list.append(resource_details)
                     return resource_list
+                else:
+                    resource_details = None
             if resource_home:
                 if resource_home != self.regDetails['resource_list'][i]['resource_home']:
                     resource_details = None

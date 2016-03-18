@@ -10,8 +10,11 @@ class testClientsLabbotSession(labBot):
 
     def unitTests(self):
 
+        exp_details = self.analyze()
+        assert exp_details['msg'] == 'test'
+
         return self
 
 if __name__ == '__main__':
-    minKwargs = { "exit": True }
+    minKwargs = { 'event': 'observation', 'channel': 'terminal', 'logging': True, 'exit': True, 'msg': 'test' }
     testClientsLabbotSession(**minKwargs).unitTests()

@@ -41,8 +41,8 @@ class inputHandler(object):
 
     # create a log of the event
         if self.labLogging:
-            from pocketLab.clients.logging_session import loggingSession
-            loggingSession().save(**self.context)
+            from pocketLab.clients.logging_client import loggingClient
+            loggingClient().put(**self.context)
 
     # format printing
         self.mprint = ''
