@@ -43,7 +43,10 @@ class localhostClient(object):
         if self.os == 'Windows':
             from re import compile
             xp_pattern = compile('^C:\\Documents and Settings')
-            if xp_pattern.findall(environ.get('APPDATA')):
+            app_data = ''
+            if environ.get('APPDATA'):
+                app_data = environ.get('APPDATA')
+            if xp_pattern.findall(app_data):
                 data_path = 'C:\\Documents and Settings\\%sLocal Settings\\Application Data\\%s\\%s' % (self.username, org_name, prod_name)
             else:
                 data_path = 'C:\\Users\\%s\\AppData\\Local\\%s\\%s' % (self.username, org_name, prod_name)

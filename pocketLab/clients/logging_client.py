@@ -86,8 +86,8 @@ class loggingClient(localhostClient):
         _body_arg = '%s(body_dict={...}' % {__name__}
 
     # validate inputs
-        key_string = self.validInput.component(key_string, '.key_string')
-        body_dict = self.validInput.component(body_dict, '.body_dict')
+        key_string = self.validInput.validate(key_string, '.key_string')
+        body_dict = self.validInput.validate(body_dict, '.body_dict')
 
     # construct log file path
         log_path = ''
@@ -127,7 +127,7 @@ class loggingClient(localhostClient):
 
         return self
 
-    def find(self, key_query=None, body_query=None, results=0, reverse=True):
+    def query(self, key_query=None, body_query=None, results=0, reverse=True):
 
         '''
             a method to find files from query parameters
@@ -147,12 +147,12 @@ class loggingClient(localhostClient):
 
     # construct regex list for key_query
         if key_query:
-            key_query = self.validInput.component(key_query, '.key_query')
+            key_query = self.validInput.validate(key_query, '.key_query')
         if body_query:
-            body_query = self.validInput.component(body_query, '.body_query')
+            body_query = self.validInput.validate(body_query, '.body_query')
             for key, value in body_query.items():
-                self.validInput.component(value, '.body_query.key')
-        results = self.validInput.component(results, '.results')
+                self.validInput.validate(value, '.body_query.key')
+        results = self.validInput.validate(results, '.results')
 
     # construct search resource variables
         result_list = []
@@ -229,7 +229,7 @@ class loggingClient(localhostClient):
         _key_arg = '%s(key_string="%s")' % (__name__, key_string)
 
     # validate inputs
-        key_string = self.validInput.component(key_string, '.key_string')
+        key_string = self.validInput.validate(key_string, '.key_string')
 
     # construct path to file
         log_path = path.join(self.logFolder, key_string)
@@ -299,7 +299,7 @@ class loggingClient(localhostClient):
         _key_arg = '%s(key_string="%s")' % (__name__, key_string)
 
     # validate inputs
-        key_string = self.validInput.component(key_string, '.key_string')
+        key_string = self.validInput.validate(key_string, '.key_string')
 
     # construct path to file
         log_path = path.join(self.logFolder, key_string)

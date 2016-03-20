@@ -1,0 +1,42 @@
+{
+  "schema": {
+    "verbose": false,
+    "logging": false,
+    "event": "",
+    "channel": "",
+    "dT": 0.0,
+    "msg": "",
+    "recipient": "",
+    "tprint": { "headers": [ "column1" ], "rows": [ { } ] },
+    "pprint": { },
+    "data": { },
+    "metadata": { },
+    "media": { },
+    "kwargs": { },
+    "operation": "",
+    "outcome": "",
+    "exception": null,
+    "input_criteria": { },
+    "failed_test": "",
+    "error_value": "",
+    "error_code": 0,
+    "exit": false
+  },
+  "components": {
+    ".": { "extra_fields": true },
+    ".verbose": { "default_value": true },
+    ".logging": { "default_value": true },
+    ".event": { "default_value": "" },
+    ".channel": { "default_value": "" },
+    ".dT": { "default_value": 0.0 },
+    ".msg": { "default_value": "" },
+    ".recipient": { "default_value": "" },
+    ".tprint": { "required_field": false },
+    ".operation": { "default_value": "" },
+    ".outcome": { "discrete_values": [ "success", "error", "input" ], "default_value": "success" },
+    ".failed_test": { "default_value": "" },
+    ".error_value": { "default_value": "" },
+    ".error_code": { "default_value": 0 },
+    ".exit": { "default_value": true }
+  }
+}

@@ -22,7 +22,8 @@ class testClientsLoggingClient(loggingClient):
             self.put(test_key, test_details)
             assert self.get(test_key)
             assert self.delete(test_key)
-        query_results = self.find(key_query=['exp-'], body_query={'dT': ['1458181174']})
+        assert not self.query(key_query=['exp-'], body_query={'dT': ['1458181175']})
+        query_results = self.query(key_query=['exp-'], body_query={'dT': ['1458181174']})
         print(query_results)
 
         return self
