@@ -66,7 +66,7 @@ setup(
     description="A Command Line Tool for Managing Laboratory Projects",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.2"
+        "jsonmodel>=1.3"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

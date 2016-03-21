@@ -1,22 +1,14 @@
 {
   "schema": {
-    "default_resource": 0,
-    "resource_list": [
-      {
-        "resource_name": "lab",
-        "resource_home": "~/lab/",
-        "resource_remote": "",
-        "resource_type": "project",
-        "resource_tags": [ "lab" ]
-      }
-    ]
+    "resource_name": "lab",
+    "resource_home": "~/lab/",
+    "resource_remote": "",
+    "resource_type": "project",
+    "resource_tags": [ "lab" ]
   },
   "components": {
-    ".default_resource": {
-      "required_field": true
-    },
-    ".resource_list[0].resource_type": {
-      "discrete_values": [ "project", "component", "image", "container" ]
+    ".resource_type": {
+      "discrete_values": [ "project", "component", "image", "container", "unittest" ]
     }
   }
 }

@@ -1,18 +1,18 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from os import path
-from pocketLab.commands.home import home
+from pocketLab.commands.home import home, _cmd_model_home
 
 class testCommandsHome(object):
 
-    def __init__(self, kwargs):
-        self.kwargs = kwargs
+    def __init__(self):
+        self.cmdModel = _cmd_model_home
 
     def unitTests(self):
-        home(**self.kwargs)
+        test_kwargs = {'command': 'home'}
+        home(**test_kwargs)
+
         return self
 
 if __name__ == '__main__':
-    testKwargs = {'newPath': path.abspath('test_commands_home.py'), 'command': 'home'}
-    testCommandsHome(testKwargs).unitTests()
+    testCommandsHome().unitTests()

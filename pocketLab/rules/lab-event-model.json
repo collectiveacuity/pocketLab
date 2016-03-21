@@ -1,11 +1,11 @@
 {
   "schema": {
-    "verbose": false,
-    "logging": false,
-    "event": "",
-    "channel": "",
-    "dT": 0.0,
-    "msg": "",
+    "verbose": true,
+    "logging": true,
+    "event": "observation",
+    "channel": "terminal",
+    "dT": 1458527554.925487,
+    "msg": "\"lab\" updated in lab registry.",
     "recipient": "",
     "tprint": { "headers": [ "column1" ], "rows": [ { } ] },
     "pprint": { },
@@ -20,23 +20,15 @@
     "failed_test": "",
     "error_value": "",
     "error_code": 0,
-    "exit": false
+    "exit": true
   },
   "components": {
     ".": { "extra_fields": true },
     ".verbose": { "default_value": true },
     ".logging": { "default_value": true },
-    ".event": { "default_value": "" },
-    ".channel": { "default_value": "" },
-    ".dT": { "default_value": 0.0 },
-    ".msg": { "default_value": "" },
-    ".recipient": { "default_value": "" },
-    ".tprint": { "required_field": false },
-    ".operation": { "default_value": "" },
-    ".outcome": { "discrete_values": [ "success", "error", "input" ], "default_value": "success" },
-    ".failed_test": { "default_value": "" },
-    ".error_value": { "default_value": "" },
-    ".error_code": { "default_value": 0 },
-    ".exit": { "default_value": true }
+    ".outcome": {
+      "discrete_values": [ "success", "error", "input" ],
+      "default_value": "success"
+    }
   }
 }

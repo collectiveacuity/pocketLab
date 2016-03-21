@@ -15,5 +15,5 @@ class testClientslabBotClient(labBotClient):
         return self
 
 if __name__ == '__main__':
-    minKwargs = { 'event': 'observation', 'channel': 'terminal', 'logging': True, 'exit': True, 'msg': 'test' }
-    testClientslabBotClient(**minKwargs).unitTests()
+    testKwargs = { 'event': 'observation', 'channel': 'terminal', 'logging': False, 'exit': True, 'msg': 'test', 'verbose': True }
+    testClientslabBotClient(**testKwargs).unitTests()

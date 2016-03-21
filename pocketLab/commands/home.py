@@ -12,13 +12,13 @@ _cmd_model_home = {
             'kwargs': {
                 'dest': 'verbose',
                 'default': True,
-                'help': 'turn off stdout lab messages',
+                'help': 'turn off lab bot messages',
                 'action': 'store_false'
             }
         },
         {   'args': [ '-z', '--zzz' ],
             'kwargs': {
-                'dest': 'labLogging',
+                'dest': 'logging',
                 'default': True,
                 'help': 'turn off lab logging (logging helps lab bot learn)',
                 'action': 'store_false'
@@ -48,28 +48,50 @@ def home(**kwargs):
 # import dependencies
     from re import compile
     from os import path
-    from pocketLab.clients.registry_session import registryClient
+    from pocketLab.clients.registry_client import registryClient
+    from pocketLab.clients.labbot_client import labBotClient
 
-# handle print_path request
+# construct method variables from cmd kwargs
     print_path = kwargs['print_path']
+    logging = kwargs['logging']
+    verbose = kwargs['verbose']
+    project_name = kwargs['project']
+    lab_kwargs = {
+        'kwargs': kwargs
+    }
+    if not logging:
+        lab_kwargs['logging'] = False
+    if not verbose:
+        lab_kwargs['verbose'] = False
+
+# resolve print path request
     if print_path:
-        home_path = './'
         import sys
-        rS = registryClient(**kwargs)
-        resource_list = rS.find(resource_name=print_path)
-        if resource_list:
-            if path.exists(resource_list[0]['resource_home']):
-                home_path = resource_list[0]['resource_home']
-        from pocketLab.handlers.success_handler import successHandler
-        success = {
-            'verbose': False,
-            'kwargs': kwargs,
-            'message': '',
-            'operation': 'home.print_path',
-            'outcome': 'success'
-        }
-        successHandler(**success)
-        print(home_path)
+        rS = registryClient()
+        resource_details = rS.describe(resource_name=print_path)
+        home_path = './'
+        lab_kwargs['verbose'] = False
+        lab_kwargs['exit'] = True
+
+# handle possible print path request outcomes
+        if not resource_details:
+            lab_kwargs['msg'] = '"%s" not found in registry. Try running "lab home" first from its root.' % print_path,
+            lab_kwargs['outcome'] = 'error'
+        else:
+            if not 'resource_home' in resource_details:
+                lab_kwargs['msg'] = 'Record for "%s" has been corrupted. Try running "lab home" again from its root.' % print_path
+                lab_kwargs['outcome'] = 'error'
+            else:
+                if not path.exists(resource_details['resource_home']):
+                    lab_kwargs['msg'] = 'Path %s to "%s" no longer exists. Try running "lab home" again from its root.' % (resource_details['resource_home'], print_path)
+                    lab_kwargs['outcome'] = 'error'
+                else:
+                    lab_kwargs['msg'] = 'Transport to "%s" underway.' % print_path
+                    lab_kwargs['outcome'] = 'success'
+                    home_path = resource_details['resource_home']
+        lab_exp = labBotClient(**lab_kwargs).analyze()
+        exit_message = '%s<>%s' % (lab_exp['msg'], home_path)
+        print(exit_message)
         sys.exit()
 
 # determine project name

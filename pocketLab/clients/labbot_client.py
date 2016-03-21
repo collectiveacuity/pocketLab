@@ -28,12 +28,7 @@ class labBotClient(localhostClient):
         self.eventModel = jsonModel(self.eventFile)
 
     # ingest & validate observation kwargs
-        self.obsDetails = self.eventModel.validate({})
-        for key, value in observation_kwargs.items():
-            try:
-                self.obsDetails[key] = self.eventModel.validate(value, '.%s' % key)
-            except:
-                pass
+        self.obsDetails = self.eventModel.ingest(**observation_kwargs)
 
     # construct initial log data
         self.logData = deepcopy(self.obsDetails)
@@ -109,7 +104,7 @@ class labBotClient(localhostClient):
         if 'channel' in self.logData.keys():
             if self.logData['channel']:
                 channel_string = self.logData['channel']
-        log_key = '%s-%s-%s.yaml' % (event_string, channel_string, dT)
+        log_key = '%s-%s-%s.yaml' % (dT, event_string, channel_string)
 
     # save current log data
         self.logClient.put(log_key, self.logData)
