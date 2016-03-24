@@ -3,6 +3,7 @@
     "verbose": true,
     "logging": true,
     "event": "observation",
+    "interface": "command line",
     "channel": "terminal",
     "dT": 1458527554.925487,
     "msg": "\"lab\" updated in lab registry.",
@@ -15,20 +16,32 @@
     "kwargs": { },
     "operation": "",
     "outcome": "",
+    "solution": "",
     "exception": null,
-    "input_criteria": { },
-    "failed_test": "",
-    "error_value": "",
-    "error_code": 0,
+    "error_report": {
+      "input_criteria": {},
+      "failed_test": "",
+      "error_value": "",
+      "error_code": 0
+    },
     "exit": true
   },
   "components": {
     ".": { "extra_fields": true },
     ".verbose": { "default_value": true },
     ".logging": { "default_value": true },
+    ".event": {
+      "discrete_values": [ "observation", "expression", "thought" ]
+    },
+    ".kwargs": {
+      "extra_fields": true
+    },
     ".outcome": {
       "discrete_values": [ "success", "error", "input" ],
       "default_value": "success"
+    },
+    ".error_report.input_criteria": {
+      "extra_fields": true
     }
   }
 }

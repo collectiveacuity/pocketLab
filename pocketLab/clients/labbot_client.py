@@ -113,12 +113,16 @@ class labBotClient(localhostClient):
 
     def analyze(self):
 
+    # import dependencies
+        from time import time
+
     # log incoming observation
         if 'logging' in self.obsDetails.keys():
             if self.obsDetails['logging']:
                 self.log()
 
     # construct placeholder (developer) expression
+
         self.expDetails = deepcopy(self.obsDetails)
         self.expDetails['event'] = 'expression'
 
@@ -130,7 +134,18 @@ class labBotClient(localhostClient):
 
     # handle request for further input
         elif self.expDetails['outcome'] == 'input':
+            if self.expDetails['error_report']:
+                failed_test = self.expDetails['error_report']['failed_test']
+                if failed_test == 'min_length':
+                    self.expDetails['msg'] += ' (a little longer)'
+                elif failed_test == 'max_length':
+                    self.expDetails['msg'] += ' (shorter & sweeter)'
+                elif failed_test == 'must_not_contain':
+                    self.expDetails['msg'] += ' (try only alphanumerics)'
+            if self.expDetails['channel'] == 'terminal':
+                self.expDetails['msg'] += ': '
             if self.expDetails['logging']:
+                self.expDetails['dT'] = time()
                 self.logData = deepcopy(self.expDetails)
                 self.log()
             input_text = input(self.expDetails['msg'])
@@ -143,6 +158,9 @@ class labBotClient(localhostClient):
     # compose expression
 
     # initiate learning processes
+
+    # log time of completed thought
+        self.expDetails['dT'] = time()
 
     # log outgoing expression
         if self.expDetails['logging']:

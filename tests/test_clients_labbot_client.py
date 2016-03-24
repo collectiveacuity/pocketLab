@@ -1,6 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
+from pocketLab import __module__
 from pocketLab.clients.labbot_client import labBotClient
 
 class testClientslabBotClient(labBotClient):
@@ -15,5 +16,8 @@ class testClientslabBotClient(labBotClient):
         return self
 
 if __name__ == '__main__':
-    testKwargs = { 'event': 'observation', 'channel': 'terminal', 'logging': False, 'exit': True, 'msg': 'test', 'verbose': True }
+    from jsonmodel.loader import jsonLoader
+    from jsonmodel.validators import jsonModel
+    testModel = jsonModel(jsonLoader(__module__, 'rules/cmd-model.json'))
+    testKwargs = { 'event': 'observation', 'interface': 'command line', 'channel': 'terminal', 'logging': False, 'exit': True, 'msg': 'test', 'verbose': True }
     testClientslabBotClient(**testKwargs).unitTests()

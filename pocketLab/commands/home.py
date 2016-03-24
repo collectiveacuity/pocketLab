@@ -3,143 +3,125 @@ __created__ = '2016.03'
 
 _cmd_model_home = {
     'command': 'home',
-    'usage': 'home [options]',
-    'description': 'creates a project home in workdir',
-    'brief': 'creates a project home in workdir',
-    'defaults': {},
-    'options': [
-        {   'args': [ '-q', '--quiet' ],
-            'kwargs': {
-                'dest': 'verbose',
-                'default': True,
-                'help': 'turn off lab bot messages',
-                'action': 'store_false'
-            }
+    'description': 'creates a resource home in workdir',
+    'brief': 'creates a resource home in workdir',
+    'args': [
+        {
+            'name': 'project',
+            'default_value': '',
+            'max_length': 64,
+            'must_not_contain': [ '[^\w\-_]' ],
+            'field_description': 'Name of project',
+            'exclusive_group': 'A',
+            'cli_flags': [ '-p', '--project' ],
+            'cli_help': '(re)set home of PROJECT to workdir',
+            'cli_metavar': 'PROJ'
         },
-        {   'args': [ '-z', '--zzz' ],
-            'kwargs': {
-                'dest': 'logging',
-                'default': True,
-                'help': 'turn off lab logging (logging helps lab bot learn)',
-                'action': 'store_false'
-            }
+        {
+            'name': 'component',
+            'default_value': '',
+            'max_length': 64,
+            'must_not_contain': [ '[^\w\-_]' ],
+            'field_description': 'Name of component',
+            'exclusive_group': 'A',
+            'cli_flags': [ '-c', '--component' ],
+            'cli_help': '(re)set home of COMPONENT to workdir',
+            'cli_metavar': 'COMP'
         },
-        {   'args': [ '-p', '--project' ],
-            'kwargs': {
-                'type': str,
-                'default': '',
-                'metavar': 'PROJ',
-                'dest': 'project',
-                'help': '(re)set PROJect home to workdir' }
-        },
-        {   'args': [ '--print_path' ],
-            'kwargs': {
-                'type': str,
-                'default': '',
-                'metavar': 'PROJ',
-                'dest': 'print_path',
-                'help': 'prints path to PROJect home' }
+        {
+            'name': 'print_path',
+            'default_value': '',
+            'max_length': 64,
+            'must_not_contain': [ '[^\w\-_]' ],
+            'field_description': 'Name of resource for home alias in .bashrc',
+            'exclusive_group': 'A',
+            'cli_flags': [ '--print_path' ],
+            'cli_help': 'prints path to RESOURCE home',
+            'cli_metavar': 'RESOURCE'
         }
     ]
 }
 
-def home(**kwargs):
+def home(**cmd_kwargs):
 
 # import dependencies
-    from re import compile
+    from time import time
     from os import path
     from pocketLab.clients.registry_client import registryClient
     from pocketLab.clients.labbot_client import labBotClient
 
-# construct method variables from cmd kwargs
-    print_path = kwargs['print_path']
-    logging = kwargs['logging']
-    verbose = kwargs['verbose']
-    project_name = kwargs['project']
+# construct lab bot input from cmd kwargs
     lab_kwargs = {
-        'kwargs': kwargs
+        'kwargs': cmd_kwargs,
+        'logging': cmd_kwargs['logging'],
+        'verbose': cmd_kwargs['verbose'],
+        'event': 'observation',
+        'interface': 'command line',
+        'channel': 'terminal',
+        'dT': time()
     }
-    if not logging:
-        lab_kwargs['logging'] = False
-    if not verbose:
-        lab_kwargs['verbose'] = False
 
 # resolve print path request
-    if print_path:
+    if cmd_kwargs['print_path']:
         import sys
         rS = registryClient()
-        resource_details = rS.describe(resource_name=print_path)
+        resource_details = rS.describe(resource_name=cmd_kwargs['print_path'])
         home_path = './'
         lab_kwargs['verbose'] = False
-        lab_kwargs['exit'] = True
+        lab_kwargs['exit'] = False
+        lab_kwargs['operation'] = 'home %s' % cmd_kwargs['print_path']
+        lab_kwargs['outcome'] = 'error'
 
 # handle possible print path request outcomes
         if not resource_details:
-            lab_kwargs['msg'] = '"%s" not found in registry. Try running "lab home" first from its root.' % print_path,
-            lab_kwargs['outcome'] = 'error'
+            lab_kwargs['msg'] = '"%s" not found in registry. Try running "lab home" first from its root.' % cmd_kwargs['print_path'],
         else:
             if not 'resource_home' in resource_details:
-                lab_kwargs['msg'] = 'Record for "%s" has been corrupted. Try running "lab home" again from its root.' % print_path
-                lab_kwargs['outcome'] = 'error'
+                lab_kwargs['msg'] = 'Record for "%s" has been corrupted. Try running "lab home" again from its root.' % cmd_kwargs['print_path']
             else:
                 if not path.exists(resource_details['resource_home']):
-                    lab_kwargs['msg'] = 'Path %s to "%s" no longer exists. Try running "lab home" again from its root.' % (resource_details['resource_home'], print_path)
-                    lab_kwargs['outcome'] = 'error'
+                    lab_kwargs['msg'] = 'Path %s to "%s" no longer exists. Try running "lab home" again from its root.' % (resource_details['resource_home'], cmd_kwargs['print_path'])
                 else:
-                    lab_kwargs['msg'] = 'Transport to "%s" underway.' % print_path
+                    lab_kwargs['msg'] = 'Transport to "%s" underway.' % cmd_kwargs['print_path']
                     lab_kwargs['outcome'] = 'success'
                     home_path = resource_details['resource_home']
         lab_exp = labBotClient(**lab_kwargs).analyze()
-        exit_message = '%s<>%s' % (lab_exp['msg'], home_path)
+        exit_message = '%s;%s' % (lab_exp['msg'], home_path)
         print(exit_message)
         sys.exit()
 
+# resolve project home request
+    if not cmd_kwargs['project']:
+        from copy import deepcopy
+        copy_lab_kwargs = deepcopy(lab_kwargs)
+        copy_lab_kwargs['outcome'] = 'input'
+        copy_lab_kwargs['exit'] = False
+        copy_lab_kwargs['msg'] = 'Name of project (short & sweet)'
+        cmd_kwargs['project'] = labBotClient(**copy_lab_kwargs).analyze()
+
+# define recursive input method to obtain project name
+    def ingest_project_name(lab_kwargs, args_model):
+        from jsonmodel.validators import jsonModel
+        from jsonmodel.exceptions import InputValidationError
+        cmd_model = jsonModel(args_model)
+        try:
+            project_name = cmd_model.validate(lab_kwargs['kwargs']['project'], '.project')
+            return project_name
+        except InputValidationError as err:
+            from copy import deepcopy
+            copy_lab_kwargs = deepcopy(lab_kwargs)
+            copy_lab_kwargs['outcome'] = 'input'
+            copy_lab_kwargs['exit'] = False
+            copy_lab_kwargs['error_report'] = err.error
+            copy_lab_kwargs['msg'] = cmd_model.components['.project']['field_description']
+            project_name = labBotClient(**copy_lab_kwargs).analyze()
+            lab_kwargs['kwargs']['project'] = project_name
+            return ingest_project_name(lab_kwargs, args_model)
+
 # determine project name
-    lab_logging = kwargs['labLogging']
-    verbose = kwargs['verbose']
-    project_name = kwargs['project']
-
-    def nameProject(msg, lab_logging, cmd_kwargs):
-        project_name = input(msg)
-        space_pattern = compile('\s')
-        if len(project_name) > 64:
-            input_kwargs = {
-                'message': 'Name for project (shorter & sweeter): ',
-                'kwargs': kwargs,
-                'failed_test': 'max_size',
-                'error_value': project_name,
-                'operation': 'input',
-                'outcome': 'clarification'
-            }
-            input_msg = inputHandler(**input_kwargs).msg()
-            project_name = nameProject(input_msg, lab_logging, cmd_kwargs)
-        elif space_pattern.findall(project_name):
-            input_kwargs = {
-                'message': 'Name for project (without spaces): ',
-                'kwargs': kwargs,
-                'failed_test': 'must_not_contain',
-                'error_value': project_name,
-                'operation': 'input',
-                'outcome': 'clarification'
-            }
-            input_msg = inputHandler(**input_kwargs).msg()
-            project_name = nameProject(input_msg, lab_logging, cmd_kwargs)
-        return project_name
-
-# differentiate between resource options
-
-# validate the resource value
-    space_pattern = compile('\s')
-    if not project_name or len(project_name) > 64 or space_pattern.findall(project_name):
-        from pocketLab.handlers.input_handler import inputHandler
-        input_kwargs = {
-            'message': 'Name for project (short & sweet): ',
-            'kwargs': kwargs,
-            'operation': 'input',
-            'outcome': 'input'
-        }
-        input_msg = inputHandler(**input_kwargs).msg()
-        project_name = nameProject(input_msg, lab_logging, kwargs)
+    from pocketLab.compilers.args_model import argsModel
+    args_model = argsModel(cmd_kwargs['model'])
+    project_name = ingest_project_name(lab_kwargs, args_model)
 
 # determine project home
     project_home = path.abspath('.')
@@ -147,15 +129,22 @@ def home(**kwargs):
 # determine project remote
 
 # update project registry
-    rS = registryClient(**kwargs)
+    rS = registryClient()
     project_details = {
         'resource_name': project_name,
         'resource_type': 'project',
-        'resource_home': project_home
+        'resource_home': project_home,
+        'resource_tags': [ project_name ]
     }
-    rS.update(**project_details)
+    rS.add(project_details)
+
+# log & report success
+    lab_kwargs['msg'] = 'Project "%s" added to lab registry. To return to workdir run: home %s' % (project_name, project_name)
+    lab_kwargs['outcome'] = 'success'
+    lab_kwargs['exit'] = False
+    labBotClient(**lab_kwargs).analyze()
 
 # add home alias to .bashrc or .bash_profile (or create)
-    home_alias = "alias home='function _home(){ file_path=\"$(lab home --print_path $1)\"; cd \"$file_path\"; };_home'"
+    home_alias = "alias home='function _home(){ lab_output=\"$(lab home --print_path $1)\"; IFS=\";\" read -ra LINES <<< \"$lab_output\"; echo \"${LINES[0]}\"; cd \"${LINES[1]}\"; };_home'"
 
 

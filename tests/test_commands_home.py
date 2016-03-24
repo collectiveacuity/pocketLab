@@ -9,9 +9,18 @@ class testCommandsHome(object):
         self.cmdModel = _cmd_model_home
 
     def unitTests(self):
-        test_kwargs = {'command': 'home'}
+        from timeit import timeit as timer
+        t0 = timer()
+        test_kwargs = {
+            'verbose': True,
+            'logging': False,
+            'command': 'home',
+            'print_path': 'unittest',
+            'project': ''
+        }
         home(**test_kwargs)
-
+        t1 = timer()
+        print(str(t1 - t0))
         return self
 
 if __name__ == '__main__':
