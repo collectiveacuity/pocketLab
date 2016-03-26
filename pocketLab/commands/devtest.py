@@ -35,6 +35,7 @@ _cmd_model_devtest = {
             'max_length': 64,
             'must_not_contain': [ '[^\w\-_]' ],
             'field_description': 'Test string argument',
+            'discrete_values': [ 'a', 'b', 'c' ],
             'exclusive_group': 'B',
             'cli_flags': [ '--string_a' ],
             'cli_help': 'string a argument for devtest',
@@ -62,7 +63,7 @@ _cmd_model_devtest = {
             'exclusive_group': '',
             'cli_flags': [ ],
             'cli_help': 'required argument for devtest',
-            'cli_metavar': ''
+            'cli_metavar': 'REQUIRED ARG'
         }
     ]
 }

@@ -117,9 +117,23 @@ def cli(error=False):
                 arg_args = [ argument['name'] ]
                 arg_kwargs = {
                     'default': argument['default_value'],
-                    'help': argument['cli_help'] }
+                    'help': argument['cli_help']
+                }
                 if argument['cli_metavar']:
                     arg_kwargs['metavar'] = argument['cli_metavar']
+                if 'discrete_values' in argument.keys():
+                    arg_kwargs['choices'] = argument['discrete_values']
+                elif 'max_value' in argument.keys() and isinstance(argument['default_value'], int):
+                    if 'min_value' in argument.keys():
+                        arg_kwargs['choices'] = range(argument['min_value'], argument['max_value'])
+                    else:
+                        arg_kwargs['choices'] = range(argument['max_value'])
+                if argument['cli_nargs']:
+                    try:
+                        narg_value = int(argument['cli_nargs'])
+                    except:
+                        narg_value = argument['cli_nargs']
+                    arg_kwargs['nargs'] = narg_value
                 if isinstance(argument['default_value'], str):
                     arg_kwargs['type'] = str
                 elif isinstance(argument['default_value'], int):
@@ -135,7 +149,8 @@ def cli(error=False):
                 arg_args = argument['cli_flags']
                 arg_kwargs = {
                     'dest': argument['name'],
-                    'help': argument['cli_help'] }
+                    'help': argument['cli_help']
+                }
                 if argument['cli_metavar']:
                     arg_kwargs['metavar'] = argument['cli_metavar']
                 if isinstance(argument['default_value'], bool):
@@ -145,6 +160,19 @@ def cli(error=False):
                         arg_kwargs['action'] = 'store_true'
                 else:
                     arg_kwargs['default'] = argument['default_value']
+                    if 'discrete_values' in argument.keys():
+                        arg_kwargs['choices'] = argument['discrete_values']
+                    elif 'max_value' in argument.keys() and isinstance(argument['default_value'], int):
+                        if 'min_value' in argument.keys():
+                            arg_kwargs['choices'] = range(argument['min_value'], argument['max_value'])
+                        else:
+                            arg_kwargs['choices'] = range(argument['max_value'])
+                    if argument['cli_nargs']:
+                        try:
+                            narg_value = int(argument['cli_nargs'])
+                        except:
+                            narg_value = argument['cli_nargs']
+                        arg_kwargs['nargs'] = narg_value
                     if argument['cli_action']:
                         arg_kwargs['action'] = argument['cli_action']
                     if isinstance(argument['default_value'], str):
@@ -162,7 +190,8 @@ def cli(error=False):
                     arg_args = argument['cli_flags']
                     arg_kwargs = {
                         'dest': argument['name'],
-                        'help': argument['cli_help'] }
+                        'help': argument['cli_help']
+                    }
                     if argument['cli_metavar']:
                         arg_kwargs['metavar'] = argument['cli_metavar']
                     if isinstance(argument['default_value'], bool):
@@ -172,6 +201,19 @@ def cli(error=False):
                             arg_kwargs['action'] = 'store_true'
                     else:
                         arg_kwargs['default'] = argument['default_value']
+                        if 'discrete_values' in argument.keys():
+                            arg_kwargs['choices'] = argument['discrete_values']
+                        elif 'max_value' in argument.keys() and isinstance(argument['default_value'], int):
+                            if 'min_value' in argument.keys():
+                                arg_kwargs['choices'] = range(argument['min_value'], argument['max_value'])
+                            else:
+                                arg_kwargs['choices'] = range(argument['max_value'])
+                        if argument['cli_nargs']:
+                            try:
+                                narg_value = int(argument['cli_nargs'])
+                            except:
+                                narg_value = argument['cli_nargs']
+                            arg_kwargs['nargs'] = narg_value
                         if argument['cli_action']:
                             arg_kwargs['action'] = argument['cli_action']
                         if isinstance(argument['default_value'], str):
