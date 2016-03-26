@@ -1,73 +1,126 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_cmd_model_devtest = {
-    'command': 'devtest',
+_cmd_kwargs_devtest = {
+    'title': 'devtest',
     'description': 'test the command structure',
-    'brief': 'test the command structure',
-    'args': [
-        {
-            'name': 'integer',
-            'default_value': 5,
+    'metadata': {
+        'cli_command': 'devtest',
+        'cli_help': 'test the command structure'
+    },
+    'schema': {
+        'verbose': True,
+        'logging': True,
+        'integer': 0,
+        'float': 0.0,
+        'string_a': '',
+        'string_b': '',
+        'required_arg': 'required',
+        'list_str': [ 'e' ],
+        'list_int': [ 7 ]
+    },
+    'components': {
+        '.logging': {
+            'default_value': True,
+            'field_description': 'Toggle to enable/disable lab logging',
+            'field_metadata': {
+                'cli_flags': ['-z', '--zzz'],
+                'cli_help': 'turn off lab logging (logging helps lab bot learn)'
+            }
+        },
+        '.verbose': {
+            'default_value': True,
+            'field_description': 'Toggle to enable/disable lab bot messages',
+            'field_metadata': {
+                'cli_flags': ['-q', '--quiet'],
+                'cli_help': 'turn off lab bot messages'
+            }
+        },
+        '.integer': {
             'min_value': 1,
-            'max_value': 1000,
+            'max_value': 10,
             'field_description': 'Test integer argument',
-            'exclusive_group': 'A',
-            'cli_flags': [ '-i', '--integer' ],
-            'cli_help': 'integer argument for devtest',
-            'cli_metavar': 'INT'
+            'field_metadata': {
+                'cli_flags': [ '-i', '--integer' ],
+                'cli_group': 'A',
+                'cli_help': 'integer argument for devtest',
+                'cli_metavar': 'INT'
+            }
         },
-        {
-            'name': 'float',
-            'default_value': 5.5,
+        '.float': {
             'min_value': 1.1,
-            'max_value': 1001.1,
-            'field_description': 'Test float argument',
-            'exclusive_group': 'A',
-            'cli_flags': [ '-f', '--float' ],
-            'cli_help': 'float argument for devtest',
-            'cli_metavar': 'FLOAT'
+            'max_value': 10.1,
+            'field_description': 'Test integer argument',
+            'field_metadata': {
+                'cli_flags': [ '-f', '--float' ],
+                'cli_group': 'A',
+                'cli_help': 'float argument for devtest',
+                'cli_metavar': 'FLOAT'
+            }
         },
-        {
-            'name': 'string_a',
-            'default_value': 'lab',
-            'min_length': 1,
-            'max_length': 64,
-            'must_not_contain': [ '[^\w\-_]' ],
-            'field_description': 'Test string argument',
+        '.string_a': {
             'discrete_values': [ 'a', 'b', 'c' ],
-            'exclusive_group': 'B',
-            'cli_flags': [ '--string_a' ],
-            'cli_help': 'string a argument for devtest',
-            'cli_metavar': 'STR'
+            'field_description': 'Test string argument',
+            'field_metadata': {
+                'cli_group': 'B',
+                'cli_flags': [ '--string_a' ],
+                'cli_help': 'string a argument for devtest',
+                'cli_metavar': 'STR'
+            }
         },
-        {
-            'name': 'string_b',
+        '.string_b': {
             'default_value': 'lab',
             'min_length': 1,
             'max_length': 64,
             'must_not_contain': [ '[^\w\-_]' ],
             'field_description': 'Test string argument',
-            'exclusive_group': 'B',
-            'cli_flags': [ '--string_b' ],
-            'cli_help': 'string b argument for devtest',
-            'cli_metavar': 'STR'
+            'field_metadata': {
+                'cli_group': 'B',
+                'cli_flags': [ '--string_b' ],
+                'cli_help': 'string b argument for devtest',
+                'cli_metavar': 'STR'
+            }
         },
-        {
-            'name': 'required',
-            'default_value': '',
+        '.required_arg': {
             'min_length': 1,
             'max_length': 64,
             'must_not_contain': [ '[^\w\-_]' ],
             'field_description': 'Test required argument',
-            'exclusive_group': '',
-            'cli_flags': [ ],
-            'cli_help': 'required argument for devtest',
-            'cli_metavar': 'REQUIRED ARG'
+            'field_metadata': {
+                'cli_help': 'required argument for devtest',
+                'cli_metavar': 'REQUIRED ARG'
+            }
+        },
+        '.list_str': {
+            'required_field': False,
+            'field_description': 'Test list argument',
+            'field_metadata': {
+                'cli_flags': [ '--list_str' ],
+                'cli_help': 'list argument for devtest',
+                'cli_metavar': 'LIST',
+                'cli_group': 'C'
+            }
+        },
+        '.list_str[0]': {
+            'discrete_values': [ 'd', 'e', 'f' ]
+        },
+        '.list_int': {
+            'required_field': False,
+            'field_description': 'Test list argument',
+            'field_metadata': {
+                'cli_help': 'list argument for devtest',
+                'cli_metavar': 'LIST',
+                'cli_group': 'C'
+            }
+        },
+        '.list_int[0]': {
+            'min_value': 1,
+            'max_value': 10
         }
-    ]
+    }
 }
 
 def devtest(**cmd_kwargs):
+    del cmd_kwargs['model']
     print(cmd_kwargs)
 

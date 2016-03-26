@@ -3,66 +3,82 @@
     "command": "home",
     "description": "transports you to the project home",
     "brief": "transports you to the project home",
-    "defaults": { },
-    "args": [
-      {
-        "name": "sample_argument",
-        "default_value": null,
-        "cli_metavar": "",
-        "cli_action": "",
-        "cli_flags": [ "--sample_argumen" ],
-        "cli_help": "sample argument help description",
-        "cli_nargs": "",
-        "exclusive_group": ""
+    "defaults": {},
+    "args": {
+      "schema": {
+        "verbose": true,
+        "logging": true
       },
-      {
-        "name": "verbose",
-        "default_value": true,
-        "cli_metavar": "",
-        "cli_action": "",
-        "cli_flags": [ "-q", "--quiet" ],
-        "cli_help": "turn off lab bot messages",
-        "cli_nargs": "",
-        "exclusive_group": ""
+      "components": {
       },
-      {
-        "name": "logging",
-        "default_value": true,
-        "cli_metavar": "",
-        "cli_action": "",
-        "cli_flags": [ "-z", "--zzz" ],
-        "cli_help": "turn off lab logging (logging helps lab bot learn)",
-        "cli_nargs": "",
-        "exclusive_group": ""
-      }
-    ]
+      "title": "argument schema for home",
+      "url": "",
+      "max_size": 0
+    }
   },
   "components": {
     ".command": {
-      "must_not_contain": [ "\\s" ]
+      "must_not_contain": [
+        "\\s"
+      ]
     },
     ".defaults": {
       "extra_fields": true,
       "field_description": "dictionary for default keyword arguments to pass to cmd_kwargs"
     },
-    ".args[0]": {
+    ".args.schema": {
       "extra_fields": true
     },
-    ".args[0].name": {
-      "must_not_contain": [ "[^\\w\\-_]" ]
+    ".args.schema.verbose": {
+      "default_value": true,
+      "field_metadata": {
+        "default_value": true,
+        "field_description": "toggle to enable/disable lab bot messages",
+        "field_metadata": {
+          "cli_flags": [ "-q", "--quiet" ],
+          "cli_help": "turn off lab bot messages",
+          "cli_metavar": "",
+          "cli_action": "",
+          "cli_group": ""
+        }
+      }
     },
-    ".args[0].cli_flags": {
-      "max_size": 2
+    ".args.schema.logging": {
+      "default_value": true,
+      "field_metadata": {
+        "default_value": true,
+        "field_description": "toggle to enable/disable lab bot logging",
+        "field_metadata": {
+          "cli_flags": [ "-z", "--zzz" ],
+          "cli_help": "turn off lab logging (logging helps lab bot learn)",
+          "cli_metavar": "",
+          "cli_action": "",
+          "cli_group": ""
+        }
+      }
     },
-    ".args[0].cli_flags[0]": {
-      "must_contain": [ "\\-" ],
-      "must_not_contain": [ "[^\\w\\-_]" ]
-    },
-    ".args[0].cli_help": {
-      "default_value": "default argument help message"
-    },
-    ".args[0].cli_nargs": {
-      "contains_either": [ "\\d+", "\\*", "\\?", "\\+" ]
+    ".args.components": {
+      "extra_fields": true,
+      "field_metadata": {
+        "schema": {
+          "cli_flags": [
+            "-z",
+            "--zzz"
+          ],
+          "cli_help": "turn off lab logging (logging helps lab bot learn)",
+          "cli_metavar": "",
+          "cli_action": "",
+          "cli_group": ""
+        },
+        "components": {
+          ".cli_flags": {
+            "max_size": 2
+          },
+          ".cli_flags[0]": {
+            "must_contain": [ "^\\-" ]
+          }
+        }
+      }
     }
   }
 }

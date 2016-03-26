@@ -1,20 +1,20 @@
 {
   "schema": {
-    "option": "positional",
-    "metavar": "PROJ",
-    "help": "(re)set home of PROJECT to workdir",
-    "flags": [ "-p", "--project" ]
+    "cli_group": "A",
+    "cli_metavar": "PROJ",
+    "cli_help": "(re)set home of PROJECT to workdir",
+    "cli_flags": [ "-p", "--project" ],
+    "cli_action": "store_true"
   },
   "components": {
-    ".option": {
-      "default_value": "optional",
-      "discrete_values": [ "positional", "default", "optional", "exclusive" ]
-    },
-    ".metavar": {
-      "required_field": false
-    },
-    ".flags": {
+    ".cli_flags": {
       "max_size": 2
+    },
+    ".cli_flags[0]": {
+      "must_contain": [ "^\\-" ]
+    },
+    ".": {
+      "extra_fields": true
     }
   }
 }
