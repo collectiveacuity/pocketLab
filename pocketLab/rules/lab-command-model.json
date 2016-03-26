@@ -10,7 +10,7 @@
         "default_value": null,
         "cli_metavar": "",
         "cli_action": "",
-        "cli_flags": [ "--sample_argument" ],
+        "cli_flags": [ "--sample_argumen" ],
         "cli_help": "sample argument help description",
         "cli_nargs": "",
         "exclusive_group": ""
