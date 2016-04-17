@@ -1,0 +1,61 @@
+{
+  "schema": {
+    "command": "",
+    "model": {},
+    "interface": "",
+    "medium": "",
+    "channel": "",
+    "verbose": true,
+    "logging": true
+  },
+  "components": {
+    ".command": {
+      "field_metadata": {
+        "cli_default": true
+      }
+    },
+    ".model": {
+      "extra_fields": true,
+      "field_metadata": {
+        "cli_default": true
+      }
+    },
+    ".interface": {
+      "field_metadata": {
+        "cli_default": true
+      }
+    },
+    ".medium": {
+      "field_metadata": {
+        "cli_default": true
+      }
+    },
+    ".channel": {
+      "field_metadata": {
+        "cli_default": true
+      }
+    },
+    ".logging": {
+      "default_value": true,
+      "field_description": "Toggle to enable/disable lab logging",
+      "field_metadata": {
+        "cli_flags": [
+          "-z",
+          "--zzz"
+        ],
+        "cli_help": "turn off lab logging (logging helps lab bot learn)"
+      }
+    },
+    ".verbose": {
+      "default_value": true,
+      "field_description": "Toggle to enable/disable lab bot messages",
+      "field_metadata": {
+        "cli_flags": [
+          "-q",
+          "--quiet"
+        ],
+        "cli_help": "turn off lab bot messages"
+      }
+    }
+  }
+}

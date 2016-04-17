@@ -4,17 +4,38 @@
     "cli_metavar": "PROJ",
     "cli_help": "(re)set home of PROJECT to workdir",
     "cli_flags": [ "-p", "--project" ],
-    "cli_action": "store_true"
+    "cli_action": "store_true",
+    "cli_default": true,
+    "cli_position": 1
   },
   "components": {
+    ".": {
+      "extra_fields": true
+    },
+    ".cli_group": {
+      "field_description": "a mutually exclusive group of arguments in cli"
+    },
+    ".cli_metavar": {
+      "field_description": "an alternative name for argument variable in cli help"
+    },
+    ".cli_help": {
+      "field_description": "a brief description of argument in cli help"
+    },
     ".cli_flags": {
-      "max_size": 2
+      "max_size": 2,
+      "field_description": "a list of flags for optional arguments in cli"
     },
     ".cli_flags[0]": {
       "must_contain": [ "^\\-" ]
     },
-    ".": {
-      "extra_fields": true
+    ".cli_action": {
+      "field_description": "a special argparse action associated with argument"
+    },
+    ".cli_default": {
+      "field_description": "argument key not included in cli options"
+    },
+    ".cli_position": {
+      "field_description": "number to designate order of a positional argument"
     }
   }
 }
