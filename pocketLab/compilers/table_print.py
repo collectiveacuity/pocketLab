@@ -12,8 +12,8 @@ def tablePrint(header_list, dict_list):
     for row in dict_list:
         for key, value in row.items():
             if key in max_lengths.keys():
-                if len(value) > max_lengths[key]:
-                    max_lengths[key] = len(value)
+                if len(str(value)) > max_lengths[key]:
+                    max_lengths[key] = len(str(value))
 
 # create columns from header list
     for field in header_list:
@@ -30,8 +30,8 @@ def tablePrint(header_list, dict_list):
         for field in header_list:
             spacing = max_lengths[field]
             if field in row.keys():
-                print_string += row[field]
-                spacing = spacing - len(row[field])
+                print_string += str(row[field])
+                spacing = spacing - len(str(row[field]))
             count = 0
             while count < spacing + 3:
                 print_string += ' '
