@@ -47,6 +47,7 @@ pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 config_file = open('pocketLab/__init__.py').read()
 version = re.search("^__version__\s*=\s*'(.*)'", config_file, re.M).group(1)
 command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
+license_terms = re.search("^__license__\s*=\s*'(.*)'", config_file, re.M).group(1)
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
@@ -62,7 +63,7 @@ setup(
     },
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
     packages=find_packages(exclude=['cred','docs','keys','models','notes','tests']),  # Needed for bdist
-    license="MIT",
+    license=license_terms,
     description="A Command Line Tool for Managing Laboratory Projects",
     long_description=open('README.rst').read(),
     install_requires=[

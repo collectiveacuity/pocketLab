@@ -3,7 +3,7 @@ __created__ = '2016.03'
 
 # pip install sympy
 
-from sympy import symbols, sympify
+from sympy import symbols, sympify, Symbol
 from sympy.logic.inference import satisfiable
 
 '''
@@ -15,6 +15,11 @@ SYMPY
 http://docs.sympy.org/latest/modules/logic.html
 https://github.com/sympy/sympy
 http://docs.sympy.org/latest/tutorial/basic_operations.html#converting-strings-to-sympy-expressions
+
+PYEDA
+https://pyeda.readthedocs.org/
+https://pypi.python.org/pypi/pyeda
+https://github.com/cjdrake/pyeda
 
 ITERTOOLS
 https://docs.python.org/3.5/library/itertools.html
@@ -72,8 +77,12 @@ class setSatisfier(object):
         return sat_options
 
 
-
-
+if __name__ == '__main__':
+    model_dict = { "a": "happy", "b": "birthday" }
+    expression = "((a&b)|(~a|b))>>b"
+    t = setSatisfier(model_dict, expression)
+    print(t.expression)
+    print(dir(Symbol))
 
 
 

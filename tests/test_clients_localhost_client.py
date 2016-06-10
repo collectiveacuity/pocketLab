@@ -14,6 +14,8 @@ class testClientsLocalhostClient(localhostClient):
         assert os
         username = self.username
         assert username
+        ip = self.ip
+        print(ip)
         data_path = self.appData('Collective Acuity', 'pocketLab')
         assert data_path
         self.os = 'Linux'

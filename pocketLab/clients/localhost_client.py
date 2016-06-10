@@ -35,6 +35,15 @@ class localhostClient(object):
         env_username = environ.get('USERNAME')
         if env_username:
             self.username = env_username
+
+    # retrieve IP from system
+        self.ip = 'localhost'
+        if self.os in ('Linux', 'FreeBSD', 'Solaris'):
+            try:
+                sys_command = 'hostname -i'
+                self.ip = check_output(sys_command).decode('utf-8').replace('\n', '')
+            except:
+                pass
         
     def appData(self, org_name, prod_name):
 
