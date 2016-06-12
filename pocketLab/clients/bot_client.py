@@ -83,33 +83,26 @@ class botClient(localhostClient):
             'interface_details': {}
         }
 
-    # create map of action statements
-        if self.actionModels:
-            request_map = {}
-            for key, value in self.actionModels.items():
-                if 'example_statements' in value['model'].metadata.keys():
-                    for statement in value['model'].metadata['example_statements']:
-                        request_map[statement] = key
-
     # determine action from observation details
+        if self.actionModels:
             action_name = ''
             action_statement = ''
             event_dict = self.obsDetails['event_details']['json']
             interface_context = event_dict['context']
             interface_details = event_dict['details']
             if 'string' in interface_details.keys():
-                if interface_details['string'] in request_map.keys():
-                    action_name = request_map[interface_details['string']]
+                if interface_details['string'] in self.actionModels.map.keys():
+                    action_name = self.actionModels.map[interface_details['string']]
                     action_statement = interface_details['string']
-            action_args = deepcopy(self.actionModels[action_name]['model'].metadata['kwargs'])
+            action_args = deepcopy(self.actionModels.actions[action_name]['model'].metadata['kwargs'])
             if 'protocols' in action_statement:
                 action_args['file'] = action_args['file'].replace('mission','protocols')
 
     # construct action list for expression
             action_list = []
-            if action_name in self.actionModels.keys():
-                action_model = self.actionModels[action_name]['model']
-                action_list, status_code = self.actionModels[action_name]['method'](action_model, **action_args)
+            if action_name in self.actionModels.actions.keys():
+                action_model = self.actionModels.actions[action_name]['model']
+                action_list, status_code = self.actionModels.actions[action_name]['method'](action_model, **action_args)
             for action in action_list:
                 self.expDetails['event_details']['actions'].append(action)
 
