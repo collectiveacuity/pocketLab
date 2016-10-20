@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.compilers.inject_defaults import injectDefaults
+from pocketlab.compilers.inject_defaults import injectDefaults
 
 _raw_kwargs_devtest = {
         'title': 'devtest',

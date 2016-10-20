@@ -2,12 +2,12 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 from os import path
-from pocketLab import __module__
+from pocketlab import __module__
 from jsonmodel.loader import jsonLoader
 from jsonmodel.validators import jsonModel
 from importlib.util import find_spec
 from copy import deepcopy
-from pocketLab.clients.localhost_client import localhostClient
+from pocketlab.clients.localhost_client import localhostClient
 
 class labBotClient(localhostClient):
 
@@ -85,7 +85,7 @@ class labBotClient(localhostClient):
     def log(self):
 
     # import dependencies
-        from pocketLab.clients.logging_client import loggingClient
+        from pocketlab.clients.logging_client import loggingClient
 
     # initialize log client
         self.logClient = loggingClient(client_name='Log Data')

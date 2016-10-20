@@ -1,8 +1,8 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.clients.docker_session import dockerSession
-from pocketLab.clients.localhost_client import localhostClient
+from pocketlab.clients.docker_session import dockerSession
+from pocketlab.clients.localhost_client import localhostClient
 
 class testClientsDockerSession(dockerSession):
 

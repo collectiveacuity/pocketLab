@@ -47,8 +47,8 @@ def home(**cmd_kwargs):
 # import dependencies
     from time import time
     from os import path
-    from pocketLab.clients.registry_client import registryClient
-    from pocketLab.clients.labbot_client import labBotClient
+    from pocketlab.clients.registry_client import registryClient
+    from pocketlab.clients.labbot_client import labBotClient
 
 # construct lab bot input from cmd kwargs
     lab_kwargs = {
@@ -119,7 +119,7 @@ def home(**cmd_kwargs):
             return ingest_project_name(lab_kwargs, args_model)
 
 # determine project name
-    from pocketLab.compilers.args_model import argsModel
+    from pocketlab.compilers.args_model import argsModel
     args_model = argsModel(cmd_kwargs['model'])
     project_name = ingest_project_name(lab_kwargs, args_model)
 

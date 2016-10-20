@@ -6,7 +6,7 @@ import os
 from re import compile
 from importlib.util import spec_from_file_location, module_from_spec
 from jsonmodel.validators import jsonModel
-from pocketLab.clients.localhost_client import localhostClient
+from pocketlab.clients.localhost_client import localhostClient
 
 class actionCompiler(localhostClient):
 

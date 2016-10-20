@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 from copy import deepcopy
-from pocketLab.clients.registry_client import registryClient
+from pocketlab.clients.registry_client import registryClient
 
 class testClientsRegistryClient(registryClient):
 

@@ -36,11 +36,11 @@ _cmd_model_enter = {
 def enter(**kwargs):
 
 # import dependencies
-    from pocketLab.importers.config_file import configFile
-    from pocketLab.clients.localhost_client import localhostClient
-    from pocketLab.clients.docker_session import dockerSession
-    from pocketLab.validators.config_model import configModel
-    from pocketLab.validators.available_container import availableContainer
+    from pocketlab.importers.config_file import configFile
+    from pocketlab.clients.localhost_client import localhostClient
+    from pocketlab.clients.docker_session import dockerSession
+    from pocketlab.validators.config_model import configModel
+    from pocketlab.validators.available_container import availableContainer
 
 # determine system properties
     localhost = localhostClient()

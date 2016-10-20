@@ -27,7 +27,7 @@ class dockerSession(object):
         try:
             call(sys_command, stdout=open(devnull, 'wb'))
         except Exception as err:
-            from pocketLab.exceptions.lab_exception import labException
+            from pocketlab.exceptions.lab_exception import labException
             self.error['exception'] = err
             self.error['error_value'] = sys_command
             self.error['failed_test'] = 'required_module'
@@ -40,7 +40,7 @@ class dockerSession(object):
             try:
                 call(sys_command, stdout=open(devnull, 'wb'))
             except Exception as err:
-                from pocketLab.exceptions.lab_exception import labException
+                from pocketlab.exceptions.lab_exception import labException
                 self.error['exception'] = err
                 self.error['error_value'] = sys_command
                 self.error['failed_test'] = 'required_module'
@@ -58,7 +58,7 @@ class dockerSession(object):
             try:
                 vbox_status = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8').replace('\n','')
             except Exception as err:
-                from pocketLab.exceptions.lab_exception import labException
+                from pocketlab.exceptions.lab_exception import labException
                 self.error['exception'] = err
                 if self.vbox == "default":
                     self.error['message'] = 'Virtualbox "default" not found. Container will not start without a valid virtualbox.'
@@ -67,7 +67,7 @@ class dockerSession(object):
                     self.error['message'] = 'Virtualbox "%s" not found. Try using "default" instead.' % self.vbox
                     raise labException(**self.error)
             if 'Stopped' in vbox_status:
-                from pocketLab.exceptions.lab_exception import labException
+                from pocketlab.exceptions.lab_exception import labException
                 self.error['message'] = 'Virtualbox "%s" is stopped. Try first running: docker-machine start %s' % (self.vbox, self.vbox)
                 raise labException(**self.error)
 

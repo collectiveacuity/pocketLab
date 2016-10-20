@@ -40,13 +40,13 @@ def start(**kwargs):
 # import dependencies
     from os import path
     from copy import deepcopy
-    from pocketLab.importers.config_file import configFile
-    from pocketLab.clients.localhost_client import localhostClient
-    from pocketLab.clients.docker_session import dockerSession
-    from pocketLab.validators.config_model import configModel
-    from pocketLab.validators.absolute_path import absolutePath
-    from pocketLab.validators.available_image import availableImage
-    from pocketLab.compilers.docker_run import dockerRun
+    from pocketlab.importers.config_file import configFile
+    from pocketlab.clients.localhost_client import localhostClient
+    from pocketlab.clients.docker_session import dockerSession
+    from pocketlab.validators.config_model import configModel
+    from pocketlab.validators.absolute_path import absolutePath
+    from pocketlab.validators.available_image import availableImage
+    from pocketlab.compilers.docker_run import dockerRun
 
 # ingest verbose options
     verbose = kwargs['verbose']
@@ -98,7 +98,7 @@ def start(**kwargs):
 
 # check that alias name is available
     if comp_details['container_alias'] in active_containers:
-        from pocketLab.exceptions.lab_exception import labException
+        from pocketlab.exceptions.lab_exception import labException
         header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,

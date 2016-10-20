@@ -11,7 +11,7 @@ def validFile(file_details, valid_model, kwargs, title=''):
     try:
         file_details = valid_model.validate(file_details)
     except InputValidationError as err:
-        from pocketLab.exceptions.lab_exception import labException
+        from pocketlab.exceptions.lab_exception import labException
         if err.error['input_path'] == '.':
             field = 'Top level dictionary'
         else:

@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.exceptions.lab_exception import labException
+from pocketlab.exceptions.lab_exception import labException
 
 def removableContainer(alias_name, container_list, kwargs):
 

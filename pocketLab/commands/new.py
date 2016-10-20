@@ -32,12 +32,12 @@ def new(**kwargs):
 
 # import dependencies
     from re import compile
-    from pocketLab import __module__, __team__
+    from pocketlab import __module__, __team__
     from jsonmodel.loader import jsonLoader
     from os import path, makedirs
-    from pocketLab.importers.config_file import configFile
-    from pocketLab.clients.localhost_client import localhostClient
-    from pocketLab.validators.config_model import configModel
+    from pocketlab.importers.config_file import configFile
+    from pocketlab.clients.localhost_client import localhostClient
+    from pocketlab.validators.config_model import configModel
 
 # determine project name
     verbose = kwargs['verbose']
@@ -83,8 +83,8 @@ def new(**kwargs):
 # check availability of namespace in project registry
     for project in registry_details['project_list']:
         if project_name == project['project_name']:
-            from pocketLab.exceptions.lab_exception import labException
-            from pocketLab.constructors.list_projects import listProjects
+            from pocketlab.exceptions.lab_exception import labException
+            from pocketlab.constructors.list_projects import listProjects
             header_list, project_list = listProjects(registry_details)
             error = {
                 'kwargs': kwargs,

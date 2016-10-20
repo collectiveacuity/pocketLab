@@ -58,10 +58,10 @@ _cmd_details_cleanup = {
 def cleanup(**kwargs):
 
 # import dependencies
-    from pocketLab.importers.config_file import configFile
-    from pocketLab.clients.localhost_client import localhostClient
-    from pocketLab.clients.docker_session import dockerSession
-    from pocketLab.validators.config_model import configModel
+    from pocketlab.importers.config_file import configFile
+    from pocketlab.clients.localhost_client import localhostClient
+    from pocketlab.clients.docker_session import dockerSession
+    from pocketlab.validators.config_model import configModel
 
 # determine system properties
     localhost = localhostClient()
@@ -89,7 +89,7 @@ def cleanup(**kwargs):
 
 # check that container exists
     if not alias_name in alias_list:
-        from pocketLab.exceptions.lab_exception import labException
+        from pocketlab.exceptions.lab_exception import labException
         header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         error = {
             'kwargs': kwargs,

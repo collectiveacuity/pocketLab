@@ -40,4 +40,6 @@ __pycache__
 desktop.ini
 *.gdoc
 
+############## tinkering scripts ###############
+tinker/
 

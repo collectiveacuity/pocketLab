@@ -41,7 +41,7 @@ class inputHandler(object):
 
     # create a log of the event
         if self.labLogging:
-            from pocketLab.clients.logging_client import loggingClient
+            from pocketlab.clients.logging_client import loggingClient
             loggingClient().put(**self.context)
 
     # format printing
@@ -64,7 +64,7 @@ class inputHandler(object):
                             if not self.context['tprint']['rows']:
                                 self.context['tprint']['rows'] = [{}]
                             if isinstance(self.context['tprint']['rows'][0], dict):
-                                from pocketLab.compilers.table_print import tablePrint
+                                from pocketlab.compilers.table_print import tablePrint
                                 self.tprint =  tablePrint(self.context['tprint']['headers'], self.context['tprint']['rows'])
         if self.context['pprint']:
             self.pprint = self.context['pprint']

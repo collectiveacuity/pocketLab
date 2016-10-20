@@ -4,7 +4,7 @@ __created__ = '2016.03'
 
 from os import environ, path
 from subprocess import check_output
-from pocketLab import __team__, __module__
+from pocketlab import __team__, __module__
 
 class localhostClient(object):
 

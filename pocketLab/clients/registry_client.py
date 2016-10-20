@@ -1,10 +1,10 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab import __module__
+from pocketlab import __module__
 from jsonmodel.loader import jsonLoader
 from jsonmodel.validators import jsonModel
-from pocketLab.clients.logging_client import loggingClient
+from pocketlab.clients.logging_client import loggingClient
 
 class registryClient(object):
 

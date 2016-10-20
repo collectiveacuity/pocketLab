@@ -4,7 +4,7 @@ __created__ = '2016.03'
 from os import path, listdir
 from re import compile
 from jsonmodel.validators import jsonModel
-from pocketLab.clients.localhost_client import localhostClient
+from pocketlab.clients.localhost_client import localhostClient
 
 class loggingClient(localhostClient):
 
@@ -113,7 +113,7 @@ class loggingClient(localhostClient):
             log_bytes = yaml.dump(body_dict).encode('utf-8')
             log_data = compress(log_bytes)
         elif self.ext.drep.findall(key_string):
-            from pocketLab.compilers import drep
+            from pocketlab.compilers import drep
             log_path = path.join(self.logFolder, key_string)
             private_key, log_data, drep_index = drep.dump(body_dict)
 
@@ -277,7 +277,7 @@ class loggingClient(localhostClient):
             except:
                 raise Exception('%s is not valid yaml data.' % _key_arg)
         elif self.ext.drep.findall(key_string):
-            from pocketLab.compilers import drep
+            from pocketlab.compilers import drep
             try:
                 file_data = open(log_path)
                 log_details = drep.load(private_key='', encrypted_data=file_data)

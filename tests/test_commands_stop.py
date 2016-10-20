@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.commands.stop import stop
+from pocketlab.commands.stop import stop
 
 class testCommandsStop(object):
 

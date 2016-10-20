@@ -16,7 +16,7 @@ def configModel(config_details, model_file, kwargs, title=''):
     try:
         config_details = valid_model.validate(config_details)
     except InputValidationError as err:
-        from pocketLab.exceptions.lab_exception import labException
+        from pocketlab.exceptions.lab_exception import labException
         if err.error['input_path'] == '.':
             field = 'Top level dictionary'
         else:

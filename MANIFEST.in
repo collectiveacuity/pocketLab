@@ -1,11 +1,13 @@
 recursive-exclude cred *
+recursive-exclude docs *
 recursive-exclude keys *
-recursive-exclude tests *
 recursive-exclude models *
 recursive-exclude notes *
-recursive-exclude docs *
-recursive-include pocketLab/commands *.py
-recursive-include pocketLab/rules *.json
+recursive-exclude tests *
+recursive-exclude tinker *
+recursive-include pocketlab/commands *.py
+recursive-include pocketlab/rules *.json
+prune */__pycache__
 include *.rst
 include *.txt
 include *.md

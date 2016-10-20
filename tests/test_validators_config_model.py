@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 import json
-from pocketLab.validators.config_model import configModel
+from pocketlab.validators.config_model import configModel
 
 class testValidatorsConfigModel(object):
 

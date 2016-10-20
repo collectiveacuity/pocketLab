@@ -4,10 +4,10 @@ __license__ = 'MIT'
 
 from copy import deepcopy
 from importlib.util import find_spec
-from pocketLab import __module__
+from pocketlab import __module__
 from labpack.records import labID
 from jsonmodel.validators import jsonModel, jsonLoader
-from pocketLab.clients.localhost_client import localhostClient
+from pocketlab.clients.localhost_client import localhostClient
 
 class botClient(localhostClient):
 

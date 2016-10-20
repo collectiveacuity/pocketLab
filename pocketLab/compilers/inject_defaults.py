@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab import __module__
+from pocketlab import __module__
 from jsonmodel.loader import jsonLoader
 
 _lab_defaults_model = jsonLoader(__module__, 'rules/lab-defaults-model.json')

@@ -2,10 +2,10 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 import sys
-from pocketLab.cli import cli
+from pocketlab.cli import cli
 from copy import deepcopy
 from jsonmodel.validators import jsonModel
-from pocketLab.commands.devtest import _cmd_kwargs_devtest
+from pocketlab.commands.devtest import _cmd_kwargs_devtest
 
 class testCli(object):
 

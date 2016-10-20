@@ -29,8 +29,8 @@ _cmd_details_compose = {
 def compose(**kwargs):
 
 # import dependencies
-    from pocketLab.importers.config_file import configFile
-    from pocketLab.validators.config_model import configModel
+    from pocketlab.importers.config_file import configFile
+    from pocketlab.validators.config_model import configModel
     from pprint import pprint
 
     verbose = kwargs['verbose']

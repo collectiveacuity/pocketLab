@@ -6,7 +6,7 @@ a method to determine absolute path from relative
 '''
 
 from os import path
-from pocketLab.exceptions.lab_exception import labException
+from pocketlab.exceptions.lab_exception import labException
 
 def absolutePath(file_path, root_path, kwargs, title=''):
 

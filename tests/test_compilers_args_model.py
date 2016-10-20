@@ -1,10 +1,10 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.compilers.args_model import argsModel
+from pocketlab.compilers.args_model import argsModel
 from jsonmodel.loader import jsonLoader
 from jsonmodel.validators import jsonModel
-from pocketLab.commands.home import _cmd_model_home
+from pocketlab.commands.home import _cmd_model_home
 
 if __name__ == '__main__':
     test_file = jsonLoader('pocketLab', 'rules/lab-command-model.json')

@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketLab.commands.home import home, _cmd_model_home
+from pocketlab.commands.home import home, _cmd_model_home
 
 class testCommandsHome(object):
 

@@ -25,4 +25,4 @@ def list(**cmd_kwargs):
 # import dependencies
     from time import time
     from os import path
-    from pocketLab.clients.registry_client import registryClient
+    from pocketlab.clients.registry_client import registryClient

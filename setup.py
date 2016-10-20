@@ -13,7 +13,8 @@ pip install wheel
 pip install twine
 
 Build Distributions:
-python setup.py sdist --format=gztar,zip bdist_wheel
+python setup.py sdist --format=gztar,zip
+pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.1.tar.gz
 
 Upload Distributions to PyPi:
 twine register dist/*
@@ -44,30 +45,32 @@ python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 '''
 
-config_file = open('pocketLab/__init__.py').read()
+config_file = open('pocketlab/__init__.py').read()
 version = re.search("^__version__\s*=\s*'(.*)'", config_file, re.M).group(1)
 command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
 license_terms = re.search("^__license__\s*=\s*'(.*)'", config_file, re.M).group(1)
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
+url = re.search("^__url__\s*=\s*'(.*)'", config_file, re.M).group(1)
 # author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
 
 setup(
     name=module,
     version=version,
     author=author,
+    author_email=email,
     maintainer_email=email,
-    entry_points={
-        "console_scripts": ['%s = %s.cli:cli' % (command, module)]
-    },
+    url=url,
+    entry_points={ "console_scripts": ['%s = %s.cli:cli' % (command, module)] },
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','docs','keys','models','notes','tests']),  # Needed for bdist
+    packages=find_packages(),  # exclude=['cred','docs','keys','models','notes','tests', 'tinker'] Needed for bdist
     license=license_terms,
     description="A Command Line Tool for Managing Laboratory Projects",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.5"
+        'jsonmodel',
+        'labpack'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
