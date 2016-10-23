@@ -11,6 +11,7 @@ Commands
 :init: creates a local lab server, scheduler and database
 :create: [project name] creates a project architecture in working directory
 :home: [project name] changes working directory to project root
+:register: adds a project to the registry
 
 :list: report a list of project resources of a given type **#TODO**
 :add: downloads image and files for a project component **#TODO**

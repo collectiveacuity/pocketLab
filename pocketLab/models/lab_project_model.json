@@ -1,0 +1,42 @@
+{
+  "schema": {
+    "repo_remote_type": "",
+    "repo_remote_url": "",
+    "docker_virtualbox_name": "",
+    "docker_container_alias": "",
+    "docker_image_name": "",
+    "docker_run_command": "",
+    "docker_mount_volumes": {
+      "/server": "/server"
+    },
+    "docker_port_mapping": {
+      "5000": 5000
+    },
+    "docker_environment_variables": {
+      "server_flask_key": "ABCDEFGHIJ0123456789klmnopqrstuv9876543210WXYZ"
+    }
+  },
+  "components": {
+    ".docker_mount_volumes": {
+      "required_field": false,
+      "extra_fields": true
+    },
+    ".docker_mount_volumes./server": {
+      "required_field": false
+    },
+    ".docker_port_mapping": {
+      "required_field": false,
+      "extra_fields": true
+    },
+    ".docker_port_mapping.5000": {
+      "required_field": false
+    },
+    ".docker_environment_variables": {
+      "required_field": false,
+      "extra_fields": true
+    },
+    ".docker_environment_variables.server_flask_key": {
+      "required_field": false
+    }
+  }
+}

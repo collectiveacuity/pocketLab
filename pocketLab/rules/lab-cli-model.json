@@ -35,7 +35,8 @@
       "field_description": "argument key not included in cli options"
     },
     ".cli_position": {
-      "field_description": "number to designate order of a positional argument"
+      "field_description": "number to designate order of a positional argument",
+      "integer_data": true
     }
   }
 }
