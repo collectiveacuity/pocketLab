@@ -2,7 +2,6 @@ __author__ = 'rcj1492'
 __created__ = '2016.10'
 __license__ = 'MIT'
 
-from jsonmodel.mapping import mapModel
 from jsonmodel.validators import jsonModel
 
 def compile_command_model(command_schema, cli_schema, default_schema=None):
@@ -37,9 +36,6 @@ def compile_command_model(command_schema, cli_schema, default_schema=None):
 
 # inject cli fields into the metadata for each field
     for key, value in command_schema['schema'].items():
-        datatype_index = mapModel._datatype_classes.index(value.__class__)
-        field_datatype = mapModel._datatype_names[datatype_index]
-        rules_key = '.%s_fields' % field_datatype
         field_key = '.%s' % key
         if not field_key in command_schema['components'].keys():
             command_schema['components'][field_key] = {}
@@ -56,13 +52,14 @@ def compile_command_model(command_schema, cli_schema, default_schema=None):
 def compile_argument_lists(command_model, command_schema, command):
 
 # construct default arguments
-    arg_list = ['command', 'model', 'interface', 'medium', 'channel']
+    arg_list = ['command']
+    # arg_list = ['command', 'model', 'interface', 'medium', 'channel']
     default_args = {
-        'command': command,
-        'model': command_schema,
-        'interface': 'terminal',
-        'medium': 'command_line',
-        'channel': 'user'
+        # 'model': command_schema,
+        # 'interface': 'terminal',
+        # 'medium': 'command_line',
+        # 'channel': 'user',
+        'command': command
     }
     optional_args = []
     positional_args = []
@@ -77,8 +74,6 @@ def compile_argument_lists(command_model, command_schema, command):
         'map': {},
         'null': None
     }
-    dummy_int = 1
-    dummy_float = 1.1
     ifs_set = {'number', 'string'}
 
 # construct cli kwargs for each argument from kwargs model

@@ -75,7 +75,8 @@ def cli(error=False):
 
 # retrieve command line metadata and default argument schemas
     cli_schema = jsonLoader(__module__, 'rules/lab-cli-model.json')
-    default_schema = jsonLoader(__module__, 'rules/lab-defaults-model.json')
+    default_schema = {}
+    # default_schema = jsonLoader(__module__, 'rules/lab-defaults-model.json')
 
 # construct each command
     for command in command_list:

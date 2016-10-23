@@ -14,7 +14,7 @@ Roadmap
 -------
 
 :init: creates a local lab server, scheduler and database **#TODO**
-:create: [project name] creates a project architecture in working directory **#TODO**
+:create: creates a project architecture in working directory **#TODO**
 :register: adds a project to the registry **#TODO**
 :list: report a list of project resources of a given type **#TODO**
 :add: downloads image and files for a project component **#TODO**

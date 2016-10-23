@@ -3,9 +3,9 @@ __created__ = '2016.03'
 
 _home = {
     'title': 'home',
-    'description': 'creates a resource home in workdir',
+    'description': 'manages the local path information for a project',
     'metadata': {
-        'cli_help': 'creates a resource home in workdir'
+        'cli_help': 'creates a project home in workdir'
     },
     'schema': {
         'project': '',
