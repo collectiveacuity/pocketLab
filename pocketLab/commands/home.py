@@ -8,8 +8,8 @@ _home = {
         'cli_help': 'creates a resource home in workdir'
     },
     'schema': {
-        'project': 'server',
-        'print_path': 'server'
+        'project': '',
+        'print_path': ''
     },
     'components': {
         '.project': {

@@ -5,55 +5,61 @@ __license__ = 'MIT'
 from jsonmodel.mapping import mapModel
 from jsonmodel.validators import jsonModel
 
-def compile_command_model(command_dict, cli_model):
+def compile_command_model(command_schema, cli_schema, default_schema=None):
+    
+    '''
+        a method to create a jsonmodel object for command fields with required defaults
+         
+    :param command_schema: dictionary with jsonmodel valid schema for command arguments
+    :param cli_schema: dictionary with jsonmodel valid schema for command line interface metadata
+    :param default_schema: dictionary with jsonmodel valid schema for default arguments
+    :return: jsonmodel object for command fields
+    '''
 
-# construct schema and component dictionaries for each field
-    command_args_schema = {}
-    command_args_components = {}
-    for arg in command_dict['args']:
-        command_args_schema[arg['field_title']] = arg['default_value']
-        component_key = '.%s' % arg['field_title']
-        command_args_components[component_key] = {}
-        datatype_index = mapModel._datatype_classes.index(arg['default_value'].__class__)
-        arg_datatype = mapModel._datatype_names[datatype_index]
-        rules_key = '.%s_fields' % arg_datatype
-        cli_fields = {}
-        for key, value in arg.items():
-            if key in jsonModel.__rules__['components'][rules_key].keys():
-                command_args_components[component_key][key] = value
-            else:
-                cli_fields[key] = value
-        command_args_components[component_key]['field_metadata'] = cli_model.ingest(**cli_fields)
+# validate model structure
+    if not 'components' in command_schema.keys():
+        command_schema['components'] = {}
+    if not 'metadata' in command_schema.keys():
+        command_schema['metadata'] = {}
 
-# assemble jsonmodel valid model
-    command_args_model = {
-        'schema': command_args_schema,
-        'components': command_args_components,
-    }
-    cli_fields = {}
-    for key, value in command_dict.items():
-        if key in ['title', 'description']:
-            command_args_model[key] = command_dict[key]
-        elif key not in ['args']:
-            cli_fields[key] = value
-    command_args_model['metadata'] = cli_model.ingest(**cli_fields)
+# construct cli_model
+    cli_model = jsonModel(cli_schema)
 
-    return command_args_model
+# inject default schema into command schema
+    if default_schema:
+        default_model = jsonModel(default_schema)
+        for key, value in default_model.schema.items():
+            if not key in command_schema['schema'].keys():
+                command_schema['schema'][key] = value
+        for key, value in default_model.components.items():
+            if not key in command_schema['components'].keys():
+                command_schema['components'][key] = value
 
-def inject_default_arguments(command_args_model, default_arguments):
+# inject cli fields into the metadata for each field
+    for key, value in command_schema['schema'].items():
+        datatype_index = mapModel._datatype_classes.index(value.__class__)
+        field_datatype = mapModel._datatype_names[datatype_index]
+        rules_key = '.%s_fields' % field_datatype
+        field_key = '.%s' % key
+        if not field_key in command_schema['components'].keys():
+            command_schema['components'][field_key] = {}
+        if not 'field_metadata' in command_schema['components'][field_key].keys():
+            command_schema['components'][field_key]['field_metadata'] = {}
+        cli_fields = command_schema['components'][field_key]['field_metadata']
+        command_schema['components'][field_key]['field_metadata'] = cli_model.ingest(**cli_fields)
 
-    return command_args_model
+# inject cli fields into metadata field
+    command_schema['metadata'] = cli_model.ingest(**command_schema['metadata'])
 
-def compile_argument_lists(command_model, cmd_dict, command):
+    return jsonModel(command_schema)
 
-# define dummy variables
-    ifs_set = {'number', 'string'}
+def compile_argument_lists(command_model, command_schema, command):
 
 # construct default arguments
     arg_list = ['command', 'model', 'interface', 'medium', 'channel']
     default_args = {
         'command': command,
-        'model': cmd_dict,
+        'model': command_schema,
         'interface': 'terminal',
         'medium': 'command_line',
         'channel': 'user'
@@ -62,20 +68,34 @@ def compile_argument_lists(command_model, cmd_dict, command):
     positional_args = []
     exclusive_args = {}
 
+# define dummy variables
+    empty_defaults = {
+        'string': '',
+        'boolean': False,
+        'number': 0.0,
+        'list': [],
+        'map': {},
+        'null': None
+    }
+    dummy_int = 1
+    dummy_float = 1.1
+    ifs_set = {'number', 'string'}
+
 # construct cli kwargs for each argument from kwargs model
     for key, value in command_model.schema.items():
         keymap_key = '.%s' % key
         arg_criteria = command_model.keyMap[keymap_key]
         cli_details = arg_criteria['field_metadata']
 
-        # additional defaults
+    # handle arguments designated as default values
         if cli_details['cli_default']:
             if not key in arg_list:
                 if arg_criteria['value_datatype'] in ifs_set:
                     arg_list.append(key)
                     default_args[key] = arg_criteria['default_value']
+
+    # otherwise construct empty arg details
         else:
-            # construct empty arg details
             arg_option = 'optional'
             arg_details = {
                 'args': [],
@@ -92,11 +112,21 @@ def compile_argument_lists(command_model, cmd_dict, command):
                 }
             }
 
-# add help
+    # validate existence of certain criteria fields
+            if not 'default_value' in arg_criteria.keys():
+                if arg_criteria['value_datatype'] == 'number':
+                    if isinstance(arg_criteria['declared_value'], int):
+                        arg_criteria['default_value'] = 0
+                    else:
+                        arg_criteria['default_value'] = 0.0
+                else:
+                    arg_criteria['default_value'] = empty_defaults[arg_criteria['value_datatype']]
+
+    # add help
             if cli_details['cli_help']:
                 arg_details['kwargs']['help'] = cli_details['cli_help']
 
-# add flags
+    # add flags
             if arg_criteria['required_field'] and arg_criteria['value_datatype'] != 'boolean':
                 arg_details['args'] = key
                 del arg_details['kwargs']['dest']
@@ -109,13 +139,13 @@ def compile_argument_lists(command_model, cmd_dict, command):
                 arg_details['args'] = [key_flag]
                 arg_details['kwargs']['dest'] = key
 
-                # add metavar
+    # add metavar
             if cli_details['cli_metavar']:
                 arg_details['kwargs']['metavar'] = cli_details['cli_metavar']
             else:
                 del arg_details['kwargs']['metavar']
 
-# add boolean specific kwargs
+    # add boolean specific kwargs
             if arg_criteria['value_datatype'] == 'boolean':
                 del arg_details['kwargs']['nargs']
                 del arg_details['kwargs']['default']
@@ -126,85 +156,96 @@ def compile_argument_lists(command_model, cmd_dict, command):
                 else:
                     arg_details['kwargs']['action'] = 'store_true'
 
-# add str, int and float specific kwargs
+    # add str, int and float specific kwargs
             elif arg_criteria['value_datatype'] in ifs_set:
                 del arg_details['kwargs']['nargs']
                 arg_details['kwargs']['default'] = arg_criteria['default_value']
+        # toggle type
                 if arg_criteria['value_datatype'] == 'number':
-                    if isinstance(arg_details['kwargs']['default'], int):
+                    if isinstance(arg_criteria['declared_value'], int):
                         arg_details['kwargs']['type'] = int
-                        # if not arg_details['kwargs']['default']:
-                        #     arg_details['kwargs']['default'] = 0
                     else:
                         arg_details['kwargs']['type'] = float
                 elif arg_criteria['value_datatype'] == 'string':
                     arg_details['kwargs']['type'] = str
                 else:
                     del arg_details['kwargs']['type']
+        # toggle action
                 if cli_details['cli_action']:
                     arg_details['kwargs']['action'] = cli_details['cli_action']
                 else:
                     del arg_details['kwargs']['action']
+        # toggle choices
                 if 'discrete_values' in arg_criteria.keys():
                     if arg_criteria['discrete_values']:
                         value_list = arg_criteria['discrete_values']
                         arg_details['kwargs']['choices'] = value_list
-                    elif 'max_value' in arg_criteria.keys() and arg_criteria['value_datatype'] == 'number':
-                        if isinstance(arg_details['kwargs']['default'], int):
+                elif 'max_value' in arg_criteria.keys() and arg_criteria['value_datatype'] == 'number':
+                    if isinstance(arg_criteria['declared_value'], int):
+                        if 'min_value' in arg_criteria.keys():
                             if arg_criteria['min_value']:
                                 low = int(arg_criteria['min_value'])
                                 high = int(arg_criteria['max_value']) + 1
                                 arg_details['kwargs']['choices'] = range(low, high)
-                            else:
-                                high = int(arg_criteria['max_value']) + 1
-                                arg_details['kwargs']['choices'] = range(high)
-                    else:
-                        del arg_details['kwargs']['choices']
-                # print(arg_details)
+                        else:
+                            high = int(arg_criteria['max_value']) + 1
+                            arg_details['kwargs']['choices'] = range(high)
+                else:
+                    del arg_details['kwargs']['choices']
 
-                # add list specific kwargs
+
+    # add list specific kwargs
             elif arg_criteria['value_datatype'] == 'list':
                 item_key = '.%s[0]' % key
                 item_criteria = command_model.keyMap[item_key]
                 arg_details['kwargs']['default'] = []
-                if item_criteria['value_datatype'] == dummy_int.__class__:
-                    arg_details['kwargs']['type'] = int
-                elif item_criteria['value_datatype'] == dummy_float.__class__:
-                    arg_details['kwargs']['type'] = float
-                elif item_criteria['value_datatype'] == ''.__class__:
+        # toggle type
+                if item_criteria['value_datatype'] == 'number':
+                    if isinstance(item_criteria['declared_value'], int):
+                        arg_details['kwargs']['type'] = int
+                    else:
+                        arg_details['kwargs']['type'] = float
+                elif item_criteria['value_datatype'] == 'string':
                     arg_details['kwargs']['type'] = str
                 else:
                     del arg_details['kwargs']['type']
-                if item_criteria['discrete_values']:
-                    value_list = item_criteria['discrete_values']
-                    arg_details['kwargs']['choices'] = value_list
-                elif 'max_value' in item_criteria.keys() and item_criteria['value_datatype'] == dummy_int.__class__:
-                    if item_criteria['min_value']:
-                        low = int(item_criteria['min_value'])
-                        high = int(item_criteria['max_value']) + 1
-                        arg_details['kwargs']['choices'] = range(low, high)
-                    else:
-                        high = int(item_criteria['max_value']) + 1
-                        arg_details['kwargs']['choices'] = range(high)
+        # toggle choices
+                if 'discrete_values' in arg_criteria.keys():
+                    if item_criteria['discrete_values']:
+                        value_list = item_criteria['discrete_values']
+                        arg_details['kwargs']['choices'] = value_list
+                elif 'max_value' in item_criteria.keys() and item_criteria['value_datatype'] == 'number':
+                    if isinstance(arg_criteria['declared_value'], int):
+                        if 'min_value' in arg_criteria.keys():
+                            if item_criteria['min_value']:
+                                low = int(item_criteria['min_value'])
+                                high = int(item_criteria['max_value']) + 1
+                                arg_details['kwargs']['choices'] = range(low, high)
+                        else:
+                            high = int(item_criteria['max_value']) + 1
+                            arg_details['kwargs']['choices'] = range(high)
                 else:
                     del arg_details['kwargs']['choices']
+        # toggle action
                 if cli_details['cli_action']:
                     arg_details['kwargs']['action'] = cli_details['cli_action']
                 else:
                     del arg_details['kwargs']['action']
-                if arg_criteria['min_size']:
-                    if arg_criteria['min_size'] == 1:
-                        arg_details['kwargs']['nargs'] = '+'
-                    else:
-                        arg_details['kwargs']['nargs'] = arg_criteria['min_size']
+        # toggle nargs
+                if 'min_size' in arg_criteria.keys():
+                    if arg_criteria['min_size']:
+                        if arg_criteria['min_size'] == 1:
+                            arg_details['kwargs']['nargs'] = '+'
+                        else:
+                            arg_details['kwargs']['nargs'] = arg_criteria['min_size']
                 else:
                     arg_details['kwargs']['nargs'] = '*'
 
-                    # skip (unsupported) dict kwargs
+    # skip (unsupported) dict kwargs
             elif arg_criteria['value_datatype'] == 'map':
                 arg_details = {}
 
-                # assign details to an argument list
+    # assign details to an argument list
             if arg_details:
                 if not key in arg_list:
                     arg_list.append(key)
@@ -219,12 +260,21 @@ def compile_argument_lists(command_model, cmd_dict, command):
                             exclusive_args[cli_details['cli_group']] = []
                         # arg_details['kwargs']['required'] = True
                         exclusive_args[cli_details['cli_group']].append(arg_details)
-                        # print(exclusive_args)
 
-                        # sort positional arguments by positional key
+# sort positional arguments by positional key
     if positional_args:
         positional_args = sorted(positional_args, key=lambda k: k['cli_position'])
 
-    # return properly formatted argument lists
-
+# return properly formatted argument lists
     return default_args, positional_args, optional_args, exclusive_args
+
+if __name__ == '__main__':
+    from pocketlab.commands.home import _home as home_schema
+    from labpack.records.settings import load_settings
+    cli_schema = load_settings('rules/lab-cli-model.json')
+    default_schema = load_settings('rules/lab-defaults-model.json')
+    home_model = compile_command_model(home_schema, cli_schema, default_schema)
+    home_model.validate(home_model.schema)
+    def_args, pos_args, opt_args, exc_args = compile_argument_lists(home_model, home_schema, 'home')
+    assert def_args
+    assert exc_args['A'][0]

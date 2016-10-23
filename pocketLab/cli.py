@@ -13,7 +13,6 @@ from importlib import import_module
 from importlib.util import find_spec
 from os import listdir
 from jsonmodel.loader import jsonLoader
-from jsonmodel.validators import jsonModel
 from argparse import ArgumentParser, HelpFormatter, RawDescriptionHelpFormatter, PARSER
 
 class SubcommandHelpFormatter(RawDescriptionHelpFormatter):
@@ -74,9 +73,9 @@ def cli(error=False):
             preferred_order.append(command)
     command_list = preferred_order
 
-# construct cli metadata model
-    cli_file = jsonLoader(__module__, 'rules/lab-cli-model.json')
-    cli_model = jsonModel(cli_file)
+# retrieve command line metadata and default argument schemas
+    cli_schema = jsonLoader(__module__, 'rules/lab-cli-model.json')
+    default_schema = jsonLoader(__module__, 'rules/lab-defaults-model.json')
 
 # construct each command
     for command in command_list:
@@ -84,13 +83,10 @@ def cli(error=False):
         try:
 
 # construct command model with cli fields
-            cmd_dict = getattr(command_module, '_cmd_model_%s' % command)
-            command_schema = compile_command_model(cmd_dict, cli_model)
-            command_model = jsonModel(command_schema)
+            command_schema = getattr(command_module, '_%s' % command)
+            command_model = compile_command_model(command_schema, cli_schema, default_schema)
 
-            # print(command_model.keyMap)
-
-    # add command details to parser
+# add command details to parser
             cmd_details = {
                 'description': 'replace this message with model description declaration',
                 'help': 'replace this message with "cli_help" in model metadata declaration',
@@ -105,11 +101,11 @@ def cli(error=False):
 
             # print(cmd_details)
 
-    # construct argument lists
+# construct argument lists
             compiler_args = {
                 'command_model': command_model,
-                'command': command,
-                'cmd_dict': cmd_dict
+                'command_schema': command_schema,
+                'command': command
             }
             def_args, req_args, opt_args, exc_args = compile_argument_lists(**compiler_args)
 
