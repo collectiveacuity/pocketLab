@@ -8,21 +8,20 @@ pocketLab
 Commands
 --------
 
-:init: creates a local lab server, scheduler and database
-:create: [project name] creates a project architecture in working directory
-:home: [project name] changes working directory to project root
-:register: adds a project to the registry
-
-:list: report a list of project resources of a given type **#TODO**
-:add: downloads image and files for a project component **#TODO**
-:remove: remove a specific project resource **#TODO**
-:start: initiates a container with a project component
-:enter: opens up a shell cli inside a running container
-:stop: terminates container running a project component
+:home: manages the local path information for a project
 
 Roadmap
 -------
 
+:init: creates a local lab server, scheduler and database **#TODO**
+:create: [project name] creates a project architecture in working directory **#TODO**
+:register: adds a project to the registry **#TODO**
+:list: report a list of project resources of a given type **#TODO**
+:add: downloads image and files for a project component **#TODO**
+:remove: remove a specific project resource **#TODO**
+:start: initiates a container with a project component **#TODO**
+:enter: opens up a shell cli inside a running container **#TODO**
+:stop: terminates container running a project component **#TODO**
 :reboot: restart a container running a project component **#TODO**
 :tunnel: creates a local tunnel to <sub-domain>.localtunnel.me **#TODO**
 :monitor: creates a scheduled request to url endpoint **#TODO**
@@ -60,6 +59,7 @@ System Requirements
 Python Requirements
 -------------------
 - **jsonmodel**: https://pypi.python.org/pypi/jsonmodel
+- **labpack**: https://pypi.python.org/pypi/labpack
 
 ============
 Installation
@@ -67,7 +67,8 @@ Installation
 From BitBucket::
 
     $ git clone https://bitbucket.org/collectiveacuity/pocketlab.git
-    $ python setup.py sdist --format=gztar,zip bdist_wheel
+    $ python setup.py sdist --format=gztar,zip
+    $ pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-*.tar.gz
     $ python setup.py develop  # for local on-the-fly file updates
 
 Getting Started
