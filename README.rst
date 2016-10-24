@@ -75,9 +75,9 @@ Getting Started
 ---------------
 This module is designed to manage lab projects...
 
-Create a new project in the working directory::
+Register a project in the working directory::
 
-    $ lab home
+    $ lab home -p <project-name>
 
 Documentation
 -------------

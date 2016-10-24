@@ -84,7 +84,7 @@ def cli(error=False):
         try:
 
 # construct command model with cli fields
-            command_schema = getattr(command_module, '_%s' % command)
+            command_schema = getattr(command_module, '_%s_schema' % command)
             command_model = compile_command_model(command_schema, cli_schema, default_schema)
 
 # add command details to parser
@@ -142,8 +142,15 @@ def cli(error=False):
     opt_dict = vars(sys_args)
     command_module = import_module('%s.commands.%s' % (__module__, sys_args.command))
     run_cmd = getattr(command_module, sys_args.command)
-    exit_data = run_cmd(**opt_dict)
+    del opt_dict['command']
+    exit_data = None
+    try:
+        exit_data = run_cmd(**opt_dict)
+    except Exception as err:
+        print('Errr! %s' % err)
     if exit_data:
+        if isinstance(exit_data, str):
+            exit_data = 'Sweet! %s' % exit_data
         return exit_data
 
 if __name__ == '__main__':

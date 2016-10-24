@@ -51,6 +51,16 @@ def compile_command_model(command_schema, cli_schema, default_schema=None):
 
 def compile_argument_lists(command_model, command_schema, command):
 
+    '''
+        a method to compile command arguments into argparse argument categories
+
+    :param command_model: jsonmodel object with model from full schema for cli arguments
+    :param command_schema: dictionary with schema for method arguments
+    :param command: string with name of command
+    :return: tuple with dictionary of default args, list of optional args, list of positional args,
+            dictionary with exclusive args
+    '''
+
 # construct default arguments
     arg_list = ['command']
     # arg_list = ['command', 'model', 'interface', 'medium', 'channel']
@@ -264,7 +274,7 @@ def compile_argument_lists(command_model, command_schema, command):
     return default_args, positional_args, optional_args, exclusive_args
 
 if __name__ == '__main__':
-    from pocketlab.commands.home import _home as home_schema
+    from pocketlab.commands.home import _home_schema as home_schema
     from labpack.records.settings import load_settings
     cli_schema = load_settings('rules/lab-cli-model.json')
     default_schema = load_settings('rules/lab-defaults-model.json')
