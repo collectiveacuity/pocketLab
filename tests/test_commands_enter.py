@@ -1,7 +1,7 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from pocketlab.commands.enter import enter
+from dev.commands.enter import enter
 
 class testCommandsEnter(object):
 

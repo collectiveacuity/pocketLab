@@ -114,36 +114,38 @@ def home(project='', print_path='', overwrite=False):
         from os import path
         from labpack.platforms.localhost import localhostClient
         localhost_client = localhostClient()
-        bash_path = localhost_client.bashConfig
         home_alias = "alias home='function _home(){ lab_output=\"$(lab home --print_path $1)\"; IFS=\";\" read -ra LINES <<< \"$lab_output\"; echo \"${LINES[0]}\"; cd \"${LINES[1]}\"; };_home'"
-        if not path.exists(bash_path):
-            with open(bash_path, 'wt') as f:
-                f.write('# alias for pocketlab home command\n')
-                f.write(home_alias)
-                f.close()
-        else:
-            import re
-            home_pattern = re.compile('alias home\=')
-            lab_pattern = re.compile('alias home\=\'function _home\(\)\{\slab_output')
-            home_match = False
-            lab_match = False
-            with open(bash_path, 'rt') as f:
-                for line in f:
-                    line = line.partition('#')[0]
-                    line = line.rstrip()
-                    if home_pattern.findall(line):
-                        home_match = True
-                    if lab_pattern.findall(line):
-                        lab_match = True
-            if not home_match:
-                with open(bash_path, 'a') as f:
-                    f.write('\n\n# alias for pocketlab home command\n')
-                    f.write(home_alias)
-                    f.close()
-            elif not lab_match:
-                raise ValueError('the "home" alias is being used by another program.')
-            else:
-                pass
+        config_list = [ localhost_client.bashConfig, localhost_client.shConfig ]
+        for i in range(len(config_list)):
+            if config_list[i]:
+                if not path.exists(config_list[i]):
+                    with open(config_list[i], 'wt') as f:
+                        f.write('# alias for pocketlab home command\n')
+                        f.write(home_alias)
+                        f.close()
+                else:
+                    import re
+                    home_pattern = re.compile('alias home\=')
+                    lab_pattern = re.compile('alias home\=\'function _home\(\)\{\slab_output')
+                    home_match = False
+                    lab_match = False
+                    with open(config_list[i], 'rt') as f:
+                        for line in f:
+                            line = line.partition('#')[0]
+                            line = line.rstrip()
+                            if home_pattern.findall(line):
+                                home_match = True
+                            if lab_pattern.findall(line):
+                                lab_match = True
+                    if not home_match:
+                        with open(config_list[i], 'a') as f:
+                            f.write('\n\n# alias for pocketlab home command\n')
+                            f.write(home_alias)
+                            f.close()
+                    elif not lab_match:
+                        raise ValueError('the "home" alias is being used by another program.')
+                    else:
+                        pass
         # TODO allow declaration of different alias
         # TODO check system path for home command
 

@@ -64,7 +64,7 @@ def cli(error=False):
             command_list.append(py_file.sub('',file))
 
 # customize the order of commands in help
-    preferred_order = ['home', 'start', 'enter', 'stop']
+    preferred_order = ['home', 'start']
     for i in range(len(preferred_order)):
         if preferred_order[i] not in command_list:
             preferred_order.pop(i)
@@ -134,7 +134,7 @@ def cli(error=False):
 
     # remove command from module if there is model parsing error
         except Exception as err:
-            # print(err)
+            print(err)
             pass
 
 # call parsing function and run appropriate command function with keyword arguments
