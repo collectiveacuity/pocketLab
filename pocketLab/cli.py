@@ -73,10 +73,8 @@ def cli(error=False):
             preferred_order.append(command)
     command_list = preferred_order
 
-# retrieve command line metadata and default argument schemas
+# retrieve command line metadata schema
     cli_schema = jsonLoader(__module__, 'rules/lab-cli-model.json')
-    default_schema = {}
-    # default_schema = jsonLoader(__module__, 'rules/lab-defaults-model.json')
 
 # construct each command
     for command in command_list:
@@ -85,7 +83,7 @@ def cli(error=False):
 
 # construct command model with cli fields
             command_schema = getattr(command_module, '_%s_schema' % command)
-            command_model = compile_command_model(command_schema, cli_schema, default_schema)
+            command_model = compile_command_model(command_schema, cli_schema)
 
 # add command details to parser
             cmd_details = {
@@ -103,12 +101,7 @@ def cli(error=False):
             # print(cmd_details)
 
 # construct argument lists
-            compiler_args = {
-                'command_model': command_model,
-                'command_schema': command_schema,
-                'command': command
-            }
-            def_args, req_args, opt_args, exc_args = compile_argument_lists(**compiler_args)
+            def_args, req_args, opt_args, exc_args = compile_argument_lists(command_model)
 
             # print(def_args)
             # print(req_args)
