@@ -4,14 +4,25 @@ __license__ = 'MIT'
 
 from jsonmodel.validators import jsonModel
 
-def compile_command_model(command_schema, cli_schema, default_schema=None):
+def inject_default_arguments(command_schema, default_schema):
+
+    default_model = jsonModel(default_schema)
+    for key, value in default_model.schema.items():
+        if not key in command_schema['schema'].keys():
+            command_schema['schema'][key] = value
+    for key, value in default_model.components.items():
+        if not key in command_schema['components'].keys():
+            command_schema['components'][key] = value
+
+    return command_schema
+
+def compile_command_model(command_schema, cli_schema):
     
     '''
-        a method to create a jsonmodel object for command fields with required defaults
+        a method to create a jsonmodel object for command fields with cli metadata
          
     :param command_schema: dictionary with jsonmodel valid schema for command arguments
     :param cli_schema: dictionary with jsonmodel valid schema for command line interface metadata
-    :param default_schema: dictionary with jsonmodel valid schema for default arguments
     :return: jsonmodel object for command fields
     '''
 
@@ -23,16 +34,6 @@ def compile_command_model(command_schema, cli_schema, default_schema=None):
 
 # construct cli_model
     cli_model = jsonModel(cli_schema)
-
-# inject default schema into command schema
-    if default_schema:
-        default_model = jsonModel(default_schema)
-        for key, value in default_model.schema.items():
-            if not key in command_schema['schema'].keys():
-                command_schema['schema'][key] = value
-        for key, value in default_model.components.items():
-            if not key in command_schema['components'].keys():
-                command_schema['components'][key] = value
 
 # inject cli fields into the metadata for each field
     for key, value in command_schema['schema'].items():
@@ -49,7 +50,7 @@ def compile_command_model(command_schema, cli_schema, default_schema=None):
 
     return jsonModel(command_schema)
 
-def compile_argument_lists(command_model, command_schema, command):
+def compile_argument_lists(command_model):
 
     '''
         a method to compile command arguments into argparse argument categories
@@ -69,7 +70,7 @@ def compile_argument_lists(command_model, command_schema, command):
         # 'interface': 'terminal',
         # 'medium': 'command_line',
         # 'channel': 'user',
-        'command': command
+        'command': command_model.title
     }
     optional_args = []
     positional_args = []
@@ -220,7 +221,7 @@ def compile_argument_lists(command_model, command_schema, command):
                         value_list = item_criteria['discrete_values']
                         arg_details['kwargs']['choices'] = value_list
                 elif 'max_value' in item_criteria.keys() and item_criteria['value_datatype'] == 'number':
-                    if isinstance(arg_criteria['declared_value'], int):
+                    if isinstance(item_criteria['declared_value'], int):
                         if 'min_value' in arg_criteria.keys():
                             if item_criteria['min_value']:
                                 low = int(item_criteria['min_value'])
@@ -278,8 +279,15 @@ if __name__ == '__main__':
     from labpack.records.settings import load_settings
     cli_schema = load_settings('rules/lab-cli-model.json')
     default_schema = load_settings('rules/lab-defaults-model.json')
-    home_model = compile_command_model(home_schema, cli_schema, default_schema)
+    home_schema = inject_default_arguments(home_schema, default_schema)
+    home_model = compile_command_model(home_schema, cli_schema)
     home_model.validate(home_model.schema)
-    def_args, pos_args, opt_args, exc_args = compile_argument_lists(home_model, home_schema, 'home')
+    def_args, pos_args, opt_args, exc_args = compile_argument_lists(home_model)
     assert def_args
-    assert exc_args['A'][0]
+    assert pos_args
+    assert opt_args
+    defaults_injected = False
+    for argument in opt_args:
+        if argument['args'][0] == '-q':
+            defaults_injected = True
+    assert defaults_injected

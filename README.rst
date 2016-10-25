@@ -72,7 +72,7 @@ This module is designed to manage lab projects...
 
 Register a project in the working directory::
 
-    $ lab home -p <project-name>
+    $ lab home <project-name>
 
 Documentation
 -------------

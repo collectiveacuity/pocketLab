@@ -110,7 +110,6 @@ def home(project_name, print_path=False, overwrite=False):
 # resolve project request
 
 # validate existence of home alias
-    from os import path
     from labpack.platforms.localhost import localhostClient
     localhost_client = localhostClient()
     home_alias = "alias home='function _home(){ lab_output=\"$(lab home --print_path $1)\"; IFS=\";\" read -ra LINES <<< \"$lab_output\"; echo \"${LINES[0]}\"; cd \"${LINES[1]}\"; };_home'"
@@ -167,6 +166,30 @@ def home(project_name, print_path=False, overwrite=False):
     exit_msg = '"%s" added to registry. To return to workdir, run "home %s"' % (project_name, project_name)
     return exit_msg
 
+if __name__ == '__main__':
+    try:
+        import pytest
+    except:
+        print('pytest module required to perform unittests. try: pip install pytest')
+        exit()
+    from jsonmodel.exceptions import InputValidationError
+    with pytest.raises(InputValidationError):
+        home('not valid')
+
+    from time import time
+    from pocketlab import __module__
+    from labpack.storage.appdata import appdataClient
+    registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+    unittest_project = 'unittest_project_name_%s' % str(time()).replace('.', '')
+
+    assert home(unittest_project).find(unittest_project)
+
+    with pytest.raises(ValueError):
+        home(unittest_project)
+
+    assert home(project_name=unittest_project, overwrite=True).find(unittest_project)
+
+    registry_client.delete('%s.yaml' % unittest_project)
 
 
 
