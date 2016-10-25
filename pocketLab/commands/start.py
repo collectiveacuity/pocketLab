@@ -60,6 +60,11 @@ def start(verbose=True, virtualbox='default', project=''):
             object_title = '%s(%s=%s)' % (title, input_names[i], input_fields[i])
             input_model.validate(input_fields[i], '.%s' % input_names[i], object_title)
 
+# validate requirements
+    # TODO boolean algebra method to check not both inputs
+    if not project:
+        raise ValueError('home command requires either a project or print_path argument.')
+
     print(input_fields)
 
 # # import dependencies

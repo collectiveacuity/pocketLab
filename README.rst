@@ -13,13 +13,12 @@ Commands
 Roadmap
 -------
 
-:init: creates a local lab server, scheduler and database **#TODO**
+:start: initiates a container with a project component **#TODO**
 :create: creates a project architecture in working directory **#TODO**
-:register: adds a project to the registry **#TODO**
 :list: report a list of project resources of a given type **#TODO**
+:init: creates a local lab server, scheduler and database **#TODO**
 :add: downloads image and files for a project component **#TODO**
 :remove: remove a specific project resource **#TODO**
-:start: initiates a container with a project component **#TODO**
 :enter: opens up a shell cli inside a running container **#TODO**
 :stop: terminates container running a project component **#TODO**
 :reboot: restart a container running a project component **#TODO**
@@ -32,10 +31,6 @@ Roadmap
 :deploy: places a project set into production **#TODO**
 :renew: retrieves a new ssl certificate for url endpoint **#TODO**
 :update: updates the components in an active project set **#TODO**
-
-Low-Level Commands
-------------------
-
 :pull: downloads an image or folder from a remote VCS repository **#TODO**
 :build: creates a new image from Dockerfile in project component **#TODO**
 :clean: removes broken images and stopped containers **#TODO**
@@ -43,12 +38,12 @@ Low-Level Commands
 Features
 --------
 - Docker Wrapper
-- GitHub & BitBucket Repos
+- GitHub / BitBucket / Gitlab Repos
 - OS Independence
 - AWS Deployment Management
 - Let's Encrypt SSL Certificates
-- LocalTunnel.me
-- PingAPI Monitoring
+- LocalTunnel.me / Ngrok
+- PingAPI / Uptime Robot Monitoring
 - Test Sequencing
 
 System Requirements
