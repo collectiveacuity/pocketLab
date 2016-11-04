@@ -10,7 +10,8 @@ _home_schema = {
     'schema': {
         'project_name': 'lab',
         'print_path': False,
-        'overwrite': False
+        'overwrite': False,
+        'project_path': ''
     },
     'components': {
         '.overwrite': {
@@ -36,25 +37,35 @@ _home_schema = {
         '.print_path': {
             'field_description': 'Path to project for home alias in .bashrc',
             'default_value': False,
+            'field_metadata': {
+                'cli_group': 'A',
+                'cli_flags': [ '--print' ],
+                'cli_help': 'prints path to project home'
+            }
+        },
+        '.project_path': {
+            'field_description': 'Name of project to add to registry',
+            'default_value': '',
             # 'max_length': 64,
             # 'must_not_contain': [ '[^\w\-_]' ],
             'field_metadata': {
-                # 'cli_group': 'A',
-                'cli_flags': [ '--print_path' ],
-                'cli_help': 'prints path to project home',
-                # 'cli_metavar': 'RESOURCE'
+                'cli_group': 'A',
+                'cli_flags': [ '--path' ],
+                'cli_help': 'path to project root',
+                'cli_metavar': 'PATH'
             }
-        }
+        },
     }
 }
 
-def home(project_name, print_path=False, overwrite=False):
+def home(project_name, print_path=False, project_path='', overwrite=False):
 
     '''
         a method to manage the local path information for a project
 
     :param project_name: string with name of project to add to registry
     :param print_path: [optional] boolean to retrieve local path of project from registry
+    :param project_path: [optional] string with path to project root
     :param overwrite: [optional] boolean to overwrite existing project registration
     :return: string with local path to project
     '''
@@ -65,7 +76,8 @@ def home(project_name, print_path=False, overwrite=False):
     from jsonmodel.validators import jsonModel
     input_model = jsonModel(_home_schema)
     input_map = {
-        'project_name': project_name
+        'project_name': project_name,
+        'project_path': project_path
     }
     for key, value in input_map.items():
         try:
@@ -75,31 +87,16 @@ def home(project_name, print_path=False, overwrite=False):
         object_title = '%s(%s=%s)' % (title, key, value_name)
         input_model.validate(value, '.%s' % key, object_title)
 
-# construct registry client
-    from os import path
-    from pocketlab import __module__
-    from labpack.storage.appdata import appdataClient
-    registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+# validate requirements
+    # TODO boolean algebra method to check not both inputs
 
 # resolve print path request
     if print_path:
 
-    # validate project name exists in registry
-        suggest_msg = 'Try running "lab home %s" first from its root.' % project_name
-        file_name = '%s.yaml' % project_name
-        filter_function = registry_client.conditionalFilter([{0:{'discrete_values':[file_name]}}])
-        project_list = registry_client.list(filter_function=filter_function)
-        if not file_name in project_list:
-            raise ValueError('"%s" not found in the registry. %s' % (project_name, suggest_msg))
-
-    # retrieve root path to project
-        suggest_msg = 'Try running "lab home %s" again from its root.' % project_name
-        project_details = registry_client.read(file_name)
-        if not 'project_root' in project_details.keys():
-            raise ValueError('Record for project "%s" has been corrupted. %s' % (project_name, suggest_msg))
-        project_root = project_details['project_root']
-        if not path.exists(project_root):
-            raise ValueError('Path %s to project "%s" no longer exists. %s' % (project_root, project_name, suggest_msg))
+    # retrieve project root
+        from pocketlab.methods.project import retrieve_project_root
+        command_context = 'Try running "lab home %s" first from its root.' % project_name
+        project_root = retrieve_project_root(project_name, command_context)
 
     # return root path to bash command
         import sys
@@ -110,9 +107,10 @@ def home(project_name, print_path=False, overwrite=False):
 # resolve project request
 
 # validate existence of home alias
+    from os import path
     from labpack.platforms.localhost import localhostClient
     localhost_client = localhostClient()
-    home_alias = "alias home='function _home(){ lab_output=\"$(lab home --print_path $1)\"; IFS=\";\" read -ra LINES <<< \"$lab_output\"; echo \"${LINES[0]}\"; cd \"${LINES[1]}\"; };_home'"
+    home_alias = "alias home='function _home(){ lab_output=\"$(lab home --print $1)\"; IFS=\";\" read -ra LINES <<< \"$lab_output\"; echo \"${LINES[0]}\"; cd \"${LINES[1]}\"; };_home'"
     config_list = [ localhost_client.bashConfig, localhost_client.shConfig ]
     for i in range(len(config_list)):
         if config_list[i]:
@@ -147,6 +145,11 @@ def home(project_name, print_path=False, overwrite=False):
     # TODO allow declaration of different alias
     # TODO check system path for home command
 
+# construct registry client
+    from pocketlab import __module__
+    from labpack.storage.appdata import appdataClient
+    registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+
 # validate project name is not already in registry
     file_name = '%s.yaml' % project_name
     filter_function = registry_client.conditionalFilter([{0:{'discrete_values':[file_name]}}])
@@ -157,39 +160,59 @@ def home(project_name, print_path=False, overwrite=False):
             raise ValueError('"%s" already exists in the registry. %s' % (project_name, suggest_msg))
 
 # add project to registry
-    from os import path
+    project_root = './'
+    if project_path:
+        if not path.exists(project_path):
+            raise ValueError('"%s" is not a valid path.' % project_path)
+        elif not path.isdir(project_path):
+            raise ValueError('"%s" is not a valid directory.' % project_path)
+        project_root = project_path
     file_details = {
         'project_name': project_name,
-        'project_root': path.abspath('./')
+        'project_root': path.abspath(project_root)
     }
     registry_client.create(file_name, file_details)
     exit_msg = '"%s" added to registry. To return to workdir, run "home %s"' % (project_name, project_name)
     return exit_msg
 
 if __name__ == '__main__':
+
+# add dependencies
     try:
         import pytest
     except:
         print('pytest module required to perform unittests. try: pip install pytest')
         exit()
-    from jsonmodel.exceptions import InputValidationError
-    with pytest.raises(InputValidationError):
-        home('not valid')
-
     from time import time
     from pocketlab import __module__
     from labpack.storage.appdata import appdataClient
     registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
     unittest_project = 'unittest_project_name_%s' % str(time()).replace('.', '')
 
+# test invalid name exception
+    from jsonmodel.exceptions import InputValidationError
+    with pytest.raises(InputValidationError):
+        home('not valid')
+
+# test new project
     assert home(unittest_project).find(unittest_project)
 
+# test existing project exception
     with pytest.raises(ValueError):
         home(unittest_project)
 
+# test existing project overwrite
     assert home(project_name=unittest_project, overwrite=True).find(unittest_project)
-
     registry_client.delete('%s.yaml' % unittest_project)
+
+# test path option
+    assert home(unittest_project, project_path='../').find(unittest_project)
+
+# test invalid path exception
+    with pytest.raises(ValueError):
+        home(unittest_project, project_path='./home.py')
+    registry_client.delete('%s.yaml' % unittest_project)
+
 
 
 
