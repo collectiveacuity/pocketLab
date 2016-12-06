@@ -111,7 +111,7 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
     from labpack.platforms.localhost import localhostClient
     localhost_client = localhostClient()
     home_alias = "alias home='function _home(){ lab_output=\"$(lab home --print $1)\"; IFS=\";\" read -ra LINES <<< \"$lab_output\"; echo \"${LINES[0]}\"; cd \"${LINES[1]}\"; };_home'"
-    config_list = [ localhost_client.bashConfig, localhost_client.shConfig ]
+    config_list = [localhost_client.bash_config, localhost_client.sh_config]
     for i in range(len(config_list)):
         if config_list[i]:
             if not path.exists(config_list[i]):
@@ -152,7 +152,7 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
 
 # validate project name is not already in registry
     file_name = '%s.yaml' % project_name
-    filter_function = registry_client.conditionalFilter([{0:{'discrete_values':[file_name]}}])
+    filter_function = registry_client.conditional_filter([{0:{'discrete_values':[file_name]}}])
     project_list = registry_client.list(filter_function=filter_function)
     if file_name in project_list:
         if not overwrite:

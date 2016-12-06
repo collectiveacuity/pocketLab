@@ -12,7 +12,7 @@ def retrieve_project_root(project_name, command_context=''):
 
 # validate project name exists in registry
     file_name = '%s.yaml' % project_name
-    filter_function = registry_client.conditionalFilter([{0:{'discrete_values':[file_name]}}])
+    filter_function = registry_client.conditional_filter([{0:{'discrete_values':[file_name]}}])
     project_list = registry_client.list(filter_function=filter_function)
     if not file_name in project_list:
         error_msg = '"%s" not found in the registry.' % project_name
