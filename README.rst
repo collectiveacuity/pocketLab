@@ -1,3 +1,6 @@
+.. image:: https://img.shields.io/pypi/dm/pocketlab.svg
+    :target: https://pypi.python.org/pypi/pocketlab
+
 =========
 pocketLab
 =========
