@@ -1,4 +1,6 @@
-.. image:: https://img.shields.io/pypi/dm/pocketlab.svg
+.. image:: https://img.shields.io/pypi/v/pocketlab.svg
+    :target: https://pypi.python.org/pypi/pocketlab
+.. image:: https://img.shields.io/pypi/l/pocketlab.svg
     :target: https://pypi.python.org/pypi/pocketlab
 
 =========
@@ -6,79 +8,36 @@ pocketLab
 =========
 *A Command Line Tool for Managing Laboratory Projects*
 
-:Source: https://bitbucket.org/collectiveacuity/pocketlab.git
-
-Commands
---------
-
-:home: manages the local path information for a project
-
-Roadmap
--------
-
-:start: initiates a container with a project component **#TODO**
-:create: creates a project architecture in working directory **#TODO**
-:list: report a list of project resources of a given type **#TODO**
-:init: creates a local lab server, scheduler and database **#TODO**
-:add: downloads image and files for a project component **#TODO**
-:remove: remove a specific project resource **#TODO**
-:enter: opens up a shell cli inside a running container **#TODO**
-:stop: terminates container running a project component **#TODO**
-:reboot: restart a container running a project component **#TODO**
-:tunnel: creates a local tunnel to <sub-domain>.localtunnel.me **#TODO**
-:monitor: creates a scheduled request to url endpoint **#TODO**
-:setup: creates required account resources on a remote service **#TODO**
-:compose: creates a set of containers from components in project **#TODO**
-:connect: opens up a direct ssh connection to remote build **#TODO**
-:test: performs tests on a project set to determine health **#TODO**
-:deploy: places a project set into production **#TODO**
-:renew: retrieves a new ssl certificate for url endpoint **#TODO**
-:update: updates the components in an active project set **#TODO**
-:pull: downloads an image or folder from a remote VCS repository **#TODO**
-:build: creates a new image from Dockerfile in project component **#TODO**
-:clean: removes broken images and stopped containers **#TODO**
-
-Features
---------
-- Docker Wrapper
-- GitHub / BitBucket / Gitlab Repos
-- OS Independence
-- AWS Deployment Management
-- Let's Encrypt SSL Certificates
-- LocalTunnel.me / Ngrok
-- PingAPI / Uptime Robot Monitoring
-- Test Sequencing
-
-System Requirements
--------------------
-- **docker**: https://www.docker.com
-- **virtualbox**: (on Mac & Windows)
-
-Python Requirements
--------------------
-- **jsonmodel**: https://pypi.python.org/pypi/jsonmodel
-- **labpack**: https://pypi.python.org/pypi/labpack
+:Downloads: http://pypi.python.org/pypi/pocketLab
+:Source: https://github.com/collectiveacuity/pocketLab
+:Documentation: https://pocketlab.github.io
 
 ============
 Installation
 ============
-From BitBucket::
+From PyPi::
 
-    $ git clone https://bitbucket.org/collectiveacuity/pocketlab.git
-    $ python setup.py sdist --format=gztar,zip
-    $ pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-*.tar.gz
-    $ python setup.py develop  # for local on-the-fly file updates
+    $ pip install pocketlab
 
+From GitHub::
+
+    $ git clone https://github.com/collectiveacuity/pocketLab
+    $ cd pocketLab
+    $ python setup.py install
+
+===============
 Getting Started
----------------
-This module is designed to manage lab projects...
+===============
+This module is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon docker to provide consistency across development environments but it also streamlines the docker workflow without compromising the security of credentials and sensitive code.
 
 Register a project in the working directory::
 
-    $ lab home <project-name>
+    $ lab home <project-alias>
 
-Documentation
--------------
-For more details about how to use pocketLab, refer to the
-`Reference Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/pocketlab/src/master/REFERENCE.rst>`_
+Initialize the project framework in the working directory::
+
+    $ lab init
+
+For a list of all the commands, refer to the
+`Reference Documentation on GitHub
+<https://pocketlab.github.io/commands/>`_
