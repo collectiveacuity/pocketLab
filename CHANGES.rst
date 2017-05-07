@@ -5,7 +5,7 @@ ChangeLog
 ---------
 * Upload of Module to PyPi
 * Creation of GitHub Repo
-* Separation of under-development methods from public methods in git
+* Separation of WIP methods into Mercurial Repo
 
 0.1 (2016.03.03)
 ----------------
