@@ -40,23 +40,19 @@ module = 'name of module'
 System Installation:
 # http://www.pyinstaller.org/
 
+Mercurial Dev Setup:
+.hgignore (add dist/, *.egg-info/, '.git/')
+hgrc [paths] default = ssh://hg@bitbucket.org/collectiveacuity/pocketlab
+
 Git Public Setup:
-https://stackoverflow.com/questions/37422221/git-remove-a-file-from-a-branch-keep-it-in-the-master/37422311
-git remote add github https://github.com/...
-git branch public
-git checkout public
-git rm --cached --ignore-unmatch -r dev/*
-git rm --cached --ignore-unmatch -r tests_dev/*
-git rm --cached --ignore-unmatch -r notes/*
-git commit -m 'removed dev files before public push'
-git push github public
-git checkout -f master
+.gitignore (add dist/, *.egg-info/, dev/, tests_dev/, docs/, .hg/, .hgignore)
+git init
+git remote add origin https://github.com/collectiveacuity/pocketLab.git
 
 Git Public Updates:
-git checkout public
-git merge master
-git push github public
-git checkout -f master
+git add -A
+git commit -m 'updates' 
+git push origin master
 '''
 
 config_file = open('pocketlab/__init__.py').read()
