@@ -14,12 +14,12 @@ build/
 develop-eggs/
 dist/
 eggs/
-.eggs/
+*.eggs/
 lib/
 lib64/
 parts/
 sdist/
-.egg-info/
+*.egg-info/
 .installed.cfg
 .manifest
 .spec
