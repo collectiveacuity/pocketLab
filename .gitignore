@@ -29,6 +29,9 @@ target/
 #############  version control  ################
 .hgignore
 .hg/
+dev/
+docs/
+tests_dev/
 
 ###############   IDE files   ##################
 .DS_STORE
