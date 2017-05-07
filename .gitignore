@@ -5,8 +5,8 @@ cred/
 keys/
 
 ###############  media files  ##################
-publicity/
 data/
+appdata/
 
 ############### distro files  ##################
 build/
@@ -19,13 +19,16 @@ lib/
 lib64/
 parts/
 sdist/
-*.egg-info/
+.egg-info/
 .installed.cfg
-*.egg
-*.manifest
-*.spec
-docs/_build/
+.manifest
+.spec
+docs/site/
 target/
+
+#############  version control  ################
+.hgignore
+.hg/
 
 ###############   IDE files   ##################
 .DS_STORE
@@ -34,11 +37,13 @@ nbproject
 .idea
 .node_history
 __pycache__
-*.so
+.so
 
 ############## backup sync files ###############
 desktop.ini
-*.gdoc
+.gdoc
+.dropbox
+Thumbs.db
 
 ############## tinkering scripts ###############
 tinker/

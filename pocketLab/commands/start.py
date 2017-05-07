@@ -3,10 +3,9 @@ __created__ = '2016.03'
 
 _start_schema = {
     'title': 'start',
-    'description': 'initiates a container with a project component',
+    'description': 'Initiates a container with the image from a project',
     'metadata': {
-        'cli_help': 'initiates a container with a project component',
-        'cli_usage': 'start [options]'
+        'cli_help': 'initiates a container with project'
     },
     'schema': {
         'verbose': False,
@@ -15,11 +14,11 @@ _start_schema = {
     },
     'components': {
         '.verbose': {
-            'field_description': 'Overwrite an existing project registration',
+            'field_description': 'Toggle to enable/disable lab messages.',
             'default_value': True,
             'field_metadata': {
                 'cli_flags': [ '-q', '--quiet' ],
-                'cli_help': 'turn off pipe of stdout from container'
+                'cli_help': 'turn off lab process messages'
             }
         },
         '.virtualbox': {
@@ -33,13 +32,13 @@ _start_schema = {
             }
         },
         '.project': {
-            'field_description': 'Name of project to add to registry',
+            'field_description': 'Name of project to initialize.',
             'default_value': '',
             'max_length': 64,
             'must_not_contain': [ '[^\w\-_]' ],
             'field_metadata': {
                 'cli_flags': [ '-p', '--project' ],
-                'cli_help': '(re)set home of PROJECT to workdir',
+                'cli_help': 'name of project to initialize',
                 'cli_metavar': 'PROJ'
             }
         }
@@ -53,17 +52,20 @@ def start(verbose=True, virtualbox='default', project=''):
 # validate inputs
     from jsonmodel.validators import jsonModel
     input_model = jsonModel(_start_schema)
-    input_fields = [ project, virtualbox, verbose ]
-    input_names = [ 'project', 'virtualbox', 'verbose' ]
-    for i in range(len(input_fields)):
-        if input_fields[i]:
-            object_title = '%s(%s=%s)' % (title, input_names[i], input_fields[i])
-            input_model.validate(input_fields[i], '.%s' % input_names[i], object_title)
+    input_fields = {
+        'verbose': verbose,
+        'virtualbox': virtualbox,
+        'project': project
+    }
+    for key, value in input_fields.items():
+        if value:
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            input_model.validate(value, '.%s' % key, object_title)
 
 # validate requirements
-    # TODO boolean algebra method to check not both inputs
-    if not project:
-        raise ValueError('home command requires either a project or print_path argument.')
+#     # TODO boolean algebra method to check not both inputs
+#     if not project:
+#         raise ValueError('home command requires either a project or print_path argument.')
 
     print(input_fields)
 
