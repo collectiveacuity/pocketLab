@@ -74,7 +74,7 @@ def cli(error=False):
     command_list = preferred_order
 
 # retrieve command line metadata schema
-    cli_schema = jsonLoader(__module__, 'rules/lab-cli-model.json')
+    cli_schema = jsonLoader(__module__, 'models/lab-cli.json')
 
 # construct each command
     for command in command_list:

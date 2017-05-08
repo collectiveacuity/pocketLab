@@ -80,11 +80,7 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
         'project_path': project_path
     }
     for key, value in input_map.items():
-        try:
-            value_name = str(value)
-        except:
-            value_name = value.__name__
-        object_title = '%s(%s=%s)' % (title, key, value_name)
+        object_title = '%s(%s=%s)' % (title, key, str(value))
         input_model.validate(value, '.%s' % key, object_title)
 
 # validate requirements

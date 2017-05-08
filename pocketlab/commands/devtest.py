@@ -124,7 +124,7 @@ from pocketlab import __module__
 from pocketlab.utils import inject_default_arguments
 from jsonmodel.loader import jsonLoader
 
-_default_schema_raw = jsonLoader(__module__, 'rules/lab-defaults-model.json')
+_default_schema_raw = jsonLoader(__module__, 'models/lab-defaults.json')
 _devtest_schema = inject_default_arguments(_devtest_schema_raw, _default_schema_raw)
 
 def devtest(**cmd_kwargs):
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     from pocketlab import __module__
     from pocketlab.utils import compile_argument_lists, compile_command_model
     from jsonmodel.loader import jsonLoader
-    cli_schema = jsonLoader(__module__, 'rules/lab-cli-model.json')
+    cli_schema = jsonLoader(__module__, 'models/lab-cli.json')
     devtest_model = compile_command_model(_devtest_schema, cli_schema)
     d, p, o, e = compile_argument_lists(devtest_model)
 

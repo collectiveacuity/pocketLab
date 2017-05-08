@@ -277,8 +277,8 @@ def compile_argument_lists(command_model):
 if __name__ == '__main__':
     from pocketlab.commands.home import _home_schema as home_schema
     from labpack.records.settings import load_settings
-    cli_schema = load_settings('rules/lab-cli-model.json')
-    default_schema = load_settings('rules/lab-defaults-model.json')
+    cli_schema = load_settings('models/lab-cli.json')
+    default_schema = load_settings('models/lab-defaults.json')
     home_schema = inject_default_arguments(home_schema, default_schema)
     home_model = compile_command_model(home_schema, cli_schema)
     home_model.validate(home_model.schema)

@@ -1,0 +1,44 @@
+{
+  "schema": {
+    "docker_image_name": "pocketlab",
+    "docker_container_alias": "lab",
+    "docker_mount_volumes": {
+      "data/": "opt/data/"
+    },
+    "docker_port_mapping": {
+      "5001": 5001
+    },
+    "docker_environment_variables": {
+      "PORT": "5001"
+    }
+  },
+  "components": {
+    ".docker_image_name": {
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_:]" ]
+    },
+    ".docker_container_alias": {
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]" ]
+    },
+    ".docker_mount_volumes": {
+      "extra_fields": true
+    },
+    ".docker_port_mapping": {
+      "extra_fields": true
+    },
+    ".docker_environment_variables": {
+      "extra_fields": true
+    },
+    ".docker_mount_volumes.data/": {
+      "required_field": false
+    },
+    ".docker_port_mapping.5001": {
+      "required_field": false,
+      "integer_data": true
+    },
+    ".docker_environment_variables.PORT": {
+      "required_field": false
+    }
+  }
+}
