@@ -84,7 +84,6 @@ def merge_ignores(standard_text, insert_text):
 if __name__ == '__main__':
     test_ignore = '../../tests/.testgitignore'
     ignore_text = open(test_ignore).read()
-    insert_text = load_ignore('mercurial')
-    print(insert_text)
-    # merged_text = merge_ignores(ignore_text, insert_text)
-    # print(merged_text)
+    insert_text = load_ignore()
+    merged_text = merge_ignores(ignore_text, insert_text)
+    print(merged_text)
