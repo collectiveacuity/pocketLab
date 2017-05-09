@@ -41,20 +41,20 @@ _init_schema = {
             }
         },
         '.vcs_service': {
-            'field_description': 'Version control system to add to framework',
-            'default_value': 'git',
-            'discrete_values': [ 'git', 'Git', 'mercurial', 'Mercurial' ],
+            'field_description': 'Version control system used by project',
+            'default_value': '',
+            'discrete_values': [ '', 'git', 'Git', 'mercurial', 'Mercurial' ],
             'field_metadata': {
                 # 'cli_group': 'A',
                 'cli_flags': [ '--vcs' ],
-                'cli_help': 'VCS service to generate ignore file (default: %(default)s)',
+                'cli_help': 'VCS service to generate ignore file',
                 'cli_metavar': 'SERVICE'
             }
         }
     }
 }
 
-def init(container_alias='', image_name='', vcs_service='git'):
+def init(container_alias='', image_name='', vcs_service=''):
 
     '''
         a method to add lab framework files to the current directory
@@ -82,22 +82,31 @@ def init(container_alias='', image_name='', vcs_service='git'):
 # import dependencies
     from os import path
 
+# determine version control service
+    if not vcs_service:
+        vcs_service = '.git'
+        if path.exists('.git'):
+            if path.isdir('.git'):
+                vcs_service = 'git'
+        elif path.exists('.hg'):
+            if path.isdir('.hg'):
+                vcs_service = 'mercurial'
+    else:
+        vcs_service = vcs_service.lower()
+
 # add a vcs ignore file
     from pocketlab.methods.vcs import load_ignore
-    vcs_path = ''
-    vcs_type = ''
-    if vcs_service.lower() == 'git':
+    if vcs_service == 'git':
         vcs_path = '.gitignore'
         vcs_type = 'git'
-    elif vcs_service.lower() == 'mercurial':
+    else:
         vcs_path = '.hgignore'
         vcs_type = 'mercurial'
-    if vcs_path:
-        if not path.exists(vcs_path):
-            file_text = load_ignore(vcs=vcs_type)
-            with open(vcs_path, 'wt') as f:
-                f.write(file_text)
-                f.close()
+    if not path.exists(vcs_path):
+        file_text = load_ignore(vcs=vcs_type)
+        with open(vcs_path, 'wt') as f:
+            f.write(file_text)
+            f.close()
 
 # add a lab config file
     config_path = 'lab.yaml'

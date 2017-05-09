@@ -91,7 +91,8 @@ def compile_commands(folder_path, cli_schema, module_name, preferred_order=None)
             command_schema = getattr(command_module, '_%s_schema' % command)
             command_model = compile_model(command_schema, cli_schema)
             command_models.append(command_model)
-        except:
+        except Exception as err:
+            print(err)
             pass
 
     return command_models

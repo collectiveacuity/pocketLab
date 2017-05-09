@@ -5,7 +5,8 @@ _devtest_schema_raw = {
         'title': 'devtest',
         'description': 'test the command structure',
         'metadata': {
-            'cli_help': 'test the command structure'
+            'cli_help': 'test the command structure',
+            'docs_benefit': 'Devtest documents command-line interface options.'
         },
         'schema': {
             'integer': 0,

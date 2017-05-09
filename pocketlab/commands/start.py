@@ -5,7 +5,8 @@ _start_schema = {
     'title': 'start',
     'description': 'Initiates a container with the image from a project',
     'metadata': {
-        'cli_help': 'initiates a container with project'
+        'cli_help': 'initiates a container with project',
+        'docs_benefit': 'WIP'
     },
     'schema': {
         'verbose': False,

@@ -2,11 +2,18 @@ __author__ = 'rcj1492'
 __created__ = '2017.05'
 __license__ = 'MIT'
 
+'''
+update the .ignore file
+update the lab.yaml file
+
+'''
+
 _update_schema = {
     'title': 'update',
     'description': 'Updates the config files for a project with the latest pocketlab configurations.',
     'metadata': {
-        'cli_help': 'updates a project\'s config files'
+        'cli_help': 'updates a project\'s config files',
+        'docs_benefit': 'Updates projects to latest pocketlab configurations.'
     },
     'schema': {
         'project_name': '',
@@ -97,7 +104,7 @@ def update(project_name='', update_all=False, verbose=True):
                 if old_hash != new_hash:
                     if verbose:
                         print('%s file for %s updated.' % (value['name'], msg_insert))
-                    print(new_text)
+
 
 # construct project list
     project_list = []
@@ -117,15 +124,10 @@ def update(project_name='', update_all=False, verbose=True):
         from pocketlab import __module__
         from labpack.storage.appdata import appdataClient
         registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
-        registry_list = []
-        registry_results = registry_client.list(max_results=1000)
-        registry_list.extend(registry_results)
-        while len(registry_list) == 1000:
-            registry_results = registry_client.list(max_results=1000, previous_key=registry_results[999])
-            registry_list.extend(registry_results)
-        for project in registry_list:
+        from labpack.records.settings import load_settings
+        for file_path in registry_client.localhost.walk(registry_client.collection_folder):
             try:
-                details = registry_client.read(project)
+                details = load_settings(file_path)
                 project_details = {
                     'name': details['project_name'],
                     'path': details['project_root']
@@ -147,6 +149,8 @@ def update(project_name='', update_all=False, verbose=True):
         _apply_update(**update_kwargs)
 
 # construct exit message
-    exit_msg = project_name
+    if update_all:
+        msg_insert = 'all projects'
+    exit_msg = 'Configurations for %s have been updated.' % msg_insert
 
     return exit_msg
