@@ -1,5 +1,6 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
+__license__ = 'MIT'
 
 '''
 https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argparse
