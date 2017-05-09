@@ -121,11 +121,11 @@ _devtest_schema_raw = {
     }
 
 from pocketlab import __module__
-from pocketlab.utils import inject_default_arguments
+from pocketlab.utils import inject_defaults
 from jsonmodel.loader import jsonLoader
 
 _default_schema_raw = jsonLoader(__module__, 'models/lab-defaults.json')
-_devtest_schema = inject_default_arguments(_devtest_schema_raw, _default_schema_raw)
+_devtest_schema = inject_defaults(_devtest_schema_raw, _default_schema_raw)
 
 def devtest(**cmd_kwargs):
     # print(cmd_kwargs)

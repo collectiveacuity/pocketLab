@@ -5,7 +5,9 @@ _home_schema = {
     'title': 'home',
     'description': 'manages the local path information for a project',
     'metadata': {
-        'cli_help': 'creates a project home in workdir'
+        'cli_help': 'creates a project home in workdir',
+        'docs_benefit': 'Home makes it easy to locate your projects.',
+        'docs_description': 'Home adds the alias and working directory to the alias registry and (on the first use) adds the alias \'home\' to bash config. On subsequent terminal sessions, typing ```$ home <project-alias>``` will change the working directory to the folder registered under that alias.'
     },
     'schema': {
         'project_name': 'lab',

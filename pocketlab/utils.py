@@ -4,7 +4,7 @@ __license__ = 'MIT'
 
 from jsonmodel.validators import jsonModel
 
-def inject_default_arguments(command_schema, default_schema):
+def inject_defaults(command_schema, default_schema):
 
     default_model = jsonModel(default_schema)
     for key, value in default_model.schema.items():
@@ -16,7 +16,7 @@ def inject_default_arguments(command_schema, default_schema):
 
     return command_schema
 
-def compile_command_model(command_schema, cli_schema):
+def compile_model(command_schema, cli_schema):
     
     '''
         a method to create a jsonmodel object for command fields with cli metadata
@@ -50,7 +50,53 @@ def compile_command_model(command_schema, cli_schema):
 
     return jsonModel(command_schema)
 
-def compile_argument_lists(command_model):
+def compile_commands(folder_path, cli_schema, module_name, preferred_order=None):
+
+    import re
+    from importlib import import_module
+    from os import path, listdir
+
+# validate inputs
+    if not isinstance(folder_path, str):
+        raise ValueError('folder_path must be a string.')
+    elif not path.exists(folder_path):
+        raise ValueError('%s is not a valid folder path.' % str(folder_path))
+    elif not isinstance(cli_schema, dict):
+        raise ValueError('cli_schema must be a dictionary.')
+    elif preferred_order:
+        if not isinstance(preferred_order, list):
+            raise ValueError('preferred_order must be a list of commands.')
+
+# retrieve list of commands
+    command_list = []
+    py_file = re.compile('\\.pyc?$')
+    for file in listdir(folder_path):
+        if py_file.findall(file):
+            command_list.append(py_file.sub('', file))
+
+# customize the order of commands in help
+    for i in range(len(preferred_order)):
+        if preferred_order[i] not in command_list:
+            preferred_order.pop(i)
+    for command in command_list:
+        if command not in preferred_order:
+            preferred_order.append(command)
+    command_list = preferred_order
+
+    # construct each command model
+    command_models = []
+    for command in command_list:
+        command_module = import_module('%s.commands.%s' % (module_name, command))
+        try:
+            command_schema = getattr(command_module, '_%s_schema' % command)
+            command_model = compile_model(command_schema, cli_schema)
+            command_models.append(command_model)
+        except:
+            pass
+
+    return command_models
+
+def compile_arguments(command_model):
 
     '''
         a method to compile command arguments into argparse argument categories
@@ -275,14 +321,19 @@ def compile_argument_lists(command_model):
     return default_args, positional_args, optional_args, exclusive_args
 
 if __name__ == '__main__':
+
+    from pocketlab import __module__, __order__
     from pocketlab.commands.home import _home_schema as home_schema
     from labpack.records.settings import load_settings
+    folder_path = 'commands/'
     cli_schema = load_settings('models/lab-cli.json')
     default_schema = load_settings('models/lab-defaults.json')
-    home_schema = inject_default_arguments(home_schema, default_schema)
-    home_model = compile_command_model(home_schema, cli_schema)
+    home_schema = inject_defaults(home_schema, default_schema)
+    home_model = compile_model(home_schema, cli_schema)
     home_model.validate(home_model.schema)
-    def_args, pos_args, opt_args, exc_args = compile_argument_lists(home_model)
+    command_list = compile_commands(folder_path, cli_schema, __module__, __order__)
+    assert command_list
+    def_args, pos_args, opt_args, exc_args = compile_arguments(home_model)
     assert def_args
     assert pos_args
     assert opt_args

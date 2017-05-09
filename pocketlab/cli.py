@@ -5,13 +5,11 @@ __created__ = '2016.03'
 https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argparse
 '''
 
-import re
 import sys
-from pocketlab.utils import compile_command_model, compile_argument_lists
-from pocketlab import __command__, __module__, __version__
+from pocketlab.utils import compile_commands, compile_arguments
+from pocketlab import __command__, __module__, __version__, __order__
 from importlib import import_module
 from importlib.util import find_spec
-from os import listdir
 from jsonmodel.loader import jsonLoader
 from argparse import ArgumentParser, HelpFormatter, RawDescriptionHelpFormatter, PARSER
 
@@ -54,38 +52,24 @@ def cli(error=False):
     }
     subparsers = parser.add_subparsers(**help_details)
 
-# define command scope from commands sub-folder
-    command_list = []
-    module_path = find_spec(__module__).submodule_search_locations[0]
-    commands_folder = listdir('%s/commands/' % module_path)
-    py_file = re.compile('\\.pyc?$')
-    for file in commands_folder:
-         if py_file.findall(file):
-            command_list.append(py_file.sub('',file))
-
-# customize the order of commands in help
-    preferred_order = ['home', 'start']
-    for i in range(len(preferred_order)):
-        if preferred_order[i] not in command_list:
-            preferred_order.pop(i)
-    for command in command_list:
-        if command not in preferred_order:
-            preferred_order.append(command)
-    command_list = preferred_order
-
 # retrieve command line metadata schema
     cli_schema = jsonLoader(__module__, 'models/lab-cli.json')
+    module_path = find_spec(__module__).submodule_search_locations[0]
+
+# compile command models
+    compile_kwargs = {
+        'folder_path': '%s/commands/' % module_path,
+        'cli_schema': cli_schema,
+        'module_name': __module__,
+        'preferred_order': __order__
+    }
+    command_list = compile_commands(**compile_kwargs)
 
 # construct each command
-    for command in command_list:
-        command_module = import_module('%s.commands.%s' % (__module__, command))
+    for command_model in command_list:
+
+    # add command details to parser
         try:
-
-# construct command model with cli fields
-            command_schema = getattr(command_module, '_%s_schema' % command)
-            command_model = compile_command_model(command_schema, cli_schema)
-
-# add command details to parser
             cmd_details = {
                 'description': 'replace this message with model description declaration',
                 'help': 'replace this message with "cli_help" in model metadata declaration',
@@ -96,12 +80,12 @@ def cli(error=False):
                     cmd_details['help'] = command_model.metadata['cli_help']
             if command_model.description:
                 cmd_details['description'] = command_model.description
-            cmd_args = subparsers.add_parser(command, **cmd_details)
+            cmd_args = subparsers.add_parser(command_model.title, **cmd_details)
 
             # print(cmd_details)
 
-# construct argument lists
-            def_args, req_args, opt_args, exc_args = compile_argument_lists(command_model)
+    # construct argument lists
+            def_args, req_args, opt_args, exc_args = compile_arguments(command_model)
 
             # print(def_args)
             # print(req_args)

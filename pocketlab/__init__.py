@@ -7,3 +7,4 @@ __license__ = 'MIT'
 __team__ = 'Collective Acuity'
 __email__ = 'support@collectiveacuity.com'
 __url__ = 'https://bitbucket.org/collectiveacuity/pocketlab'
+__order__ = [ 'home', 'init', 'start' ]
