@@ -4,10 +4,10 @@ __license__ = 'MIT'
 
 _init_schema = {
     'title': 'init',
-    'description': 'add lab framework files to the current directory',
+    'description': 'Adds lab configuration files to the current directory.',
     'metadata': {
         'cli_help': 'creates a lab framework in workdir',
-        'docs_benefit': 'Init adds the structure needed for other commands.',
+        'docs_benefit': 'Init adds the config files for other lab commands.',
         'docs_description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.'
     },
     'schema': {
@@ -149,6 +149,7 @@ def init(container_alias='', image_name='', vcs_service='git'):
     return exit_msg
 
 if __name__ == "__main__":
+
     from labpack.records.settings import load_settings
     from jsonmodel.validators import jsonModel
     config_path = '../models/lab-config.json'

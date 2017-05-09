@@ -32,7 +32,7 @@ This module is designed to manage the development operations of lab projects and
 
 Register a project in the working directory::
 
-    $ lab home <project-alias>
+    $ lab home <project>
 
 Initialize the project framework in the working directory::
 
