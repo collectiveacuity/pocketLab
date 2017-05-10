@@ -1,9 +1,20 @@
 {
   "schema": {
+    "project_name": "lab",
     "container_alias": "",
     "image_name": ""
   },
   "components": {
+    ".project_name": {
+      "field_description": "Name of project in lab registry",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]" ],
+      "field_metadata": {
+        "cli_help": "name of project in lab registry",
+        "cli_metavar": "project"
+      }
+    },
     ".container_alias": {
       "field_description": "Docker container alias to add to config",
       "default_value": "",
@@ -11,7 +22,7 @@
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
         "cli_flags": [ "--container" ],
-        "cli_help": "alias for docker container",
+        "cli_help": "alias for project's docker container",
         "cli_metavar": "ALIAS"
       }
     },
@@ -22,7 +33,7 @@
       "must_not_contain": [ "[^\\w\\-_/]" ],
       "field_metadata": {
         "cli_flags": [ "--image" ],
-        "cli_help": "name for docker image",
+        "cli_help": "name for project's docker image",
         "cli_metavar": "NAME"
       }
     }
