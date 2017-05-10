@@ -4,8 +4,8 @@ __license__ = 'MIT'
 
 '''
 remove projects with non-existent roots from registry
-remove broken/previous docker images from docker
-remove exited status 1 containers from docker
+TODO: remove broken/previous docker images from docker
+TODO: remove exited status 1 containers from docker
 '''
 
 _clean_schema = {

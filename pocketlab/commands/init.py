@@ -16,30 +16,6 @@ _init_schema = {
         'vcs_service': ''
     },
     'components': {
-        '.container_alias': {
-            'field_description': 'Docker container alias to add to config',
-            'default_value': '',
-            'max_length': 64,
-            'must_not_contain': [ '[^\w\-_]' ],
-            'field_metadata': {
-                # 'cli_group': 'A',
-                'cli_flags': [ '--container' ],
-                'cli_help': 'container alias to add to project config',
-                'cli_metavar': 'ALIAS'
-            }
-        },
-        '.image_name': {
-            'field_description': 'Docker image name to add to project config',
-            'default_value': '',
-            'max_length': 64,
-            'must_not_contain': [ '[^\w\-_/]' ],
-            'field_metadata': {
-                # 'cli_group': 'A',
-                'cli_flags': [ '--image' ],
-                'cli_help': 'image name to add to project config',
-                'cli_metavar': 'NAME'
-            }
-        },
         '.vcs_service': {
             'field_description': 'Version control system used by project',
             'default_value': '',
@@ -71,8 +47,6 @@ def init(container_alias='', image_name='', vcs_service=''):
     from jsonmodel.validators import jsonModel
     input_model = jsonModel(_init_schema)
     input_map = {
-        'container_alias': container_alias,
-        'image_name': image_name,
         'vcs_service': vcs_service
     }
     for key, value in input_map.items():
@@ -116,12 +90,7 @@ def init(container_alias='', image_name='', vcs_service=''):
         from labpack.records.settings import save_settings
         config_schema = jsonLoader(__module__, 'models/lab-config.json')
         config_model = jsonModel(config_schema)
-        input_details = {}
-        if container_alias:
-            input_details['docker_container_alias'] = container_alias
-        if image_name:
-            input_details['docker_image_name'] = image_name
-        config_details = config_model.ingest(**input_details)
+        config_details = config_model.ingest(**{})
         save_settings(config_path, config_details)
 
 # add a data folder

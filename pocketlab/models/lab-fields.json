@@ -1,0 +1,30 @@
+{
+  "schema": {
+    "container_alias": "",
+    "image_name": ""
+  },
+  "components": {
+    ".container_alias": {
+      "field_description": "Docker container alias to add to config",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]" ],
+      "field_metadata": {
+        "cli_flags": [ "--container" ],
+        "cli_help": "alias for docker container",
+        "cli_metavar": "ALIAS"
+      }
+    },
+    ".image_name": {
+      "field_description": "Docker image name to add to project config",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_/]" ],
+      "field_metadata": {
+        "cli_flags": [ "--image" ],
+        "cli_help": "name for docker image",
+        "cli_metavar": "NAME"
+      }
+    }
+  }
+}

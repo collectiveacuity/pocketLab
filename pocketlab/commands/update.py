@@ -5,7 +5,6 @@ __license__ = 'MIT'
 '''
 update the .ignore file
 update the lab.yaml file
-
 '''
 
 _update_schema = {
@@ -81,6 +80,11 @@ def update(project_name='', update_all=False, verbose=True):
 
     def _apply_update(root_path, project_name=''):
 
+    # construct message
+        msg_insert = 'project'
+        if project_name:
+            msg_insert = 'project "%s"' % project_name
+
     # update vcs ignore
         import hashlib
         from os import path
@@ -104,7 +108,28 @@ def update(project_name='', update_all=False, verbose=True):
                 if old_hash != new_hash:
                     if verbose:
                         print('%s file for %s updated.' % (value['name'], msg_insert))
+                    # with open(value['path'], 'rt') as f:
+                    #     f.write(new_text)
+                    #     f.close()
 
+    # update lab yaml
+        from pocketlab import __module__
+        from jsonmodel.loader import jsonLoader
+        from labpack.records.settings import save_settings, load_settings
+        config_schema = jsonLoader(__module__, 'models/lab-config.json')
+        config_model = jsonModel(config_schema)
+        template_config = config_model.ingest(**{})
+        config_path = path.join(root_path, 'lab.yaml')
+        if path.exists(config_path):
+            try:
+                old_config = load_settings(config_path)
+                template_config.update(**old_config)
+                if old_config != template_config:
+                    if verbose:
+                        print('lab.yaml file for %s updated.' % msg_insert)
+                        # save_settings(config_path, template_config)
+            except:
+                 print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
 
 # construct project list
     project_list = []
