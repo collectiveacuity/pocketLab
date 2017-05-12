@@ -1,6 +1,13 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
+_devtest_details = {
+    'description': 'Devtest provides a method to test the range of cli options, arguments and types.',
+    'epilog': '',
+    'help': 'test the command structure',
+    'benefit': 'Devtest documents command-line interface options',
+}
+
 _devtest_schema_raw = {
         'title': 'devtest',
         'description': 'test the command structure',

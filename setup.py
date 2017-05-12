@@ -80,7 +80,9 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'jsonmodel',
-        'labpack'
+        'labpack',
+        'click',
+        'tabulate'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

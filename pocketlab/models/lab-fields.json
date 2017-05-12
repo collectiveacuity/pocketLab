@@ -1,8 +1,13 @@
 {
   "schema": {
     "project_name": "lab",
-    "container_alias": "",
-    "image_name": ""
+    "project_path": "~/lab",
+    "vcs_service": "git",
+    "resource_type": "projects",
+    "virtualbox": "default",
+	"container_alias": "server",
+    "image_name": "flaskserver",
+    "verbose": false
   },
   "components": {
     ".project_name": {
@@ -15,6 +20,45 @@
         "cli_metavar": "project"
       }
     },
+    ".project_path": {
+      "field_description": "Path to project root on localhost",
+      "default_value": "",
+      "field_metadata": {
+        "cli_group": "A",
+        "cli_flags": [ "--path" ],
+        "cli_help": "path to project root",
+        "cli_metavar": "PATH"
+      }
+    },
+    ".vcs_service": {
+      "field_description": "Version control system used by project",
+      "default_value": "",
+      "discrete_values": [ "", "git", "Git", "mercurial", "Mercurial" ],
+      "field_metadata": {
+        "cli_flags": [ "--vcs" ],
+        "cli_help": "VCS service to generate ignore file",
+        "cli_metavar": "SERVICE"
+      }
+    },
+    ".resource_type": {
+      "field_description": "Type of lab resource. eg. projects, images...",
+      "default_value": "projects",
+      "discrete_values": [ "projects" ],
+      "field_metadata": {
+        "cli_help": "Type of lab resource. eg. projects, images...",
+        "cli_metavar": "resource"
+      }
+    },
+    ".virtualbox": {
+      "field_description": "Name of virtualbox image in which to run service.",
+      "default_value": "default",
+      "max_length": 64,
+      "field_metadata": {
+        "cli_metavar": "VIRTUALBOX",
+        "cli_help": "Name of docker virtualbox on Win7/8.",
+        "cli_flags": [ "--virtualbox" ]
+      }
+    },
     ".container_alias": {
       "field_description": "Docker container alias to add to config",
       "default_value": "",
@@ -22,7 +66,7 @@
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
         "cli_flags": [ "--container" ],
-        "cli_help": "alias for project's docker container",
+        "cli_help": "alias for docker container for project",
         "cli_metavar": "ALIAS"
       }
     },
@@ -33,9 +77,17 @@
       "must_not_contain": [ "[^\\w\\-_/]" ],
       "field_metadata": {
         "cli_flags": [ "--image" ],
-        "cli_help": "name for project's docker image",
+        "cli_help": "name for docker image for project",
         "cli_metavar": "NAME"
       }
     }
-  }
+  },
+    ".verbose": {
+      "field_description": "Toggle to enable/disable lab messages.",
+      "default_value": true,
+      "field_metadata": {
+          "cli_flags": [ "-q", "--quiet" ],
+          "cli_help": "turn off lab process messages"
+      }
+    }
 }
