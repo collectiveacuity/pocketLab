@@ -32,10 +32,16 @@
       "field_description": "a special argparse action associated with argument"
     },
     ".cli_default": {
-      "field_description": "argument key not included in cli options"
+      "field_description": "argument key not included in cli options",
+      "field_metadata": {
+        "note": "REMOVE AFTER MERGE"
+      }
     },
     ".cli_position": {
       "field_description": "number to designate order of a positional argument",
+      "field_metadata": {
+        "note": "REMOVE AFTER MERGE"
+      },
       "integer_data": true
     }
   }

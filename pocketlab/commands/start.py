@@ -10,8 +10,7 @@ _start_schema = {
     },
     'schema': {
         'verbose': False,
-        'virtualbox': '',
-        'project': ''
+        'virtualbox': ''
     },
     'components': {
         '.verbose': {
@@ -31,22 +30,11 @@ _start_schema = {
                 'cli_help': 'name of docker virtualbox (default: %(default)s)',
                 'cli_flags': [ '--virtualbox' ]
             }
-        },
-        '.project': {
-            'field_description': 'Name of project to initialize.',
-            'default_value': '',
-            'max_length': 64,
-            'must_not_contain': [ '[^\w\-_]' ],
-            'field_metadata': {
-                'cli_flags': [ '-p', '--project' ],
-                'cli_help': 'name of project to initialize',
-                'cli_metavar': 'PROJ'
-            }
         }
     }
 }
 
-def start(verbose=True, virtualbox='default', project=''):
+def start(*args, verbose=True, virtualbox='default'):
 
     title = 'start'
 
@@ -55,8 +43,7 @@ def start(verbose=True, virtualbox='default', project=''):
     input_model = jsonModel(_start_schema)
     input_fields = {
         'verbose': verbose,
-        'virtualbox': virtualbox,
-        'project': project
+        'virtualbox': virtualbox
     }
     for key, value in input_fields.items():
         if value:

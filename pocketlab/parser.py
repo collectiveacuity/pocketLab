@@ -9,10 +9,10 @@ https://docs.python.org/3.5/library/argparse.html?highlight=argparse#module-argp
 '''
 
 from pocketlab import __command__, __module__, __version__, __order__
-from pocketlab.fields import cli_schema
+from pocketlab.init import fields_model
 from pocketlab.utils import compile_commands, compile_arguments
 from importlib.util import find_spec
-from argparse import ArgumentParser, HelpFormatter, RawDescriptionHelpFormatter, PARSER
+from argparse import ArgumentParser, HelpFormatter, RawDescriptionHelpFormatter, PARSER, SUPPRESS
 
 # construct customized formatter class
 class SubcommandHelpFormatter(RawDescriptionHelpFormatter):
@@ -49,60 +49,46 @@ def construct_parser(description, epilog=''):
 # compile command models
     compile_kwargs = {
         'folder_path': '%s/commands/' % module_path,
-        'cli_schema': cli_schema,
         'module_name': __module__,
+        'fields_model': fields_model,
         'preferred_order': __order__
     }
     command_list = compile_commands(**compile_kwargs)
 
 # construct each command
-    for command_model in command_list:
+    for command_details in command_list:
 
     # add command details to parser
         try:
-            cmd_details = {
-                'description': 'replace this message with model description declaration',
-                'help': 'replace this message with "cli_help" in model metadata declaration',
-                'formatter_class': lambda prog: HelpFormatter(prog, max_help_position=30, width=80)
-    # adjusts column width to options
+            details = {
+                'description': command_details['description'],
+                'help': command_details['help'],
+                'formatter_class': lambda prog: HelpFormatter(prog, max_help_position=30, width=80) # adjusts column width to options
             }
-            if 'cli_help' in command_model.metadata.keys():
-                if isinstance(command_model.metadata['cli_help'], str):
-                    cmd_details['help'] = command_model.metadata['cli_help']
-            if command_model.description:
-                cmd_details['description'] = command_model.description
-            cmd_args = subparsers.add_parser(command_model.title, **cmd_details)
-
-            # print(cmd_details)
-
-    # construct argument lists
-            def_args, req_args, opt_args, exc_args = compile_arguments(command_model)
-
-            # print(def_args)
-            # print(req_args)
-            # print(opt_args)
-            # print(exc_args)
+            if command_details['epilog']:
+                details['epilog'] = command_details['epilog']
+            cmd_args = subparsers.add_parser(command_details['name'], **details)
 
     # construct default arguments
-            cmd_args.set_defaults(**def_args)
+            cmd_args.set_defaults(**command_details['default_args'])
 
     # construct positional arguments
-            for argument in req_args:
+            for argument in command_details['positional_args']:
                 cmd_args.add_argument(argument['args'], **argument['kwargs'])
 
     # construct optional arguments
-            for argument in opt_args:
+            for argument in command_details['optional_args']:
                 cmd_args.add_argument(*argument['args'], **argument['kwargs'])
 
     # construct mutually exclusive arguments
-            for key in exc_args.keys():
+            for key in command_details['exclusive_args'].keys():
                 exclusive_options = cmd_args.add_mutually_exclusive_group()
-                for argument in exc_args[key]:
+                for argument in command_details['exclusive_args'][key]:
                     exclusive_options.add_argument(*argument['args'], **argument['kwargs'])
 
     # remove command from module if there is model parsing error
         except Exception as err:
-            print(err)
+            # print(err)
             pass
 
     return parser

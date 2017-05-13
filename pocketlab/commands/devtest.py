@@ -4,7 +4,7 @@ __created__ = '2016.03'
 _devtest_details = {
     'description': 'Devtest provides a method to test the range of cli options, arguments and types.',
     'epilog': '',
-    'help': 'test the command structure',
+    'help': 'Tests the command structure.',
     'benefit': 'Devtest documents command-line interface options',
 }
 
@@ -135,9 +135,9 @@ from jsonmodel.loader import jsonLoader
 _default_schema_raw = jsonLoader(__module__, 'models/lab-defaults.json')
 _devtest_schema = inject_defaults(_devtest_schema_raw, _default_schema_raw)
 
-def devtest(**cmd_kwargs):
+def devtest(verbose=True):
     # print(cmd_kwargs)
-    return cmd_kwargs
+    return verbose
 
 if __name__ == '__main__':
     from pocketlab import __module__

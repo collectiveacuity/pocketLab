@@ -7,7 +7,10 @@
     "virtualbox": "default",
 	"container_alias": "server",
     "image_name": "flaskserver",
-    "verbose": false
+    "verbose": true,
+    "all": true,
+    "overwrite": true,
+    "print_path": true
   },
   "components": {
     ".project_name": {
@@ -16,18 +19,17 @@
       "max_length": 64,
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
-        "cli_help": "name of project in lab registry",
-        "cli_metavar": "project"
+        "cli_flag": [ "-p", "--project" ],
+        "cli_help": "Name of project in lab registry.",
+        "cli_metavar": "PROJECT"
       }
     },
     ".project_path": {
       "field_description": "Path to project root on localhost",
       "default_value": "",
       "field_metadata": {
-        "cli_group": "A",
         "cli_flags": [ "--path" ],
-        "cli_help": "path to project root",
-        "cli_metavar": "PATH"
+        "cli_help": "Path to project root."
       }
     },
     ".vcs_service": {
@@ -36,8 +38,7 @@
       "discrete_values": [ "", "git", "Git", "mercurial", "Mercurial" ],
       "field_metadata": {
         "cli_flags": [ "--vcs" ],
-        "cli_help": "VCS service to generate ignore file",
-        "cli_metavar": "SERVICE"
+        "cli_help": "VCS service to generate ignore file."
       }
     },
     ".resource_type": {
@@ -45,8 +46,9 @@
       "default_value": "projects",
       "discrete_values": [ "projects" ],
       "field_metadata": {
+        "cli_flags": [ "--resource" ],
         "cli_help": "Type of lab resource. eg. projects, images...",
-        "cli_metavar": "resource"
+        "cli_metavar": "RESOURCE"
       }
     },
     ".virtualbox": {
@@ -54,9 +56,8 @@
       "default_value": "default",
       "max_length": 64,
       "field_metadata": {
-        "cli_metavar": "VIRTUALBOX",
-        "cli_help": "Name of docker virtualbox on Win7/8.",
-        "cli_flags": [ "--virtualbox" ]
+        "cli_flags": [ "--virtualbox" ],
+        "cli_help": "Name of docker virtualbox on Win7/8. (default: %(default)s)"
       }
     },
     ".container_alias": {
@@ -66,8 +67,7 @@
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
         "cli_flags": [ "--container" ],
-        "cli_help": "alias for docker container for project",
-        "cli_metavar": "ALIAS"
+        "cli_help": "Alias for docker container for project."
       }
     },
     ".image_name": {
@@ -77,17 +77,40 @@
       "must_not_contain": [ "[^\\w\\-_/]" ],
       "field_metadata": {
         "cli_flags": [ "--image" ],
-        "cli_help": "name for docker image for project",
-        "cli_metavar": "NAME"
+        "cli_help": "Name for docker image for project."
       }
-    }
-  },
+    },
     ".verbose": {
       "field_description": "Toggle to enable/disable lab messages.",
       "default_value": true,
       "field_metadata": {
           "cli_flags": [ "-q", "--quiet" ],
-          "cli_help": "turn off lab process messages"
+          "cli_help": "Turn off lab process messages."
+      }
+    },
+    ".all": {
+      "field_description": "Apply action to all projects in registry.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "-a", "--all" ],
+        "cli_help": "Apply to all projects in registry."
+      }
+    },
+    ".overwrite": {
+      "field_description": "Overwrites the existing resource.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "-f", "--force" ],
+        "cli_help": "Overwrite the existing resource."
+      }
+    },
+    ".print_path": {
+      "field_description": "Prints out path to terminal.",
+      "default_value": false,
+      "field_metadata": {
+          "cli_flags": [ "--print" ],
+          "cli_help": "Prints path."
       }
     }
+  }
 }

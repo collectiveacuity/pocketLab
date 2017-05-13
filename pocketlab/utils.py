@@ -2,6 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.10'
 __license__ = 'MIT'
 
+from pocketlab.init import logging
 from jsonmodel.validators import jsonModel
 
 def inject_defaults(command_schema, default_schema):
@@ -50,22 +51,209 @@ def compile_model(command_schema, cli_schema):
 
     return jsonModel(command_schema)
 
-def compile_commands(folder_path, cli_schema, module_name, preferred_order=None):
+def extract_signature(module_name, command_name):
+
+# retrieve command method
+    from importlib import import_module
+    import inspect
+    command_module = import_module('%s.commands.%s' % (module_name, command_name))
+    command_method = getattr(command_module, command_name)
+
+# extract argument list from signature
+    command_signature = inspect.signature(command_method)
+    command_signature = str(command_signature)[1:-1]
+    argument_list = command_signature.replace('\n','').replace(' ','').split(',')
+
+    return argument_list
+
+def compile_arguments(command_name, argument_list, fields_model):
+
+# construct placeholder response
+    default_args = {
+        'command': command_name
+    }
+    optional_args = []
+    positional_args = []
+    exclusive_args = {}
+
+# define dummy variables
+    empty_defaults = {
+        'string': '',
+        'boolean': False,
+        'number': 0.0,
+        'list': [],
+        'map': {},
+        'null': None
+    }
+
+# define type parser
+    def _return_type(value):
+        if isinstance(value, bool):
+            return bool
+        elif isinstance(value, int):
+            return int
+        elif isinstance(value, float):
+            return float
+        elif isinstance(value, str):
+            return str
+        elif isinstance(value, dict):
+            return dict
+        elif isinstance(value, list):
+            return list
+        else:
+            return None
+
+# construct argument details
+    for argument in argument_list:
+
+    # parse name and default from argument string
+        name_value = argument.split('=')
+        arg_name = name_value[0]
+        arg_default = ''
+        if len(name_value) > 1:
+            arg_default = name_value[1]
+
+    # construct default details
+        details = {
+            'name': arg_name,
+            'option': 'positional',
+            'args': [],
+            'kwargs': {
+                'dest': arg_name,
+                'type': None,  # datatypes
+                'default': None,  # datatypes
+                'metavar': '',
+                'nargs': None,  # int or '*', '?', '+'
+                'choices': None,  # range() or []
+                'action': '',
+                # 'const': object(),
+                'help': 'replace this message with "cli_help" in field metadata'
+            }
+        }
+        if arg_default:
+            details['option'] = 'optional'
+
+    # modify defaults based upon values from fields model
+        if not arg_name in fields_model.schema.keys():
+            logging.debug('%s(%s) missing from fields model.' % (command_name, arg_name))
+        else:
+            key_map = fields_model.keyMap['.%s' % arg_name]
+            cli_details = key_map['field_metadata']
+
+        # determine type
+            list_map = {}
+            if key_map['value_datatype'] == 'list':
+                key_map = fields_model.keyMap['.%s[0]' % arg_name]
+                list_map = fields_model.keyMap['.%s' % arg_name]
+            details['kwargs']['type'] = _return_type(key_map['declared_value'])
+
+        # skip if dict or None
+            if details['kwargs']['type'] in { dict, None }:
+                continue
+
+        # determine default
+            if 'default_value' in key_map.keys():
+                details['kwargs']['default'] = key_map['default_value']
+            else:
+                if key_map['value_datatype'] == 'number':
+                    if isinstance(key_map['declared_value'], int):
+                        details['kwargs']['default'] = 0
+                    else:
+                        details['kwargs']['default'] = 0.0
+                else:
+                    details['kwargs']['default'] = empty_defaults[key_map['value_datatype']]
+
+        # determine help
+            if cli_details['cli_help']:
+                details['kwargs']['help'] = cli_details['cli_help']
+
+        # determine metavar
+            if cli_details['cli_metavar']:
+                details['kwargs']['metavar'] = cli_details['cli_metavar']
+            elif details['kwargs']['type'] == int:
+                details['kwargs']['metavar'] = 'INT'
+            elif details['kwargs']['type'] == float:
+                details['kwargs']['metavar'] = 'FLOAT'
+            elif details['kwargs']['type'] == str:
+                details['kwargs']['metavar'] = 'STRING'
+            else:
+                del details['kwargs']['metavar']
+
+        # determine nargs
+            if list_map:
+                details['kwargs']['nargs'] = '*'
+                if 'max_size' in list_map.keys():
+                    if list_map['max_size'] == 1:
+                        details['kwargs']['nargs'] = '?'
+                if 'min_size' in list_map.keys():
+                    if list_map['min_size'] == 1:
+                        details['kwargs']['nargs'] = '+'
+
+        # determine choices
+            if 'discrete_values' in key_map.keys():
+                if key_map['value_datatype'] == 'string':
+                    details['kwargs']['choices'] = key_map['discrete_values']
+            elif 'min_value' in key_map.keys() and 'max_value' in key_map.keys():
+                if key_map['value_datatype'] == 'number':
+                    if isinstance(key_map['declared_value'], int):
+                        max_value = key_map['max_value'] + 1
+                        details['kwargs']['choices'] = range(key_map['min_value'], max_value)
+
+        # determine flags
+            if details['option'] == 'positional':
+                details['args'] = arg_name
+                del details['kwargs']['dest']
+            elif cli_details['cli_flags']:
+                details['args'] = cli_details['cli_flags']
+            else:
+                key_flag = '--%s' % arg_name
+                details['args'] = [key_flag]
+
+        # modify boolean fields
+            if details['kwargs']['type'] == bool:
+                del details['kwargs']['nargs']
+                del details['kwargs']['choices']
+                del details['kwargs']['type']
+                if details['kwargs']['default']:
+                    details['kwargs']['action'] = 'store_false'
+                else:
+                    details['kwargs']['action'] = 'store_true'
+                del details['kwargs']['default']
+
+        # modify string fields
+            elif details['kwargs']['type'] in { int, float, str }:
+                if cli_details['cli_action']:
+                    details['kwargs']['action'] = cli_details['cli_action']
+
+        # TODO add byte streams
+
+        # remove empty fields
+            prop_list = [ 'nargs', 'choices', 'action' ]
+            for prop in prop_list:
+                if prop in details['kwargs'].keys():
+                    if not details['kwargs'][prop]:
+                        del details['kwargs'][prop]
+
+    # add details to appropriate list
+            if not cli_details['cli_group']:
+                if details['option'] == 'positional':
+                    positional_args.append(details)
+                else:
+                    optional_args.append(details)
+            else:
+                if not cli_details['cli_group'] in exclusive_args.keys():
+                    exclusive_args[cli_details['cli_group']] = []
+                exclusive_args[cli_details['cli_group']].append(details)
+
+
+    return default_args, optional_args, positional_args, exclusive_args
+
+def compile_commands(folder_path, module_name, fields_model, preferred_order=None):
 
     import re
+    import inspect
     from importlib import import_module
-    from os import path, listdir
-
-# validate inputs
-    if not isinstance(folder_path, str):
-        raise ValueError('folder_path must be a string.')
-    elif not path.exists(folder_path):
-        raise ValueError('%s is not a valid folder path.' % str(folder_path))
-    elif not isinstance(cli_schema, dict):
-        raise ValueError('cli_schema must be a dictionary.')
-    elif preferred_order:
-        if not isinstance(preferred_order, list):
-            raise ValueError('preferred_order must be a list of commands.')
+    from os import listdir
 
 # retrieve list of commands
     command_list = []
@@ -83,240 +271,60 @@ def compile_commands(folder_path, cli_schema, module_name, preferred_order=None)
             preferred_order.append(command)
     command_list = preferred_order
 
-    # construct each command model
+# construct each command model
     command_models = []
     for command in command_list:
         command_module = import_module('%s.commands.%s' % (module_name, command))
         try:
-            command_schema = getattr(command_module, '_%s_schema' % command)
-            command_model = compile_model(command_schema, cli_schema)
-            command_models.append(command_model)
+            command_help = getattr(command_module, '_%s_details' % command)
+            command_method = getattr(command_module, command)
+
+    # compile arguments from method signature
+            command_signature = inspect.signature(command_method)
+            command_signature = str(command_signature)[1:-1]
+            command_signature = command_signature.replace('\n', '').replace(' ', '')
+            argument_list = command_signature.split(',')
+            argument_kwargs = {
+                'command_name': command,
+                'argument_list': argument_list,
+                'fields_model': fields_model
+            }
+            def_args, opt_args, pos_args, exc_args = compile_arguments(**argument_kwargs)
+
+    # build command details
+            command_details = {
+                'description': 'replace this message with "description" in _command_details',
+                'help': 'replace this message with "help" in _command_details',
+                'title': command.capitalize(),
+                'benefit': 'replace this message with "benefit" in _command_details',
+                'epilog': ''
+            }
+            for key, value in command_details.items():
+                if key in command_help.keys():
+                    if value.__class__ == command_help[key].__class__:
+                        command_details[key] = command_help[key]
+            command_details['name'] = command
+            command_details['default_args'] = def_args
+            command_details['optional_args'] = opt_args
+            command_details['positional_args'] = pos_args
+            command_details['exclusive_args'] = exc_args
+            command_models.append(command_details)
+
         except Exception as err:
-            print(err)
+            # logging.debug(err)
             pass
 
     return command_models
 
-def compile_arguments(command_model):
+if __name__ == '__main__':
 
-    '''
-        a method to compile command arguments into argparse argument categories
-
-    :param command_model: jsonmodel object with model from full schema for cli arguments
-    :param command_schema: dictionary with schema for method arguments
-    :param command: string with name of command
-    :return: tuple with dictionary of default args, list of optional args, list of positional args,
-            dictionary with exclusive args
-    '''
-
-# construct default arguments
-    arg_list = ['command']
-    # arg_list = ['command', 'model', 'interface', 'medium', 'channel']
-    default_args = {
-        # 'model': command_schema,
-        # 'interface': 'terminal',
-        # 'medium': 'command_line',
-        # 'channel': 'user',
-        'command': command_model.title
-    }
-    optional_args = []
-    positional_args = []
-    exclusive_args = {}
-
-# define dummy variables
-    empty_defaults = {
-        'string': '',
-        'boolean': False,
-        'number': 0.0,
-        'list': [],
-        'map': {},
-        'null': None
-    }
-    ifs_set = {'number', 'string'}
-
-# construct cli kwargs for each argument from kwargs model
-    for key, value in command_model.schema.items():
-        keymap_key = '.%s' % key
-        arg_criteria = command_model.keyMap[keymap_key]
-        cli_details = arg_criteria['field_metadata']
-
-    # handle arguments designated as default values
-        if cli_details['cli_default']:
-            if not key in arg_list:
-                if arg_criteria['value_datatype'] in ifs_set:
-                    arg_list.append(key)
-                    default_args[key] = arg_criteria['default_value']
-
-    # otherwise construct empty arg details
-        else:
-            arg_option = 'optional'
-            arg_details = {
-                'args': [],
-                'kwargs': {
-                    'dest': '',
-                    'metavar': '',
-                    'action': '',
-                    'nargs': None,  # int or '*', '?', '+'
-                    'choices': None,  # range() or []
-                    'type': None,  # datatypes
-                    'default': None,  # datatypes
-                    # 'const': object(),
-                    'help': 'replace this message with "cli_help" in field metadata declaration'
-                }
-            }
-
-    # validate existence of certain criteria fields
-            if not 'default_value' in arg_criteria.keys():
-                if arg_criteria['value_datatype'] == 'number':
-                    if isinstance(arg_criteria['declared_value'], int):
-                        arg_criteria['default_value'] = 0
-                    else:
-                        arg_criteria['default_value'] = 0.0
-                else:
-                    arg_criteria['default_value'] = empty_defaults[arg_criteria['value_datatype']]
-
-    # add help
-            if cli_details['cli_help']:
-                arg_details['kwargs']['help'] = cli_details['cli_help']
-
-    # add flags
-            if arg_criteria['required_field'] and arg_criteria['value_datatype'] != 'boolean':
-                arg_details['args'] = key
-                del arg_details['kwargs']['dest']
-                arg_option = 'positional'
-            elif cli_details['cli_flags']:
-                arg_details['args'] = cli_details['cli_flags']
-                arg_details['kwargs']['dest'] = key
-            else:
-                key_flag = '--%s' % key
-                arg_details['args'] = [key_flag]
-                arg_details['kwargs']['dest'] = key
-
-    # add metavar
-            if cli_details['cli_metavar']:
-                arg_details['kwargs']['metavar'] = cli_details['cli_metavar']
-            else:
-                del arg_details['kwargs']['metavar']
-
-    # add boolean specific kwargs
-            if arg_criteria['value_datatype'] == 'boolean':
-                del arg_details['kwargs']['nargs']
-                del arg_details['kwargs']['default']
-                del arg_details['kwargs']['choices']
-                del arg_details['kwargs']['type']
-                if arg_criteria['default_value']:
-                    arg_details['kwargs']['action'] = 'store_false'
-                else:
-                    arg_details['kwargs']['action'] = 'store_true'
-
-    # add str, int and float specific kwargs
-            elif arg_criteria['value_datatype'] in ifs_set:
-                del arg_details['kwargs']['nargs']
-                arg_details['kwargs']['default'] = arg_criteria['default_value']
-        # toggle type
-                if arg_criteria['value_datatype'] == 'number':
-                    if isinstance(arg_criteria['declared_value'], int):
-                        arg_details['kwargs']['type'] = int
-                    else:
-                        arg_details['kwargs']['type'] = float
-                elif arg_criteria['value_datatype'] == 'string':
-                    arg_details['kwargs']['type'] = str
-                else:
-                    del arg_details['kwargs']['type']
-        # toggle action
-                if cli_details['cli_action']:
-                    arg_details['kwargs']['action'] = cli_details['cli_action']
-                else:
-                    del arg_details['kwargs']['action']
-        # toggle choices
-                if 'discrete_values' in arg_criteria.keys():
-                    if arg_criteria['discrete_values']:
-                        value_list = arg_criteria['discrete_values']
-                        arg_details['kwargs']['choices'] = value_list
-                elif 'max_value' in arg_criteria.keys() and arg_criteria['value_datatype'] == 'number':
-                    if isinstance(arg_criteria['declared_value'], int):
-                        if 'min_value' in arg_criteria.keys():
-                            if arg_criteria['min_value']:
-                                low = int(arg_criteria['min_value'])
-                                high = int(arg_criteria['max_value']) + 1
-                                arg_details['kwargs']['choices'] = range(low, high)
-                        else:
-                            high = int(arg_criteria['max_value']) + 1
-                            arg_details['kwargs']['choices'] = range(high)
-                else:
-                    del arg_details['kwargs']['choices']
-
-
-    # add list specific kwargs
-            elif arg_criteria['value_datatype'] == 'list':
-                item_key = '.%s[0]' % key
-                item_criteria = command_model.keyMap[item_key]
-                arg_details['kwargs']['default'] = []
-        # toggle type
-                if item_criteria['value_datatype'] == 'number':
-                    if isinstance(item_criteria['declared_value'], int):
-                        arg_details['kwargs']['type'] = int
-                    else:
-                        arg_details['kwargs']['type'] = float
-                elif item_criteria['value_datatype'] == 'string':
-                    arg_details['kwargs']['type'] = str
-                else:
-                    del arg_details['kwargs']['type']
-        # toggle choices
-                if 'discrete_values' in arg_criteria.keys():
-                    if item_criteria['discrete_values']:
-                        value_list = item_criteria['discrete_values']
-                        arg_details['kwargs']['choices'] = value_list
-                elif 'max_value' in item_criteria.keys() and item_criteria['value_datatype'] == 'number':
-                    if isinstance(item_criteria['declared_value'], int):
-                        if 'min_value' in arg_criteria.keys():
-                            if item_criteria['min_value']:
-                                low = int(item_criteria['min_value'])
-                                high = int(item_criteria['max_value']) + 1
-                                arg_details['kwargs']['choices'] = range(low, high)
-                        else:
-                            high = int(item_criteria['max_value']) + 1
-                            arg_details['kwargs']['choices'] = range(high)
-                else:
-                    del arg_details['kwargs']['choices']
-        # toggle action
-                if cli_details['cli_action']:
-                    arg_details['kwargs']['action'] = cli_details['cli_action']
-                else:
-                    del arg_details['kwargs']['action']
-        # toggle nargs
-                if 'min_size' in arg_criteria.keys():
-                    if arg_criteria['min_size']:
-                        if arg_criteria['min_size'] == 1:
-                            arg_details['kwargs']['nargs'] = '+'
-                        else:
-                            arg_details['kwargs']['nargs'] = arg_criteria['min_size']
-                else:
-                    arg_details['kwargs']['nargs'] = '*'
-
-    # skip (unsupported) dict kwargs
-            elif arg_criteria['value_datatype'] == 'map':
-                arg_details = {}
-
-    # assign details to an argument list
-            if arg_details:
-                if not key in arg_list:
-                    arg_list.append(key)
-                    if not cli_details['cli_group']:
-                        if arg_option == 'positional':
-                            arg_details['cli_position'] = cli_details['cli_position']
-                            positional_args.append(arg_details)
-                        else:
-                            optional_args.append(arg_details)
-                    else:
-                        if not cli_details['cli_group'] in exclusive_args.keys():
-                            exclusive_args[cli_details['cli_group']] = []
-                        # arg_details['kwargs']['required'] = True
-                        exclusive_args[cli_details['cli_group']].append(arg_details)
-
-# sort positional arguments by positional key
-    if positional_args:
-        positional_args = sorted(positional_args, key=lambda k: k['cli_position'])
-
-# return properly formatted argument lists
-    return default_args, positional_args, optional_args, exclusive_args
+    from pocketlab import __module__
+    command_name = 'home'
+    from pocketlab.init import fields_model
+    argument_list = extract_signature(__module__, command_name)
+    print(argument_list)
+    d_args, o_args, p_args, e_args = compile_arguments(command_name, argument_list, fields_model)
+    print(d_args)
+    print(o_args)
+    print(p_args)
+    print(e_args)

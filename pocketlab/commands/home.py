@@ -1,63 +1,14 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_home_schema = {
+from pocketlab.init import fields_model
+
+_home_details = {
     'title': 'home',
-    'description': 'Manages the local path information for a project.',
-    'metadata': {
-        'cli_help': 'creates a project home in workdir',
-        'docs_benefit': 'Home makes it easy to locate your projects.',
-        'docs_description': 'Home adds the alias and working directory to the alias registry and (on the first use) adds the alias \'home\' to bash config. On subsequent terminal sessions, typing ```$ home <project>``` will change the working directory to the folder registered under that alias.'
-    },
-    'schema': {
-        'project_name': 'lab',
-        'print_path': False,
-        'overwrite': False,
-        'project_path': ''
-    },
-    'components': {
-        '.overwrite': {
-            'field_description': 'Overwrite an existing project registration',
-            'default_value': False,
-            'field_metadata': {
-                'cli_flags': [ '-f', '--force' ],
-                'cli_help': 'overwrites existing project registration'
-            }
-        },
-        '.project_name': {
-            'field_description': 'Name of project to add to registry',
-            'default_value': '',
-            'max_length': 64,
-            'must_not_contain': [ '[^\w\-_]' ],
-            'field_metadata': {
-                # 'cli_group': 'A',
-                # 'cli_flags': [ '-p', '--project' ],
-                'cli_help': 'name of project to add to registry',
-                'cli_metavar': 'project'
-            }
-        },
-        '.print_path': {
-            'field_description': 'Path to project for home alias in .bashrc',
-            'default_value': False,
-            'field_metadata': {
-                'cli_group': 'A',
-                'cli_flags': [ '--print' ],
-                'cli_help': 'prints path to project home'
-            }
-        },
-        '.project_path': {
-            'field_description': 'Name of project to add to registry',
-            'default_value': '',
-            # 'max_length': 64,
-            # 'must_not_contain': [ '[^\w\-_]' ],
-            'field_metadata': {
-                'cli_group': 'A',
-                'cli_flags': [ '--path' ],
-                'cli_help': 'path to project root',
-                'cli_metavar': 'PATH'
-            }
-        },
-    }
+    'description': 'Home adds the alias and working directory to the alias registry and (on the first use) adds the alias \'home\' to bash config. On subsequent terminal sessions, typing ```$ home <project>``` will change the working directory to the folder registered under that alias.',
+    'help': 'Creates a project home in workdir.',
+    'benefit': 'Home makes it easy to locate your projects.',
+    'epilog': ''
 }
 
 def home(project_name, print_path=False, project_path='', overwrite=False):
@@ -75,15 +26,14 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
     title = 'home'
 
 # validate inputs
-    from jsonmodel.validators import jsonModel
-    input_model = jsonModel(_home_schema)
     input_map = {
         'project_name': project_name,
         'project_path': project_path
     }
     for key, value in input_map.items():
-        object_title = '%s(%s=%s)' % (title, key, str(value))
-        input_model.validate(value, '.%s' % key, object_title)
+        if value:
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            fields_model.validate(value, '.%s' % key, object_title)
 
 # validate requirements
     # TODO boolean algebra method to check not both inputs
@@ -170,6 +120,7 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
         'project_root': path.abspath(project_root)
     }
     registry_client.create(file_name, file_details)
+
     exit_msg = '"%s" added to registry. To return to workdir, run "home %s"' % (project_name, project_name)
     return exit_msg
 
