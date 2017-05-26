@@ -5,71 +5,37 @@ __license__ = 'MIT'
 '''
 update the .ignore file
 update the lab.yaml file
+TODO: update the setup.py file
+TODO: check dependencies and alert new versions
 '''
 
-_update_schema = {
-    'title': 'update',
+_update_details = {
+    'title': 'Update',
     'description': 'Updates the config files for a project with the latest pocketlab configurations.',
-    'metadata': {
-        'cli_help': 'updates a project\'s config files',
-        'docs_benefit': 'Updates projects to latest pocketlab configurations.'
-    },
-    'schema': {
-        'project_name': '',
-        'update_all': False,
-        'verbose': False
-    },
-    'components': {
-        '.project_name': {
-            'field_description': 'Name in registry of project to update',
-            'default_value': '',
-            'max_length': 64,
-            'must_not_contain': [ '[^\w\-_]' ],
-            'field_metadata': {
-                'cli_group': 'A',
-                'cli_flags': [ '-p', '--project' ],
-                'cli_help': 'name in registry of project to update',
-                'cli_metavar': 'PROJ'
-            }
-        },
-        '.update_all': {
-            'field_description': 'Apply update to all projects in registry.',
-            'default_value': False,
-            'field_metadata': {
-                'cli_group': 'A',
-                'cli_flags': [ '-a', '--all' ],
-                'cli_help': 'updates all projects in registry'
-            }
-        },
-        '.verbose': {
-            'field_description': 'Toggle to enable/disable lab messages.',
-            'default_value': True,
-            'field_metadata': {
-                'cli_flags': [ '-q', '--quiet' ],
-                'cli_help': 'turn off lab process messages'
-            }
-        }
-    }
+    'help': 'updates the config files for a project',
+    'benefit': 'Updates projects to latest pocketlab configurations.'
 }
 
-def update(project_name='', update_all=False, verbose=True):
+from pocketlab.init import fields_model
+
+def update(project_list, all=False, verbose=True):
 
     title = 'update'
 
 # validate inputs
-    from jsonmodel.validators import jsonModel
-    input_model = jsonModel(_update_schema)
+    if isinstance(project_list, str):
+        if project_list:
+            project_list = [project_list]
     input_map = {
-        'project_name': project_name
+        'project_list': project_list
     }
     for key, value in input_map.items():
-        object_title = '%s(%s=%s)' % (title, key, str(value))
-        input_model.validate(value, '.%s' % key, object_title)
+        if value:
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            fields_model.validate(value, '.%s' % key, object_title)
 
 # define message insert
     msg_insert = 'project'
-    if project_name:
-        msg_insert = 'project "%s"' % project_name
 
 # retrieve vcs templates
     from pocketlab.methods.vcs import load_ignore
@@ -115,6 +81,7 @@ def update(project_name='', update_all=False, verbose=True):
     # update lab yaml
         from pocketlab import __module__
         from jsonmodel.loader import jsonLoader
+        from jsonmodel.validators import jsonModel
         from labpack.records.settings import save_settings, load_settings
         config_schema = jsonLoader(__module__, 'models/lab-config.json')
         config_model = jsonModel(config_schema)
@@ -132,20 +99,30 @@ def update(project_name='', update_all=False, verbose=True):
                  print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
 
 # construct project list
-    project_list = []
+    update_list = []
 
 # add named project to project list
-    if project_name:
-        from pocketlab.methods.project import retrieve_project_root
-        project_root = retrieve_project_root(project_name)
-        project_details = {
-            'name': project_name,
-            'path': project_root
-        }
-        project_list.append(project_details)
+    if project_list:
+        msg_insert = ''
+        for i in range(len(project_list)):
+            project = project_list[i]
+            if msg_insert:
+                if i + 1 == len(project_list):
+                    msg_insert += ' and '
+                else:
+                    msg_insert += ', '
+            msg_insert += '"%s"' % project
+            from pocketlab.methods.project import retrieve_project_root
+            project_root = retrieve_project_root(project)
+            project_details = {
+                'name': project,
+                'path': project_root
+            }
+            update_list.append(project_details)
 
 # add all projects in registry to project list
-    elif update_all:
+    elif all:
+        msg_insert = 'all projects'
         from pocketlab import __module__
         from labpack.storage.appdata import appdataClient
         registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
@@ -157,16 +134,16 @@ def update(project_name='', update_all=False, verbose=True):
                     'name': details['project_name'],
                     'path': details['project_root']
                 }
-                project_list.append(project_details)
+                update_list.append(project_details)
             except:
                 pass
 
 # add local path to project list
     else:
-        project_list.append({'name':'', 'path':'./'})
+        update_list.append({'name':'', 'path':'./'})
 
 # apply updates
-    for project in project_list:
+    for project in update_list:
         update_kwargs = {
             'root_path': project['path'],
             'project_name': project['name']
@@ -174,8 +151,6 @@ def update(project_name='', update_all=False, verbose=True):
         _apply_update(**update_kwargs)
 
 # construct exit message
-    if update_all:
-        msg_insert = 'all projects'
     exit_msg = 'Configurations for %s have been updated.' % msg_insert
 
     return exit_msg

@@ -7,7 +7,7 @@ from pocketlab.parser import argument_parser
 from pocketlab import __module__
 from importlib import import_module
 
-def cli(error=False):
+def cli(error=False, command=''):
 
 # handle optional error argument
     if error:

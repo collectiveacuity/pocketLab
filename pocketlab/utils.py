@@ -103,6 +103,28 @@ def compile_arguments(command_name, argument_list, fields_model):
         else:
             return None
 
+# define default parser
+    def _determine_default(input):
+
+        if input.lower() == 'true':
+            default = True
+        elif input.lower() == 'false':
+            default = False
+        elif input.lower() == 'none':
+            default = None
+        else:
+            try:
+                try:
+                    default = int(input)
+                except:
+                    default = float(input)
+            except:
+                default = input
+                if default.find('{') > -1 or default.find('[') > -1:
+                    default = None
+
+        return default
+
 # construct argument details
     for argument in argument_list:
 
@@ -152,6 +174,11 @@ def compile_arguments(command_name, argument_list, fields_model):
                 continue
 
         # determine default
+        #     default_value = None
+        #     if arg_default:
+        #         default_value = _determine_default(arg_default)
+        #     if default_value != None:
+        #         details['kwargs']['default'] = default_value
             if 'default_value' in key_map.keys():
                 details['kwargs']['default'] = key_map['default_value']
             else:
@@ -276,7 +303,7 @@ def compile_commands(folder_path, module_name, fields_model, preferred_order=Non
     for command in command_list:
         command_module = import_module('%s.commands.%s' % (module_name, command))
         try:
-            command_help = getattr(command_module, '_%s_details' % command)
+            command_help = getattr(command_module, '_%s_details' % command, None)
             command_method = getattr(command_module, command)
 
     # compile arguments from method signature
@@ -293,16 +320,17 @@ def compile_commands(folder_path, module_name, fields_model, preferred_order=Non
 
     # build command details
             command_details = {
-                'description': 'replace this message with "description" in _command_details',
-                'help': 'replace this message with "help" in _command_details',
+                'description': 'replace this message with "description" in _%s_details' % command,
+                'help': 'replace this message with "help" in _%s_details' % command,
                 'title': command.capitalize(),
-                'benefit': 'replace this message with "benefit" in _command_details',
+                'benefit': 'replace this message with "benefit" in _%s_details' % command,
                 'epilog': ''
             }
-            for key, value in command_details.items():
-                if key in command_help.keys():
-                    if value.__class__ == command_help[key].__class__:
-                        command_details[key] = command_help[key]
+            if command_help:
+                for key, value in command_details.items():
+                    if key in command_help.keys():
+                        if value.__class__ == command_help[key].__class__:
+                            command_details[key] = command_help[key]
             command_details['name'] = command
             command_details['default_args'] = def_args
             command_details['optional_args'] = opt_args

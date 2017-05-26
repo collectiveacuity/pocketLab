@@ -1,0 +1,53 @@
+'''
+References:
+https://python-packaging-user-guide.readthedocs.org/en/latest/
+https://docs.python.org/3.5/distutils/index.html
+https://github.com/jgehrcke/python-cmdline-bootstrap
+http://www.pyinstaller.org/
+
+Installation Packages:
+pip install wheel
+pip install twine
+
+Build Distributions:
+python setup.py sdist --format=gztar,zip
+pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.1.tar.gz
+
+Upload Distributions to PyPi:
+twine register dist/*
+twine upload dist/[module-version]*
+
+Installation:
+pip install [module]
+python setup.py develop  # for local on-the-fly file updates
+python setup.py install  # when possessing distribution files
+
+Uninstall:
+pip uninstall [module]
+python setup.py develop --uninstall # for removing symbolic link
+# remove command line tool in ../Python/Python35-32/Scripts/
+
+CLI Installation:
+command = 'name of command'
+module = 'name of module'
+    entry_points = {
+        "console_scripts": ['%s = %s.cli:cli' % (command, module)]
+    },
+
+System Installation:
+# http://www.pyinstaller.org/
+
+Mercurial Dev Setup:
+.hgignore (add dist/, *.egg-info/, '.git/')
+hgrc [paths] default = ssh://hg@bitbucket.org/collectiveacuity/pocketlab
+
+Git Public Setup:
+.gitignore (add dist/, *.egg-info/, dev/, tests_dev/, docs/, .hg/, .hgignore)
+git init
+git remote add origin https://github.com/collectiveacuity/pocketLab.git
+
+Git Public Updates:
+git add -A
+git commit -m 'updates'
+git push origin master
+'''

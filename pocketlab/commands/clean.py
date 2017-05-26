@@ -8,26 +8,11 @@ TODO: remove broken/previous docker images from docker
 TODO: remove exited status 1 containers from docker
 '''
 
-_clean_schema = {
+_clean_details = {
     'title': 'clean',
     'description': 'Removes broken resources from the registries.',
-    'metadata': {
-        'cli_help': 'cleans registries of broken resources',
-        'docs_benefit': 'Frees up space by removing superfluous files.'
-    },
-    'schema': {
-        'verbose': False
-    },
-    'components': {
-        '.verbose': {
-            'field_description': 'Toggle to enable/disable lab messages.',
-            'default_value': True,
-            'field_metadata': {
-                'cli_flags': [ '-q', '--quiet' ],
-                'cli_help': 'turn off lab process messages'
-            }
-        }
-    }
+    'help': 'cleans registries of broken resources',
+    'benefit': 'Frees up space by removing superfluous files.'
 }
 
 def clean(verbose=True):

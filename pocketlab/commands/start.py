@@ -1,54 +1,32 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-_start_schema = {
-    'title': 'start',
+_start_details = {
+    'title': 'Start',
     'description': 'Initiates a container with the image from a project',
-    'metadata': {
-        'cli_help': 'initiates a container with project',
-        'docs_benefit': 'WIP'
-    },
-    'schema': {
-        'verbose': False,
-        'virtualbox': ''
-    },
-    'components': {
-        '.verbose': {
-            'field_description': 'Toggle to enable/disable lab messages.',
-            'default_value': True,
-            'field_metadata': {
-                'cli_flags': [ '-q', '--quiet' ],
-                'cli_help': 'turn off lab process messages'
-            }
-        },
-        '.virtualbox': {
-            'field_description': 'Name of virtualbox image in which to run service.',
-            'default_value': 'default',
-            'max_length': 64,
-            'field_metadata': {
-                'cli_metavar': 'VIRTUALBOX',
-                'cli_help': 'name of docker virtualbox (default: %(default)s)',
-                'cli_flags': [ '--virtualbox' ]
-            }
-        }
-    }
+    'help': 'initiates a container for project',
+    'benefit': 'WIP'
 }
 
-def start(*args, verbose=True, virtualbox='default'):
+from pocketlab.init import fields_model
+
+def start(project_list, verbose=True, virtualbox='default'):
 
     title = 'start'
 
 # validate inputs
-    from jsonmodel.validators import jsonModel
-    input_model = jsonModel(_start_schema)
+    if isinstance(project_list, str):
+        if project_list:
+            project_list = [project_list]
     input_fields = {
+        'project_list': project_list,
         'verbose': verbose,
         'virtualbox': virtualbox
     }
     for key, value in input_fields.items():
         if value:
             object_title = '%s(%s=%s)' % (title, key, str(value))
-            input_model.validate(value, '.%s' % key, object_title)
+            fields_model.validate(value, '.%s' % key, object_title)
 
 # validate requirements
 #     # TODO boolean algebra method to check not both inputs

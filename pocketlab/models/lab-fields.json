@@ -2,6 +2,7 @@
   "schema": {
     "project_name": "lab",
     "project_path": "~/lab",
+    "project_list": [ "lab" ],
     "vcs_service": "git",
     "resource_type": "projects",
     "virtualbox": "default",
@@ -20,7 +21,7 @@
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
         "cli_flag": [ "-p", "--project" ],
-        "cli_help": "Name of project in lab registry.",
+        "cli_help": "name of project in lab registry",
         "cli_metavar": "PROJECT"
       }
     },
@@ -29,8 +30,23 @@
       "default_value": "",
       "field_metadata": {
         "cli_flags": [ "--path" ],
-        "cli_help": "Path to project root."
+        "cli_help": "path to project root"
       }
+    },
+    ".project_list": {
+      "field_description": "List of projects in lab registry.",
+      "min_size": 0,
+      "field_metadata": {
+        "cli_flag": [ "-p", "--projects" ],
+        "cli_help": "list of projects in lab registry",
+        "cli_metavar": "PROJECT"
+      }
+    },
+    ".project_list[0]": {
+      "field_description": "Project in list of projects from lab registry",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]" ]
     },
     ".vcs_service": {
       "field_description": "Version control system used by project",
@@ -38,7 +54,7 @@
       "discrete_values": [ "", "git", "Git", "mercurial", "Mercurial" ],
       "field_metadata": {
         "cli_flags": [ "--vcs" ],
-        "cli_help": "VCS service to generate ignore file."
+        "cli_help": "VCS service to generate ignore file"
       }
     },
     ".resource_type": {
@@ -47,7 +63,7 @@
       "discrete_values": [ "projects" ],
       "field_metadata": {
         "cli_flags": [ "--resource" ],
-        "cli_help": "Type of lab resource. eg. projects, images...",
+        "cli_help": "type of lab resource. eg. projects, images...",
         "cli_metavar": "RESOURCE"
       }
     },
@@ -57,7 +73,7 @@
       "max_length": 64,
       "field_metadata": {
         "cli_flags": [ "--virtualbox" ],
-        "cli_help": "Name of docker virtualbox on Win7/8. (default: %(default)s)"
+        "cli_help": "name of docker virtualbox on Win7/8 (default: %(default)s)"
       }
     },
     ".container_alias": {
@@ -67,7 +83,7 @@
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
         "cli_flags": [ "--container" ],
-        "cli_help": "Alias for docker container for project."
+        "cli_help": "alias for docker container for project"
       }
     },
     ".image_name": {
@@ -77,7 +93,7 @@
       "must_not_contain": [ "[^\\w\\-_/]" ],
       "field_metadata": {
         "cli_flags": [ "--image" ],
-        "cli_help": "Name for docker image for project."
+        "cli_help": "name for docker image for project"
       }
     },
     ".verbose": {
@@ -85,7 +101,7 @@
       "default_value": true,
       "field_metadata": {
           "cli_flags": [ "-q", "--quiet" ],
-          "cli_help": "Turn off lab process messages."
+          "cli_help": "turn off lab process messages"
       }
     },
     ".all": {
@@ -93,7 +109,7 @@
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "-a", "--all" ],
-        "cli_help": "Apply to all projects in registry."
+        "cli_help": "apply to all projects in registry"
       }
     },
     ".overwrite": {
@@ -101,7 +117,7 @@
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "-f", "--force" ],
-        "cli_help": "Overwrite the existing resource."
+        "cli_help": "overwrite the existing resource"
       }
     },
     ".print_path": {
@@ -109,7 +125,7 @@
       "default_value": false,
       "field_metadata": {
           "cli_flags": [ "--print" ],
-          "cli_help": "Prints path."
+          "cli_help": "prints path of project root"
       }
     }
   }
