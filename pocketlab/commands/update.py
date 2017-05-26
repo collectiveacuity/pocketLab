@@ -5,8 +5,8 @@ __license__ = 'MIT'
 '''
 update the .ignore file
 update the lab.yaml file
-TODO: update the setup.py file
 TODO: check dependencies and alert new versions
+TODO: update the setup.py file
 '''
 
 _update_details = {
@@ -26,10 +26,10 @@ def update(project_list, all=False, verbose=True):
     if isinstance(project_list, str):
         if project_list:
             project_list = [project_list]
-    input_map = {
+    input_fields = {
         'project_list': project_list
     }
-    for key, value in input_map.items():
+    for key, value in input_fields.items():
         if value:
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
@@ -72,11 +72,11 @@ def update(project_list, all=False, verbose=True):
                 new_text = merge_ignores(old_text, vcs_templates[key])
                 new_hash = hashlib.sha1(new_text.encode('utf-8')).hexdigest()
                 if old_hash != new_hash:
+                    with open(value['path'], 'wt') as f:
+                        f.write(new_text)
+                        f.close()
                     if verbose:
                         print('%s file for %s updated.' % (value['name'], msg_insert))
-                    # with open(value['path'], 'rt') as f:
-                    #     f.write(new_text)
-                    #     f.close()
 
     # update lab yaml
         from pocketlab import __module__
@@ -85,16 +85,20 @@ def update(project_list, all=False, verbose=True):
         from labpack.records.settings import save_settings, load_settings
         config_schema = jsonLoader(__module__, 'models/lab-config.json')
         config_model = jsonModel(config_schema)
-        template_config = config_model.ingest(**{})
+        template_config = config_model.ingest()
         config_path = path.join(root_path, 'lab.yaml')
         if path.exists(config_path):
             try:
                 old_config = load_settings(config_path)
                 template_config.update(**old_config)
                 if old_config != template_config:
+                    from pocketlab.methods.config import compile_yaml
+                    config_text = compile_yaml(config_schema, config_path)
+                    with open(config_path, 'wt') as f:
+                        f.write(config_text)
+                        f.close()
                     if verbose:
                         print('lab.yaml file for %s updated.' % msg_insert)
-                        # save_settings(config_path, template_config)
             except:
                  print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
 

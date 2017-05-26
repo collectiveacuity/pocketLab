@@ -1,4 +1,7 @@
 {
+  "metadata": {
+    "comments": "lab project configuration file"
+  },
   "schema": {
     "docker_image_name": "flaskserver",
     "docker_container_alias": "server",
@@ -11,9 +14,6 @@
     "docker_environment_variables": {
       "PORT": "5000"
     }
-  },
-  "metadata": {
-    "comments": "lab project configuration file"
   },
   "components": {
     ".docker_image_name": {

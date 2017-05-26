@@ -8,43 +8,27 @@ TODO: list images
 TODO: list containers
 '''
 
-_list_schema = {
-    'title': 'list',
+_list_details = {
+    'title': 'List',
     'description': 'Generates a list of the resources of a specific type.',
-    'metadata': {
-        'cli_help': 'lists the instances of a resource type'
-    },
-    'schema': {
-        'resource_type': 'projects'
-    },
-    'components': {
-        '.resource_type': {
-            'field_description': 'Type of lab resource. eg. projects, images...',
-            'default_value': 'projects',
-            'discrete_values': [ 'projects' ],
-            'field_metadata': {
-                # 'cli_group': 'A',
-                # 'cli_flags': [ '-p', '--project' ],
-                'cli_help': 'type of lab resource. eg. projects, images...',
-                'cli_metavar': 'resource'
-            }
-        }
-    }
+    'help': 'lists the instances of a resource type',
+    'benefit': 'WIP'
 }
+
+from pocketlab.init import fields_model
 
 def list(resource_type):
 
     title = 'list'
 
 # validate inputs
-    from jsonmodel.validators import jsonModel
-    input_model = jsonModel(_list_schema)
     input_fields = {
         'resource_type': resource_type
     }
     for key, value in input_fields.items():
-        object_title = '%s(%s=%s)' % (title, key, str(value))
-        input_model.validate(value, '.%s' % key, object_title)
+        if value:
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            fields_model.validate(value, '.%s' % key, object_title)
 
 # construct registry client
     from pocketlab import __module__

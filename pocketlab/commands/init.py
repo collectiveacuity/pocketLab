@@ -2,6 +2,14 @@ __author__ = 'rcj1492'
 __created__ = '2017.05'
 __license__ = 'MIT'
 
+'''
+add .ignore file
+add lab.yaml file
+add cred & data folders
+copy cred files from notes to cred
+TODO: python module setup (setup.py, docs folder, <module> folder, __init__)
+'''
+
 _init_details = {
     'title': 'Init',
     'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.',
@@ -67,56 +75,15 @@ def init(vcs_service=''):
     # retrieve config model
         from pocketlab import __module__
         from jsonmodel.loader import jsonLoader
-        from jsonmodel.validators import jsonModel
         config_schema = jsonLoader(__module__, 'models/lab-config.json')
-        config_model = jsonModel(config_schema)
 
-    # construct order dict
-        config_list = []
-        config_details = config_model.ingest()
-        for key, value in config_details.items():
-            details = {
-                'key': key,
-                'value': value,
-                'position': 0,
-                'comments': ''
-            }
-            comp_key = '.%s' % key
-            if comp_key in config_model.keyMap.keys():
-                if 'field_metadata' in config_model.keyMap[comp_key].keys():
-                    metadata = config_model.keyMap[comp_key]['field_metadata']
-                    if 'position' in metadata.keys():
-                        if isinstance(metadata['position'], int):
-                            details['position'] = metadata['position']
-                    if 'comments' in metadata.keys():
-                        if isinstance(metadata['comments'], str):
-                            details['comments'] = metadata['comments']
-            config_list.append(details)
-        config_list.sort(key=lambda k: k['position'])
+    # compile yaml
+        from pocketlab.methods.config import compile_yaml
+        config_text = compile_yaml(config_schema)
 
-    # save to file with comments
+    # save config text
         with open(config_path, 'wt') as f:
-            if 'comments' in config_model.metadata.keys():
-                if isinstance(config_model.metadata['comments'], str):
-                    comment_lines = config_model.metadata['comments'].splitlines()
-                    for comment in comment_lines:
-                        comment_text = '# %s\n' % comment
-                        f.write(comment_text)
-            for item in config_list:
-                comment_stub = '\n'
-                if item['comments']:
-                    comment_stub = ' # %s\n' % item['comments']
-                if isinstance(item['value'], dict):
-                    line_text = '%s:%s' % (item['key'], comment_stub)
-                    for key, value in item['value'].items():
-                        line_text += '  %s: %s\n' % (key, value)
-                elif isinstance(item['value'], list):
-                    line_text = '%s:%s' % (item['key'], comment_stub)
-                    for sub_item in item['value']:
-                        line_text += '  - %s\n' % sub_item
-                else:
-                    line_text = '%s: %s%s' % (item['key'], str(item['value']), comment_stub)
-                f.write(line_text)
+            f.write(config_text)
             f.close()
 
 # add a data folder
@@ -155,4 +122,4 @@ if __name__ == "__main__":
     from jsonmodel.validators import jsonModel
     config_path = '../models/lab-config.json'
     config_model = jsonModel(load_settings(config_path))
-    print(config_model.ingest(**{}))
+    print(config_model.ingest())
