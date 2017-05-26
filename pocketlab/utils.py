@@ -330,7 +330,10 @@ def compile_commands(folder_path, module_name, fields_model, preferred_order=Non
                 for key, value in command_details.items():
                     if key in command_help.keys():
                         if value.__class__ == command_help[key].__class__:
-                            command_details[key] = command_help[key]
+                            help_value = command_help[key]
+                            if isinstance(help_value, str):
+                                help_value = help_value.replace('```$ ','\'').replace('```', '\'')
+                            command_details[key] = help_value
             command_details['name'] = command
             command_details['default_args'] = def_args
             command_details['optional_args'] = opt_args

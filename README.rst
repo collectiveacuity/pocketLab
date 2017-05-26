@@ -28,7 +28,7 @@ From GitHub::
 ===============
 Getting Started
 ===============
-This module is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon docker to provide consistency across development environments but it also streamlines the docker workflow without compromising the security of credentials and sensitive code.
+This module is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon Docker to provide consistency across development environments but it also streamlines the Docker workflow without compromising the security of credentials and sensitive code.
 
 Register a project in the working directory::
 

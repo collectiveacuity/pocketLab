@@ -8,6 +8,7 @@
     "virtualbox": "default",
 	"container_alias": "server",
     "image_name": "flaskserver",
+    "module_name": "pocketlab",
     "verbose": true,
     "all": true,
     "overwrite": true,
@@ -90,10 +91,19 @@
       "field_description": "Docker image name to add to project config",
       "default_value": "",
       "max_length": 64,
-      "must_not_contain": [ "[^\\w\\-_/]" ],
+      "must_not_contain": [ "[^\\w\\-_/:]" ],
       "field_metadata": {
         "cli_flags": [ "--image" ],
         "cli_help": "name for docker image for project"
+      }
+    },
+    ".module_name": {
+      "field_description": "Python module name",
+      "max_length": 64,
+      "must_contain": [ "^[a-z\\d\\-]+$" ],
+      "field_metadata": {
+        "cli_flags": [ "--module" ],
+        "cli_help": "name for python module"
       }
     },
     ".verbose": {

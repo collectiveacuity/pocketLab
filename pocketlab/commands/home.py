@@ -5,7 +5,7 @@ from pocketlab.init import fields_model
 
 _home_details = {
     'title': 'home',
-    'description': 'Home adds the alias and working directory to the alias registry and (on the first use) adds the alias \'home\' to bash config. On subsequent terminal sessions, typing ```$ home <project>``` will change the working directory to the folder registered under that alias.',
+    'description': 'Home adds the project name and working directory to the project registry. On its first run, it also adds the alias \'home\' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <project>``` will change the working directory to the folder registered under the project name.',
     'help': 'creates a project home in workdir',
     'benefit': 'Home makes it easy to locate your projects.',
     'epilog': ''
