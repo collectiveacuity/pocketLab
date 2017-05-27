@@ -12,7 +12,8 @@
     "verbose": true,
     "all": true,
     "overwrite": true,
-    "print_path": true
+    "print_path": true,
+    "paginate": true
   },
   "components": {
     ".project_name": {
@@ -136,6 +137,14 @@
       "field_metadata": {
           "cli_flags": [ "--print" ],
           "cli_help": "prints path of project root"
+      }
+    },
+    ".paginate": {
+      "field_description": "Break up results into separate results.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--more" ],
+        "cli_help": "paginate results longer than console height"
       }
     }
   }

@@ -81,8 +81,8 @@ setup(
     install_requires=[
         'jsonmodel',
         'labpack',
-        'tabulate',
-        'ruamel.yaml'
+        'tabulate>=0.7.7',
+        'ruamel.yaml>=0.14.12'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
