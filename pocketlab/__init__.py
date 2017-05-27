@@ -6,5 +6,5 @@ __module__ = 'pocketlab'
 __license__ = 'MIT'
 __team__ = 'Collective Acuity'
 __email__ = 'support@collectiveacuity.com'
-__url__ = 'https://bitbucket.org/collectiveacuity/pocketlab'
-__order__ = [ 'home', 'init', 'list', 'start', 'update', 'clean', 'devtest' ]
+__url__ = 'https://github.com/collectiveacuity/pocketLab'
+__order__ = [ 'home', 'init', 'list', 'update', 'remove', 'clean' ]
