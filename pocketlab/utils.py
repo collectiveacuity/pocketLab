@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.10'
 __license__ = 'MIT'
 
-from pocketlab.init import logging
+# from pocketlab.init import logging circular dependency
 from jsonmodel.validators import jsonModel
 
 def inject_defaults(command_schema, default_schema):
@@ -157,7 +157,7 @@ def compile_arguments(command_name, argument_list, fields_model):
 
     # modify defaults based upon values from fields model
         if not arg_name in fields_model.schema.keys():
-            logging.debug('%s(%s) missing from fields model.' % (command_name, arg_name))
+            print('%s(%s) missing from fields model.' % (command_name, arg_name))
         else:
             key_map = fields_model.keyMap['.%s' % arg_name]
             cli_details = key_map['field_metadata']
@@ -275,7 +275,7 @@ def compile_arguments(command_name, argument_list, fields_model):
 
     return default_args, optional_args, positional_args, exclusive_args
 
-def compile_commands(folder_path, module_name, fields_model, preferred_order=None):
+def compile_commands(folder_path, module_name, fields_model, preferred_order=None, preserve_markdown=False):
 
     import re
     import inspect
@@ -331,7 +331,7 @@ def compile_commands(folder_path, module_name, fields_model, preferred_order=Non
                     if key in command_help.keys():
                         if value.__class__ == command_help[key].__class__:
                             help_value = command_help[key]
-                            if isinstance(help_value, str):
+                            if isinstance(help_value, str) and not preserve_markdown:
                                 help_value = help_value.replace('```$ ','\'').replace('```', '\'')
                             command_details[key] = help_value
             command_details['name'] = command
