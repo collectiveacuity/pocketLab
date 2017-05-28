@@ -3,7 +3,7 @@ __created__ = '2017.05'
 __license__ = 'MIT'
 
 '''
-list projects
+list services
 TODO: list images
 TODO: list containers
 '''
@@ -38,7 +38,7 @@ def list(resource_type, paginate=False):
 
 # list projects
     exit_msg = ''
-    if resource_type == 'projects':
+    if resource_type == 'services':
 
     # construct registry client
         from pocketlab import __module__
@@ -48,23 +48,23 @@ def list(resource_type, paginate=False):
     # walk registry to compile list of project
         from tabulate import tabulate
         from labpack.records.settings import load_settings
-        project_list = []
+        service_list = []
         left_width = 0
-        table_headers = ['Project', 'Path']
+        table_headers = ['Service', 'Path']
         for file_path in registry_client.localhost.walk(registry_client.collection_folder):
             try:
                 details = load_settings(file_path)
-                project_name = details['project_name']
-                project_root = details['project_root']
-                if len(project_name) > left_width:
-                    left_width = len(project_name)
-                project_list.append([project_name, project_root])
+                service_name = details['service_name']
+                service_root = details['service_root']
+                if len(service_name) > left_width:
+                    left_width = len(service_name)
+                service_list.append([service_name, service_root])
             except:
                 pass
 
     # format list of projects
         formatted_rows = []
-        for row in project_list:
+        for row in service_list:
             row_width = left_width + 2 + len(row[1])
             path_text = row[1]
             if row_width > console_columns:
@@ -98,5 +98,8 @@ def list(resource_type, paginate=False):
             table_text = tabulate(formatted_rows, headers=table_headers)
             print(table_text)
 
+# list images
+    elif resource_type == 'images':
+        pass
 
     return exit_msg

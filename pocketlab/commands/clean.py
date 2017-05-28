@@ -3,7 +3,7 @@ __created__ = '2017.05'
 __license__ = 'MIT'
 
 '''
-remove projects with non-existent roots from registry
+remove services with non-existent roots from registry
 TODO: remove broken/previous docker images from docker
 TODO: remove exited status 1 containers from docker
 '''
@@ -29,9 +29,9 @@ def clean(verbose=True):
         remove_file = False
         try:
             details = load_settings(file_path)
-            project_name = details['project_name']
-            project_root = details['project_root']
-            if not path.exists(project_root):
+            service_name = details['service_name']
+            service_root = details['service_root']
+            if not path.exists(service_root):
                 remove_file = True
         except:
             remove_file = True
@@ -39,7 +39,7 @@ def clean(verbose=True):
             if verbose:
                 file_root, file_ext = path.splitext(file_path)
                 file_dir, file_name = path.split(file_root)
-                print('Broken project "%s" removed from lab registry.' % file_name)
+                print('Broken service "%s" removed from lab registry.' % file_name)
             remove_settings(file_path)
 
 # TODO remove docker containers with exit 1 status

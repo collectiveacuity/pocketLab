@@ -5,30 +5,30 @@ from pocketlab.init import fields_model
 
 _home_details = {
     'title': 'home',
-    'description': 'Home adds the project name and working directory to the project registry. On its first run, it also adds the alias \'home\' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <project>``` will change the working directory to the folder registered under the project name.',
-    'help': 'creates a project home in workdir',
-    'benefit': 'Home makes it easy to locate your projects.',
+    'description': 'Home adds the service name and working directory to the lab registry. On its first run, it also adds the alias \'home\' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <service>``` will change the working directory to the folder registered under the service name.',
+    'help': 'creates a home for service in workdir',
+    'benefit': 'Home makes it easy to locate your services.',
     'epilog': ''
 }
 
-def home(project_name, print_path=False, project_path='', overwrite=False):
+def home(service_name, print_path=False, service_path='', overwrite=False):
 
     '''
-        a method to manage the local path information for a project
+        a method to manage the local path information for a service
 
-    :param project_name: string with name of project to add to registry
-    :param print_path: [optional] boolean to retrieve local path of project from registry
-    :param project_path: [optional] string with path to project root
-    :param overwrite: [optional] boolean to overwrite existing project registration
-    :return: string with local path to project
+    :param service_name: string with name of service to add to registry
+    :param print_path: [optional] boolean to retrieve local path of service from registry
+    :param service_path: [optional] string with path to service root
+    :param overwrite: [optional] boolean to overwrite existing service registration
+    :return: string with local path to service
     '''
 
     title = 'home'
 
 # validate inputs
     input_map = {
-        'project_name': project_name,
-        'project_path': project_path
+        'service_name': service_name,
+        'service_path': service_path
     }
     for key, value in input_map.items():
         if value:
@@ -41,18 +41,18 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
 # resolve print path request
     if print_path:
 
-    # retrieve project root
-        from pocketlab.methods.project import retrieve_project_root
-        command_context = 'Try running "lab home %s" first from its root.' % project_name
-        project_root = retrieve_project_root(project_name, command_context)
+    # retrieve service root
+        from pocketlab.methods.service import retrieve_service_root
+        command_context = 'Try running "lab home %s" first from its root.' % service_name
+        service_root = retrieve_service_root(service_name, command_context)
 
     # return root path to bash command
         import sys
-        exit_msg = 'Transport to "%s" underway.;%s' % (project_name, project_root)
+        exit_msg = 'Transport to "%s" underway.;%s' % (service_name, service_root)
         print(exit_msg)
         sys.exit()
 
-# resolve project request
+# resolve service request
 
 # validate existence of home alias
     from os import path
@@ -98,30 +98,30 @@ def home(project_name, print_path=False, project_path='', overwrite=False):
     from labpack.storage.appdata import appdataClient
     registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
 
-# validate project name is not already in registry
-    file_name = '%s.yaml' % project_name
+# validate service name is not already in registry
+    file_name = '%s.yaml' % service_name
     filter_function = registry_client.conditional_filter([{0:{'discrete_values':[file_name]}}])
-    project_list = registry_client.list(filter_function=filter_function)
-    if file_name in project_list:
+    service_list = registry_client.list(filter_function=filter_function)
+    if file_name in service_list:
         if not overwrite:
             suggest_msg = 'Add -f to overwrite.'
-            raise ValueError('"%s" already exists in the registry. %s' % (project_name, suggest_msg))
+            raise ValueError('"%s" already exists in the registry. %s' % (service_name, suggest_msg))
 
-# add project to registry
-    project_root = './'
-    if project_path:
-        if not path.exists(project_path):
-            raise ValueError('"%s" is not a valid path.' % project_path)
-        elif not path.isdir(project_path):
-            raise ValueError('"%s" is not a valid directory.' % project_path)
-        project_root = project_path
+# add service to registry
+    service_root = './'
+    if service_path:
+        if not path.exists(service_path):
+            raise ValueError('"%s" is not a valid path.' % service_path)
+        elif not path.isdir(service_path):
+            raise ValueError('"%s" is not a valid directory.' % service_path)
+        service_root = service_path
     file_details = {
-        'project_name': project_name,
-        'project_root': path.abspath(project_root)
+        'service_name': service_name,
+        'service_root': path.abspath(service_root)
     }
     registry_client.create(file_name, file_details)
 
-    exit_msg = '"%s" added to registry. To return to workdir, run "home %s"' % (project_name, project_name)
+    exit_msg = '"%s" added to registry. To return to workdir, run "home %s"' % (service_name, service_name)
     return exit_msg
 
 if __name__ == '__main__':
@@ -136,31 +136,31 @@ if __name__ == '__main__':
     from pocketlab import __module__
     from labpack.storage.appdata import appdataClient
     registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
-    unittest_project = 'unittest_project_name_%s' % str(time()).replace('.', '')
+    unittest_service = 'unittest_service_name_%s' % str(time()).replace('.', '')
 
 # test invalid name exception
     from jsonmodel.exceptions import InputValidationError
     with pytest.raises(InputValidationError):
         home('not valid')
 
-# test new project
-    assert home(unittest_project).find(unittest_project)
+# test new service
+    assert home(unittest_service).find(unittest_service)
 
-# test existing project exception
+# test existing service exception
     with pytest.raises(ValueError):
-        home(unittest_project)
+        home(unittest_service)
 
-# test existing project overwrite
-    assert home(project_name=unittest_project, overwrite=True).find(unittest_project)
-    registry_client.delete('%s.yaml' % unittest_project)
+# test existing service overwrite
+    assert home(service_name=unittest_service, overwrite=True).find(unittest_service)
+    registry_client.delete('%s.yaml' % unittest_service)
 
 # test path option
-    assert home(unittest_project, project_path='../').find(unittest_project)
+    assert home(unittest_service, service_path='../').find(unittest_service)
 
 # test invalid path exception
     with pytest.raises(ValueError):
-        home(unittest_project, project_path='./home.py')
-    registry_client.delete('%s.yaml' % unittest_project)
+        home(unittest_service, service_path='./home.py')
+    registry_client.delete('%s.yaml' % unittest_service)
 
 
 

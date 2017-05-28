@@ -11,23 +11,23 @@ TODO: update the setup.py file
 
 _update_details = {
     'title': 'Update',
-    'description': 'Updates the config files for a project with the latest pocketlab configurations.',
-    'help': 'updates the config files for a project',
-    'benefit': 'Updates projects to latest pocketlab configurations.'
+    'description': 'Updates the configuration files for a service with the latest pocketlab configurations.',
+    'help': 'updates the config files for a service',
+    'benefit': 'Keeps your services up-to-date with the latest configurations.'
 }
 
 from pocketlab.init import fields_model
 
-def update(project_list, all=False, verbose=True):
+def update(service_list, all=False, verbose=True):
 
     title = 'update'
 
 # validate inputs
-    if isinstance(project_list, str):
-        if project_list:
-            project_list = [project_list]
+    if isinstance(service_list, str):
+        if service_list:
+            service_list = [service_list]
     input_fields = {
-        'project_list': project_list
+        'service_list': service_list
     }
     for key, value in input_fields.items():
         if value:
@@ -35,7 +35,7 @@ def update(project_list, all=False, verbose=True):
             fields_model.validate(value, '.%s' % key, object_title)
 
 # define message insert
-    msg_insert = 'project'
+    msg_insert = 'service'
 
 # retrieve vcs templates
     from pocketlab.methods.vcs import load_ignore
@@ -44,12 +44,12 @@ def update(project_list, all=False, verbose=True):
         'mercurial': load_ignore(vcs='mercurial')
     }
 
-    def _apply_update(root_path, project_name=''):
+    def _apply_update(root_path, service_name=''):
 
     # construct message
-        msg_insert = 'project'
-        if project_name:
-            msg_insert = 'project "%s"' % project_name
+        msg_insert = 'service'
+        if service_name:
+            msg_insert = 'service "%s"' % service_name
 
     # update vcs ignore
         import hashlib
@@ -102,31 +102,31 @@ def update(project_list, all=False, verbose=True):
             except:
                  print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
 
-# construct project list
+# construct service list
     update_list = []
 
-# add named project to project list
-    if project_list:
+# add named service to service list
+    if service_list:
         msg_insert = ''
-        for i in range(len(project_list)):
-            project = project_list[i]
+        for i in range(len(service_list)):
+            service = service_list[i]
             if msg_insert:
-                if i + 1 == len(project_list):
+                if i + 1 == len(service_list):
                     msg_insert += ' and '
                 else:
                     msg_insert += ', '
-            msg_insert += '"%s"' % project
-            from pocketlab.methods.project import retrieve_project_root
-            project_root = retrieve_project_root(project)
-            project_details = {
-                'name': project,
-                'path': project_root
+            msg_insert += '"%s"' % service
+            from pocketlab.methods.service import retrieve_service_root
+            service_root = retrieve_service_root(service)
+            service_details = {
+                'name': service,
+                'path': service_root
             }
-            update_list.append(project_details)
+            update_list.append(service_details)
 
-# add all projects in registry to project list
+# add all services in registry to service list
     elif all:
-        msg_insert = 'all projects'
+        msg_insert = 'all services'
         from pocketlab import __module__
         from labpack.storage.appdata import appdataClient
         registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
@@ -134,23 +134,23 @@ def update(project_list, all=False, verbose=True):
         for file_path in registry_client.localhost.walk(registry_client.collection_folder):
             try:
                 details = load_settings(file_path)
-                project_details = {
-                    'name': details['project_name'],
-                    'path': details['project_root']
+                service_details = {
+                    'name': details['service_name'],
+                    'path': details['service_root']
                 }
-                update_list.append(project_details)
+                update_list.append(service_details)
             except:
                 pass
 
-# add local path to project list
+# add local path to service list
     else:
         update_list.append({'name':'', 'path':'./'})
 
 # apply updates
-    for project in update_list:
+    for service in update_list:
         update_kwargs = {
-            'root_path': project['path'],
-            'project_name': project['name']
+            'root_path': service['path'],
+            'service_name': service['name']
         }
         _apply_update(**update_kwargs)
 

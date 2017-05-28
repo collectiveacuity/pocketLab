@@ -9,6 +9,14 @@ data/
 appdata/
 
 ############### distro files  ##################
+*.egg
+*.manifest
+*.spec
+.eggs/
+.webassets-cache/
+hooks/
+platforms/
+plugins/
 build/
 .Python
 develop-eggs/
@@ -34,6 +42,7 @@ docs/
 tests_dev/
 
 ###############   IDE files   ##################
+*.so
 .DS_STORE
 .netbeans
 nbproject
@@ -50,4 +59,8 @@ Thumbs.db
 
 ############## tinkering scripts ###############
 tinker/
+#################  dependencies   #################
+node_modules/
 
+#################   backup sync   #################
+*.gdoc
