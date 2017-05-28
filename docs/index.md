@@ -14,7 +14,7 @@ by [Collective Acuity](http://collectiveacuity.com)
     </tr>
     <tr>
       <td><b>Documentation</b></td>
-      <td><a href="https://pocketlab.github.io">https://pocketlab.github.io</a></td>
+      <td><a href="https://pocketlab.github.io">https://collectiveacuity.github.io/pocketLab/</a></td>
     </tr>
   </tbody>
 </table>

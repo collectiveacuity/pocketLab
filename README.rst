@@ -10,7 +10,7 @@ pocketLab
 
 :Downloads: http://pypi.python.org/pypi/pocketLab
 :Source: https://github.com/collectiveacuity/pocketLab
-:Documentation: https://pocketlab.github.io
+:Documentation: https://collectiveacuity.github.io/pocketLab/
 
 ============
 Installation
@@ -46,4 +46,4 @@ Initialize the lab framework in the working directory::
 
 For a list of all the commands, refer to the
 `Reference Documentation on GitHub
-<https://pocketlab.github.io/commands/>`_
+<https://collectiveacuity.github.io/pocketLab/commands/>`_
