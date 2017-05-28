@@ -1,31 +1,3 @@
-from setuptools import setup, find_packages
-from pocketlab.methods.config import inject_init
-
-init_path = 'pocketlab/__init__.py'
-readme_path = 'README.rst'
-setup_kwargs = {
-    'include_package_data': True, # Checks MANIFEST.in for explicit rules
-    'packages': find_packages(),
-    'install_requires': [
-        'jsonmodel',
-        'labpack',
-        'tabulate>=0.7.7',
-        'ruamel.yaml>=0.14.12'
-    ],
-    # https://docs.python.org/3.6/distutils/setupscript.html#additional-meta-data
-    'classifiers': [
-        'Development Status :: 3 - Alpha',
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Natural Language :: English',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.5'
-    ]
-}
-setup_kwargs = inject_init(init_path, readme_path, setup_kwargs)
-setup(**setup_kwargs)
-
 ''' DOCUMENTATION
 References:
 https://python-packaging-user-guide.readthedocs.org/en/latest/
@@ -39,7 +11,7 @@ pip install twine
 
 Build Distributions:
 python setup.py sdist --format=gztar,zip
-pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.3.tar.gz
+pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.1.tar.gz
 
 Upload (or Register) Distributions to PyPi:
 twine upload dist/[module-version]*
@@ -52,7 +24,7 @@ Installation:
 pip install [module]
 python setup.py develop  # for local on-the-fly file updates
 python setup.py install  # when possessing distribution files
-pip install dist/pocketlab-0.3-py3-none-any.whl # when possessing wheel file
+pip install dist/pocketlab-0.1-py3-none-any.whl # when possessing wheel file
 
 Uninstall:
 pip uninstall [module]

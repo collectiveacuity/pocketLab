@@ -35,7 +35,7 @@ def update(service_list, all=False, verbose=True):
             fields_model.validate(value, '.%s' % key, object_title)
 
 # define message insert
-    msg_insert = 'service'
+    msg_insert = 'local service'
 
 # retrieve vcs templates
     from pocketlab.methods.vcs import load_ignore
@@ -47,7 +47,7 @@ def update(service_list, all=False, verbose=True):
     def _apply_update(root_path, service_name=''):
 
     # construct message
-        msg_insert = 'service'
+        msg_insert = 'local service'
         if service_name:
             msg_insert = 'service "%s"' % service_name
 
@@ -101,6 +101,21 @@ def update(service_list, all=False, verbose=True):
                         print('lab.yaml file for %s updated.' % msg_insert)
             except:
                  print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
+
+    # update setup.py
+        setup_path = path.join(root_path, 'setup.py')
+        if path.exists(setup_path):
+            from pocketlab.methods.config import update_setup
+            old_text = open(setup_path).read()
+            old_hash = hashlib.sha1(old_text.encode('utf-8')).hexdigest()
+            new_text = update_setup(old_text)
+            new_hash = hashlib.sha1(new_text.encode('utf-8')).hexdigest()
+            if old_hash != new_hash:
+                with open(setup_path, 'wt') as f:
+                    f.write(new_text)
+                    f.close()
+                if verbose:
+                    print('setup.py file for %s updated.' % msg_insert)
 
 # construct service list
     update_list = []
