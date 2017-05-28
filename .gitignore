@@ -38,7 +38,6 @@ target/
 .hgignore
 .hg/
 dev/
-docs/
 tests_dev/
 
 ###############   IDE files   ##################

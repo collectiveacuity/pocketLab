@@ -1,0 +1,7 @@
+site_name: Pocket Lab
+pages:
+  - Home: index.md
+  - Commands: commands.md
+  - Architecture: architecture.md
+  - Roadmap: roadmap.md
+markdown_extensions: [ footnotes, smarty, abbr ]

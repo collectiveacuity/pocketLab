@@ -1,0 +1,52 @@
+architecture:
+  title: Service-Oriented Architecture
+  section: 'Pocket Lab is designed around a service-oriented architecture. A service can be a data processor, client-side code, a backend server, a job scheduler, a database, etc. But a service also maps one-to-one to many other components of development: a repo, an image, a container, a folder, etc. Importantly, a project or application is typically made up of one or more services and services can also be provided by a third party. This module uses the service as the principle atomic component to manage the compositional process of project development and deployment.'
+resources:
+  - service: self-contained modular component of an application or project
+  - project: group of interconnected services with user application
+  - image: compilation of code & dependencies for service in a Docker image
+  - container: instantiation of a service in a Docker container
+  - platform: computational resources that run a service
+  - region: sub-division of platform to manage content distribution
+  - environment: sub-division of plaform to manage development process
+  - repo: version control repository containing the files for a service
+  - file: path to a file with configuration settings
+  - virtualbox: oracle virtualbox boot2docker image (on Win7/8)
+  - tag: metadata associated with a resource
+  - log: file or service in which to log stdout of service
+commands:
+  - home:
+  - init:
+  - list:
+  - update:
+  - remove:
+  - clean:
+  - build: creates a new image from Dockerfile for service
+  - start: initiates a container with the Docker image of a service
+  - enter: opens up a shell cli inside a running container
+  - tunnel: creates a local tunnel to <sub-domain>.localtunnel.me
+  - deploy: places a service onto live remote host
+  - connect: opens up a direct ssh connection to remote host
+  - setup: creates required account resources on a remote service
+features:
+  - Docker Wrapper
+  - GitHub / BitBucket / Gitlab Repos
+  - OS Independence
+  - AWS Deployment Management
+  - Let's Encrypt SSL Certificates
+  - LocalTunnel.me / Ngrok
+  - PingAPI / Uptime Robot Monitoring
+  - Test Sequencing
+extra:
+  stop: terminates container running a project component
+  init: creates a local lab server, scheduler and database
+  add: downloads image and files for a project component
+  reboot: restart a container running a project component
+  monitor: creates a scheduled request to url endpoint
+  compose: creates a set of containers from components in project
+  test: performs tests on a project set to determine health
+  renew: retrieves a new ssl certificate for url endpoint
+  update: updates the components in an active project set
+  pull: downloads an image or folder from a remote VCS repository
+  clean: removes broken images and stopped containers
+  create: creates a project architecture in working directory
