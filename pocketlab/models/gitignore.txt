@@ -24,7 +24,7 @@ sdist/
 .installed.cfg
 *.manifest
 *.spec
-docs/site/
+site/
 target/
 .webassets-cache/
 platforms/

@@ -31,7 +31,7 @@ sdist/
 .installed.cfg
 .manifest
 .spec
-docs/site/
+site/
 target/
 
 #############  version control  ################
@@ -39,6 +39,8 @@ target/
 .hg/
 dev/
 tests_dev/
+docs_dev/
+generate.py
 
 ###############   IDE files   ##################
 *.so
