@@ -1,0 +1,114 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "Pocket Lab\n\n\nA Command Line Tool for Managing Laboratory Projects\n\nby \nCollective Acuity\n\n\n\n  \n\n    \n\n      \nDownloads\n\n      \nhttp://pypi.python.org/pypi/pocketLab\n\n    \n\n    \n\n      \nSource\n\n      \nhttps://github.com/collectiveacuity/pocketLab\n\n    \n\n    \n\n      \nDocumentation\n\n      \nhttps://pocketlab.github.io\n\n    \n\n  \n\n\n\n\n\nIntroduction\n\n\nPocket Lab is a python-based command-line tool which is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon docker to provide consistency across development environments but it also streamlines the docker workflow without compromising the security of credentials and sensitive code.  \n\n\nSystem Requirements\n\n\n\n\nDocker\n: https://www.docker.com\n\n\nVirtualbox\n: (on Windows 7/8)\n\n\n\n\nInstallation\n\n\nFrom PyPi\n\n\n    $ pip install pocketlab\n\n\n\n\nFrom GitHub\n\n\n    $ git clone https://github.com/collectiveacuity/pocketLab\n    $ cd pocketLab\n    $ python setup.py sdist --format=gztar,zip\n    $ pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.*.tar.gz\n    $ pip install dist/pocketlab-0.*-py3-none-any.whl\n\n\n\n\nGetting Started\n\n\nAll commands for Pocket Lab use the \u2018lab\u2019 keyword. So, at any time, you can type \nlab --help\n from the terminal to see the help menu for the module. In order to use the module for building and deployment with docker, you will first need to setup the service framework around your project with a couple of commands. \n\n\nRegister a service in the working directory::\n\n\n$ lab home <project>\n\n\n\nInitialize the lab framework in the working directory::\n\n\n$ lab init\n\n\n\nYou can run these commands in a fresh directory at the start of a new project, but they are especially useful for preparing your localhost environment after you have cloned a repo from the remote repository. \nlab init\n will create a couple of local folders for managing credentials and any local data volumes. It will also add placeholder files in those folders from the notes directory and ensure that your version control system ignores these sensitive folders. When you need to update your credentials or edit your configuration, you can simply change the values in these files.\n\n\nFurther Reading\n\n\nOnce you have setup the lab framework for your project, you can use other commands to build images, run them locally or deploy them to a variety of cloud providers. Descriptions for how to use the other commands can be found on the \nCommands page\n.",
+            "title": "Home"
+        },
+        {
+            "location": "/#pocket-lab",
+            "text": "A Command Line Tool for Managing Laboratory Projects \nby  Collective Acuity  \n   \n     \n       Downloads \n       http://pypi.python.org/pypi/pocketLab \n     \n     \n       Source \n       https://github.com/collectiveacuity/pocketLab \n     \n     \n       Documentation \n       https://pocketlab.github.io",
+            "title": "Pocket Lab"
+        },
+        {
+            "location": "/#introduction",
+            "text": "Pocket Lab is a python-based command-line tool which is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon docker to provide consistency across development environments but it also streamlines the docker workflow without compromising the security of credentials and sensitive code.",
+            "title": "Introduction"
+        },
+        {
+            "location": "/#system-requirements",
+            "text": "Docker : https://www.docker.com  Virtualbox : (on Windows 7/8)",
+            "title": "System Requirements"
+        },
+        {
+            "location": "/#installation",
+            "text": "From PyPi      $ pip install pocketlab  From GitHub      $ git clone https://github.com/collectiveacuity/pocketLab\n    $ cd pocketLab\n    $ python setup.py sdist --format=gztar,zip\n    $ pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.*.tar.gz\n    $ pip install dist/pocketlab-0.*-py3-none-any.whl",
+            "title": "Installation"
+        },
+        {
+            "location": "/#getting-started",
+            "text": "All commands for Pocket Lab use the \u2018lab\u2019 keyword. So, at any time, you can type  lab --help  from the terminal to see the help menu for the module. In order to use the module for building and deployment with docker, you will first need to setup the service framework around your project with a couple of commands.   Register a service in the working directory::  $ lab home <project>  Initialize the lab framework in the working directory::  $ lab init  You can run these commands in a fresh directory at the start of a new project, but they are especially useful for preparing your localhost environment after you have cloned a repo from the remote repository.  lab init  will create a couple of local folders for managing credentials and any local data volumes. It will also add placeholder files in those folders from the notes directory and ensure that your version control system ignores these sensitive folders. When you need to update your credentials or edit your configuration, you can simply change the values in these files.",
+            "title": "Getting Started"
+        },
+        {
+            "location": "/#further-reading",
+            "text": "Once you have setup the lab framework for your project, you can use other commands to build images, run them locally or deploy them to a variety of cloud providers. Descriptions for how to use the other commands can be found on the  Commands page .",
+            "title": "Further Reading"
+        },
+        {
+            "location": "/commands/",
+            "text": "Commands\n\n\nHome\n\n\nHome makes it easy to locate your services.\n  \n\n\nDescription:\n\nHome adds the service name and working directory to the lab registry. On its first run, it also adds the alias \u2018home\u2019 to bash config. As a result, on subsequent terminal sessions, typing \n$ home <service>\n will change the working directory to the folder registered under the service name.  \n\n\nUsage:\n\n\n$ lab home [-h] [--print] [--path STRING] [-f] SERVICE\n\n\n\n\nHelp:\n \n\n\nHome adds the service name and working directory to the lab registry. On its\n\nfirst run, it also adds the alias 'home' to bash config. As a result, on\n\nsubsequent terminal sessions, typing 'home <service>' will change the working\n\ndirectory to the folder registered under the service name.\n\n\n\npositional arguments:\n\n  SERVICE        name of service in lab registry\n\n\n\noptional arguments:\n\n  -h, --help     show this help message and exit\n\n  --print        prints path of service root\n\n  --path STRING  path to service root\n\n  -f, --force    overwrite the existing resource\n\n\n\n\nInit\n\n\nInit adds the config files for other lab commands.\n  \n\n\nDescription:\n\nInit adds a number of files to the working directory which are required for other lab processes. If not present, it will create a \nlab.yaml\n file in the root directory to manage various configuration options. It will also create, if missing, \ncred/\n and \ndata/\n folders to store sensitive information outside version control along with a \n.gitignore\n (or \n.hgignore\n) file to escape out standard non-VCS files.  \n\n\nUsage:\n\n\n$ lab init [-h] [--vcs STRING]\n\n\n\n\nHelp:\n \n\n\nInit adds a number of files to the working directory which are required for\n\nother lab processes. If not present, it will create a 'lab.yaml' file in the\n\nroot directory to manage various configuration options. It will also create, if\n\nmissing, 'cred/' and 'data/' folders to store sensitive information outside\n\nversion control along with a '.gitignore' (or '.hgignore') file to escape out\n\nstandard non-VCS files.\n\n\n\noptional arguments:\n\n  -h, --help    show this help message and exit\n\n  --vcs STRING  VCS service to generate ignore file\n\n\n\n\nList\n\n\nProvides a way to find existing resources.\n  \n\n\nDescription:\n\nGenerates a list of the resources of a specific type.  \n\n\nUsage:\n\n\n$ lab list [-h] [--more] RESOURCE\n\n\n\n\nHelp:\n \n\n\nGenerates a list of the resources of a specific type.\n\n\n\npositional arguments:\n\n  RESOURCE    type of lab resource. eg. services, images...\n\n\n\noptional arguments:\n\n  -h, --help  show this help message and exit\n\n  --more      paginate results longer than console height\n\n\n\n\nUpdate\n\n\nKeeps your services up-to-date with the latest configurations.\n  \n\n\nDescription:\n\nUpdates the configuration files for a service with the latest pocketlab configurations.  \n\n\nUsage:\n\n\n$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]\n\n\n\n\nHelp:\n \n\n\nUpdates the configuration files for a service with the latest pocketlab\n\nconfigurations.\n\n\n\npositional arguments:\n\n  SERVICES     list of services in lab registry\n\n\n\noptional arguments:\n\n  -h, --help   show this help message and exit\n\n  -a, --all    apply to all services in registry\n\n  -q, --quiet  turn off lab process messages\n\n\n\n\nRemove\n\n\nRemoves a service listing from the lab registry.\n  \n\n\nDescription:\n\nRemoves clutter from your records.  \n\n\nUsage:\n\n\n$ lab remove [-h] SERVICE\n\n\n\n\nHelp:\n \n\n\nRemoves clutter from your records.\n\n\n\npositional arguments:\n\n  SERVICE     name of service in lab registry\n\n\n\noptional arguments:\n\n  -h, --help  show this help message and exit\n\n\n\n\nClean\n\n\nFrees up space by removing superfluous files.\n  \n\n\nDescription:\n\nRemoves broken resources from the registries.  \n\n\nUsage:\n\n\n$ lab clean [-h] [-q]\n\n\n\n\nHelp:\n \n\n\nRemoves broken resources from the registries.\n\n\n\noptional arguments:\n\n  -h, --help   show this help message and exit\n\n  -q, --quiet  turn off lab process messages",
+            "title": "Commands"
+        },
+        {
+            "location": "/commands/#commands",
+            "text": "",
+            "title": "Commands"
+        },
+        {
+            "location": "/commands/#home",
+            "text": "Home makes it easy to locate your services.     Description: \nHome adds the service name and working directory to the lab registry. On its first run, it also adds the alias \u2018home\u2019 to bash config. As a result, on subsequent terminal sessions, typing  $ home <service>  will change the working directory to the folder registered under the service name.    Usage:  $ lab home [-h] [--print] [--path STRING] [-f] SERVICE  Help:    Home adds the service name and working directory to the lab registry. On its\n\nfirst run, it also adds the alias 'home' to bash config. As a result, on\n\nsubsequent terminal sessions, typing 'home <service>' will change the working\n\ndirectory to the folder registered under the service name.\n\n\n\npositional arguments:\n\n  SERVICE        name of service in lab registry\n\n\n\noptional arguments:\n\n  -h, --help     show this help message and exit\n\n  --print        prints path of service root\n\n  --path STRING  path to service root\n\n  -f, --force    overwrite the existing resource",
+            "title": "Home"
+        },
+        {
+            "location": "/commands/#init",
+            "text": "Init adds the config files for other lab commands.     Description: \nInit adds a number of files to the working directory which are required for other lab processes. If not present, it will create a  lab.yaml  file in the root directory to manage various configuration options. It will also create, if missing,  cred/  and  data/  folders to store sensitive information outside version control along with a  .gitignore  (or  .hgignore ) file to escape out standard non-VCS files.    Usage:  $ lab init [-h] [--vcs STRING]  Help:    Init adds a number of files to the working directory which are required for\n\nother lab processes. If not present, it will create a 'lab.yaml' file in the\n\nroot directory to manage various configuration options. It will also create, if\n\nmissing, 'cred/' and 'data/' folders to store sensitive information outside\n\nversion control along with a '.gitignore' (or '.hgignore') file to escape out\n\nstandard non-VCS files.\n\n\n\noptional arguments:\n\n  -h, --help    show this help message and exit\n\n  --vcs STRING  VCS service to generate ignore file",
+            "title": "Init"
+        },
+        {
+            "location": "/commands/#list",
+            "text": "Provides a way to find existing resources.     Description: \nGenerates a list of the resources of a specific type.    Usage:  $ lab list [-h] [--more] RESOURCE  Help:    Generates a list of the resources of a specific type.\n\n\n\npositional arguments:\n\n  RESOURCE    type of lab resource. eg. services, images...\n\n\n\noptional arguments:\n\n  -h, --help  show this help message and exit\n\n  --more      paginate results longer than console height",
+            "title": "List"
+        },
+        {
+            "location": "/commands/#update",
+            "text": "Keeps your services up-to-date with the latest configurations.     Description: \nUpdates the configuration files for a service with the latest pocketlab configurations.    Usage:  $ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]  Help:    Updates the configuration files for a service with the latest pocketlab\n\nconfigurations.\n\n\n\npositional arguments:\n\n  SERVICES     list of services in lab registry\n\n\n\noptional arguments:\n\n  -h, --help   show this help message and exit\n\n  -a, --all    apply to all services in registry\n\n  -q, --quiet  turn off lab process messages",
+            "title": "Update"
+        },
+        {
+            "location": "/commands/#remove",
+            "text": "Removes a service listing from the lab registry.     Description: \nRemoves clutter from your records.    Usage:  $ lab remove [-h] SERVICE  Help:    Removes clutter from your records.\n\n\n\npositional arguments:\n\n  SERVICE     name of service in lab registry\n\n\n\noptional arguments:\n\n  -h, --help  show this help message and exit",
+            "title": "Remove"
+        },
+        {
+            "location": "/commands/#clean",
+            "text": "Frees up space by removing superfluous files.     Description: \nRemoves broken resources from the registries.    Usage:  $ lab clean [-h] [-q]  Help:    Removes broken resources from the registries.\n\n\n\noptional arguments:\n\n  -h, --help   show this help message and exit\n\n  -q, --quiet  turn off lab process messages",
+            "title": "Clean"
+        },
+        {
+            "location": "/architecture/",
+            "text": "Architecture\n\n\nPocket Lab is designed around a service-oriented architecture. A service can be a data processor, client-side code, a backend server, a job scheduler, a database, etc. But a service also maps one-to-one to many other components of development: a repo, an image, a container, a folder, etc. Importantly, a project or application is typically made up of one or more services and services can also be provided by a third party. This module uses the service as the principle atomic component to manage the compositional process of project development and deployment.\n\n\nSystem Resources\n\n\n\n\n\n\nResource   \nDescription                                                     \n\n\n\n\n\n\nservice    \nself-contained modular component of an application or project   \n\n\nproject    \ngroup of interconnected services with user application          \n\n\nimage      \ncompilation of code & dependencies for service in a Docker image\n\n\ncontainer  \ninstantiation of a service in a Docker container                \n\n\nplatform   \ncomputational resources that run a service                      \n\n\nregion     \nsub-division of platform to manage content distribution         \n\n\nenvironment\nsub-division of plaform to manage development process           \n\n\nrepo       \nversion control repository containing the files for a service   \n\n\nfile       \npath to a file with configuration settings                      \n\n\nvirtualbox \noracle virtualbox boot2docker image (on Win7/8)                 \n\n\ntag        \nmetadata associated with a resource                             \n\n\nlog        \nfile or service in which to log stdout of service",
+            "title": "Architecture"
+        },
+        {
+            "location": "/architecture/#architecture",
+            "text": "Pocket Lab is designed around a service-oriented architecture. A service can be a data processor, client-side code, a backend server, a job scheduler, a database, etc. But a service also maps one-to-one to many other components of development: a repo, an image, a container, a folder, etc. Importantly, a project or application is typically made up of one or more services and services can also be provided by a third party. This module uses the service as the principle atomic component to manage the compositional process of project development and deployment.",
+            "title": "Architecture"
+        },
+        {
+            "location": "/architecture/#system-resources",
+            "text": "Resource    Description                                                         service     self-contained modular component of an application or project     project     group of interconnected services with user application            image       compilation of code & dependencies for service in a Docker image  container   instantiation of a service in a Docker container                  platform    computational resources that run a service                        region      sub-division of platform to manage content distribution           environment sub-division of plaform to manage development process             repo        version control repository containing the files for a service     file        path to a file with configuration settings                        virtualbox  oracle virtualbox boot2docker image (on Win7/8)                   tag         metadata associated with a resource                               log         file or service in which to log stdout of service",
+            "title": "System Resources"
+        },
+        {
+            "location": "/roadmap/",
+            "text": "Roadmap\n\n\nFeatures\n\n\n\n\nDocker Wrapper\n\n\nGitHub / BitBucket / Gitlab Repos\n\n\nOS Independence\n\n\nAWS Deployment Management\n\n\nLet\u2019s Encrypt SSL Certificates\n\n\nLocalTunnel.me / Ngrok\n\n\nPingAPI / Uptime Robot Monitoring\n\n\nTest Sequencing\n\n\n\n\nCommands\n\n\n\n\n\n\nCommand  \nDescription                                             \nStatus   \n\n\n\n\n\n\nhome     \ncreates a home for service in workdir                   \navailable\n\n\ninit     \ncreates a lab framework in workdir                      \navailable\n\n\nlist     \nlists the instances of a resource type                  \navailable\n\n\nupdate   \nupdates the config files for a service                  \navailable\n\n\nremove   \nremoves a service from the registry                     \navailable\n\n\nclean    \ncleans registries of broken resources                   \navailable\n\n\nbuild    \ncreates a new image from Dockerfile for service         \n         \n\n\nstart    \ninitiates a container with the Docker image of a service\n         \n\n\nenter    \nopens up a shell cli inside a running container         \n         \n\n\ntunnel   \ncreates a local tunnel to \n.localtunnel.me   \n         \n\n\ndeploy   \nplaces a service onto live remote host                  \n         \n\n\nconnect  \nopens up a direct ssh connection to remote host         \n         \n\n\nsetup    \ncreates required account resources on a remote service",
+            "title": "Roadmap"
+        },
+        {
+            "location": "/roadmap/#roadmap",
+            "text": "",
+            "title": "Roadmap"
+        },
+        {
+            "location": "/roadmap/#features",
+            "text": "Docker Wrapper  GitHub / BitBucket / Gitlab Repos  OS Independence  AWS Deployment Management  Let\u2019s Encrypt SSL Certificates  LocalTunnel.me / Ngrok  PingAPI / Uptime Robot Monitoring  Test Sequencing",
+            "title": "Features"
+        },
+        {
+            "location": "/roadmap/#commands",
+            "text": "Command   Description                                              Status       home      creates a home for service in workdir                    available  init      creates a lab framework in workdir                       available  list      lists the instances of a resource type                   available  update    updates the config files for a service                   available  remove    removes a service from the registry                      available  clean     cleans registries of broken resources                    available  build     creates a new image from Dockerfile for service                     start     initiates a container with the Docker image of a service            enter     opens up a shell cli inside a running container                     tunnel    creates a local tunnel to  .localtunnel.me               deploy    places a service onto live remote host                              connect   opens up a direct ssh connection to remote host                     setup     creates required account resources on a remote service",
+            "title": "Commands"
+        }
+    ]
+}

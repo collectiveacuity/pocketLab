@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Commands - Pocket Lab</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+	
+	<script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="..">Pocket Lab</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                    <li class="active">
+                        <a href="./">Commands</a>
+                    </li>
+                    <li >
+                        <a href="../architecture/">Architecture</a>
+                    </li>
+                    <li >
+                        <a href="../roadmap/">Roadmap</a>
+                    </li>
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                    <li >
+                        <a rel="next" href="..">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../architecture/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#commands">Commands</a></li>
+            <li><a href="#home">Home</a></li>
+            <li><a href="#init">Init</a></li>
+            <li><a href="#list">List</a></li>
+            <li><a href="#update">Update</a></li>
+            <li><a href="#remove">Remove</a></li>
+            <li><a href="#clean">Clean</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="commands">Commands</h1>
+<h2 id="home">Home</h2>
+<p><em>Home makes it easy to locate your services.</em>  </p>
+<p><strong>Description:</strong><br />
+Home adds the service name and working directory to the lab registry. On its first run, it also adds the alias &lsquo;home&rsquo; to bash config. As a result, on subsequent terminal sessions, typing <code>$ home &lt;service&gt;</code> will change the working directory to the folder registered under the service name.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab home [-h] [--print] [--path STRING] [-f] SERVICE
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Home adds the service name and working directory to the lab registry. On its
+
+first run, it also adds the alias 'home' to bash config. As a result, on
+
+subsequent terminal sessions, typing 'home &lt;service&gt;' will change the working
+
+directory to the folder registered under the service name.
+
+
+
+positional arguments:
+
+  SERVICE        name of service in lab registry
+
+
+
+optional arguments:
+
+  -h, --help     show this help message and exit
+
+  --print        prints path of service root
+
+  --path STRING  path to service root
+
+  -f, --force    overwrite the existing resource
+</code></pre>
+
+<h2 id="init">Init</h2>
+<p><em>Init adds the config files for other lab commands.</em>  </p>
+<p><strong>Description:</strong><br />
+Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a <code>lab.yaml</code> file in the root directory to manage various configuration options. It will also create, if missing, <code>cred/</code> and <code>data/</code> folders to store sensitive information outside version control along with a <code>.gitignore</code> (or <code>.hgignore</code>) file to escape out standard non-VCS files.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab init [-h] [--vcs STRING]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Init adds a number of files to the working directory which are required for
+
+other lab processes. If not present, it will create a 'lab.yaml' file in the
+
+root directory to manage various configuration options. It will also create, if
+
+missing, 'cred/' and 'data/' folders to store sensitive information outside
+
+version control along with a '.gitignore' (or '.hgignore') file to escape out
+
+standard non-VCS files.
+
+
+
+optional arguments:
+
+  -h, --help    show this help message and exit
+
+  --vcs STRING  VCS service to generate ignore file
+</code></pre>
+
+<h2 id="list">List</h2>
+<p><em>Provides a way to find existing resources.</em>  </p>
+<p><strong>Description:</strong><br />
+Generates a list of the resources of a specific type.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab list [-h] [--more] RESOURCE
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Generates a list of the resources of a specific type.
+
+
+
+positional arguments:
+
+  RESOURCE    type of lab resource. eg. services, images...
+
+
+
+optional arguments:
+
+  -h, --help  show this help message and exit
+
+  --more      paginate results longer than console height
+</code></pre>
+
+<h2 id="update">Update</h2>
+<p><em>Keeps your services up-to-date with the latest configurations.</em>  </p>
+<p><strong>Description:</strong><br />
+Updates the configuration files for a service with the latest pocketlab configurations.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Updates the configuration files for a service with the latest pocketlab
+
+configurations.
+
+
+
+positional arguments:
+
+  SERVICES     list of services in lab registry
+
+
+
+optional arguments:
+
+  -h, --help   show this help message and exit
+
+  -a, --all    apply to all services in registry
+
+  -q, --quiet  turn off lab process messages
+</code></pre>
+
+<h2 id="remove">Remove</h2>
+<p><em>Removes a service listing from the lab registry.</em>  </p>
+<p><strong>Description:</strong><br />
+Removes clutter from your records.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab remove [-h] SERVICE
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Removes clutter from your records.
+
+
+
+positional arguments:
+
+  SERVICE     name of service in lab registry
+
+
+
+optional arguments:
+
+  -h, --help  show this help message and exit
+</code></pre>
+
+<h2 id="clean">Clean</h2>
+<p><em>Frees up space by removing superfluous files.</em>  </p>
+<p><strong>Description:</strong><br />
+Removes broken resources from the registries.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab clean [-h] [-q]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Removes broken resources from the registries.
+
+
+
+optional arguments:
+
+  -h, --help   show this help message and exit
+
+  -q, --quiet  turn off lab process messages
+</code></pre></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
