@@ -9,7 +9,7 @@ recursive-exclude tests *
 recursive-exclude tests_dev *
 recursive-exclude tinker *
 recursive-include pocketlab/commands *.py
-recursive-include pocketlab/rules *.json
+recursive-include pocketlab/models *.*
 recursive-include pocketlab/methods *.py
 prune */__pycache__
 include *.rst

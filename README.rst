@@ -23,7 +23,9 @@ From GitHub::
 
     $ git clone https://github.com/collectiveacuity/pocketLab
     $ cd pocketLab
-    $ python setup.py install
+    $ python setup.py sdist --format=gztar,zip
+    $ pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.*.tar.gz
+    $ pip install dist/pocketlab-0.*-py3-none-any.whl
 
 ===============
 Getting Started
