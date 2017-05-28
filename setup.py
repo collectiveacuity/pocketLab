@@ -14,10 +14,9 @@ pip install twine
 
 Build Distributions:
 python setup.py sdist --format=gztar,zip
-pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.1.tar.gz
+pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.2.tar.gz
 
-Upload Distributions to PyPi:
-twine register dist/*
+Upload (or Register) Distributions to PyPi:
 twine upload dist/[module-version]*
 
 Installation:
