@@ -364,12 +364,11 @@ def construct_changes():
 
     return file_text
 
-def construct_license(license_type='MIT'):
+def construct_license(license_type='mit'):
 
 # retrieve license text
-    file_text = ''
-    if license_type =='MIT':
-        file_text = retrieve_template('models/license.mit.txt')
+    file_path = 'models/license.%s.txt' % license_type
+    file_text = retrieve_template(file_path)
 
 # retrieve username
     import os
@@ -435,4 +434,4 @@ if __name__ == '__main__':
     license_text = construct_license()
     # print(license_text)
     mkdocs_text = construct_mkdocs(module_name)
-    print(mkdocs_text)
+    # print(mkdocs_text)

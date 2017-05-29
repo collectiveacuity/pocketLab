@@ -9,6 +9,7 @@
 	"container_alias": "server",
     "image_name": "flaskserver",
     "module_name": "pocketlab",
+    "license_type": "MIT",
     "verbose": true,
     "all": true,
     "overwrite": true,
@@ -106,6 +107,15 @@
       "field_metadata": {
         "cli_flags": [ "--module" ],
         "cli_help": "name for python module"
+      }
+    },
+    ".license_type": {
+      "field_description": "Type of software license terms for source code.",
+      "default_value": "MIT",
+      "discrete_values": [ "MIT", "mit" ],
+      "field_metadata": {
+        "cli_flags": [ "--license" ],
+        "cli_help": "name of software license type"
       }
     },
     ".verbose": {

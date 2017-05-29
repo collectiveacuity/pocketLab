@@ -1,0 +1,5 @@
+recursive-include testmod *
+prune */__pycache__
+include *.rst
+include *.txt
+include *.md

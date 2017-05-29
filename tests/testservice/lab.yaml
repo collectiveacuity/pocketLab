@@ -1,0 +1,9 @@
+# lab project configuration file
+docker_image_name: flaskserver # replace with build image name
+docker_container_alias: server # replace with your service name
+docker_mount_volumes:
+  data/: opt/data/
+docker_port_mapping:
+  5000: 5000
+docker_environment_variables:
+  PORT: 5000

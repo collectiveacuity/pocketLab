@@ -22,7 +22,7 @@
       "must_not_contain": [ "[^\\w\\-_/:]" ],
       "field_metadata": {
         "position": 0,
-        "comments": ""
+        "comments": "replace with build image name"
       }
     },
     ".docker_container_alias": {
@@ -31,7 +31,7 @@
       "must_not_contain": [ "[^\\w\\-_]" ],
       "field_metadata": {
         "position": 1,
-        "comments": "replace with your project name"
+        "comments": "replace with your service name"
       }
     },
     ".docker_mount_volumes": {

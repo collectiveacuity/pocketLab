@@ -111,7 +111,7 @@ def update(service_list, all=False, verbose=True):
             new_text = update_setup(old_text)
             new_hash = hashlib.sha1(new_text.encode('utf-8')).hexdigest()
             if old_hash != new_hash:
-                with open(setup_path, 'wt') as f:
+                with open(setup_path, 'wt', encoding='utf-8') as f:
                     f.write(new_text)
                     f.close()
                 if verbose:
