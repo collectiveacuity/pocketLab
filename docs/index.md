@@ -20,7 +20,7 @@ by [Collective Acuity](http://collectiveacuity.com)
 </table>
 
 ## Introduction
-Pocket Lab is a python-based command-line tool which is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon docker to provide consistency across development environments but it also streamlines the docker workflow without compromising the security of credentials and sensitive code.  
+Pocket Lab is a python-based command-line tool which is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon Docker to provide consistency across development environments but it also streamlines the Docker workflow without compromising the security of credentials and sensitive code.  
 
 ## System Requirements
 - **Docker**: https://www.docker.com

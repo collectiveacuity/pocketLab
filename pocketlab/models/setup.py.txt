@@ -1,5 +1,30 @@
+from setuptools import setup, find_packages
+from pocketlab.methods.config import inject_init
+
+init_path = ''
+readme_path = 'README.rst'
+setup_kwargs = {
+    'include_package_data': True,  # Checks MANIFEST.in for explicit rules
+    'packages': find_packages(),
+    'install_requires': [],
+    'classifiers': [
+        # https://pypi.python.org/pypi?%3Aaction=list_classifiers
+        'Development Status :: 3 - Alpha',
+        'Environment :: Web Environment',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: MIT License',
+        'Natural Language :: English',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5'
+    ]
+}
+setup_kwargs = inject_init(init_path, readme_path, setup_kwargs)
+setup(**setup_kwargs)
+
 ''' DOCUMENTATION
 References:
+https://docs.python.org/3.6/distutils/setupscript.html
+
 https://python-packaging-user-guide.readthedocs.org/en/latest/
 https://docs.python.org/3.5/distutils/index.html
 https://github.com/jgehrcke/python-cmdline-bootstrap

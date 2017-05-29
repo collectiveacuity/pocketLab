@@ -1,0 +1,4 @@
+site_name: pocketlab
+pages:
+  - Home: index.md
+markdown_extensions: [ footnotes, smarty, abbr ]

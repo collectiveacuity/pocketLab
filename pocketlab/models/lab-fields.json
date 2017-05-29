@@ -101,7 +101,8 @@
     ".module_name": {
       "field_description": "Python module name",
       "max_length": 64,
-      "must_contain": [ "^[a-z\\d\\-]+$" ],
+      "must_contain": [ "^[a-zA-Z\\d\\-]+$" ],
+      "must_not_contain": [ "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
         "cli_flags": [ "--module" ],
         "cli_help": "name for python module"

@@ -2,6 +2,24 @@ __author__ = 'rcj1492'
 __created__ = '2017.05'
 __license__ = 'MIT'
 
+def retrieve_template(file_path):
+
+    '''
+        a method to retrieve text of a template file 
+        
+    :param file_path: string with relative path of file
+    :return: string with text of file
+    '''
+
+    from os import path
+    from pocketlab import __module__
+    from importlib.util import find_spec
+    module_path = find_spec(__module__).submodule_search_locations[0]
+    absolute_path = path.join(module_path, file_path)
+    file_text = open(absolute_path).read()
+
+    return file_text
+
 def compile_yaml(config_schema, yaml_path=''):
 
     '''
@@ -90,6 +108,15 @@ def compile_yaml(config_schema, yaml_path=''):
 
 def inject_init(init_path, readme_path, setup_kwargs):
 
+    '''
+        a method to add arguments to setup.py from module init file
+        
+    :param init_path: string with path to module __init__ file 
+    :param readme_path: string with path to module README.rst file
+    :param setup_kwargs: dictionary with existing setup keyword arguments
+    :return: dictionary with injected keyword arguments
+    '''
+
     import re
     from os import path
     from copy import deepcopy
@@ -157,18 +184,23 @@ def inject_init(init_path, readme_path, setup_kwargs):
 
 def update_setup(setup_text):
 
+    '''
+        a method to update an existing setup text with latest comments
+        
+    :param setup_text: string with text from setup.py source code
+    :return: string with updated comments
+    '''
+
 # retrieve setup text comments
+    import re
     from os import path
-    from pocketlab import __module__
-    from importlib.util import find_spec
-    module_path = find_spec(__module__).submodule_search_locations[0]
-    file_path = path.join(module_path, 'models/setup.py.txt')
-    file_text = open(file_path).read()
+    file_text = retrieve_template('models/setup.py.txt')
+    comment_regex = re.compile("'''\sDOCUMENTATION.*?'''", re.S)
+    comment_text = comment_regex.findall(file_text)[0]
 
 # determine module name and version number
     module_name = 'pocketlab'
     version_number = '0.1'
-    import re
     init_regex = re.compile("init_path\s\=\s'(.*?)'")
     init_search = init_regex.findall(setup_text)
     if init_search:
@@ -190,10 +222,9 @@ def update_setup(setup_text):
     github_search = github_regex.findall(setup_text)
 
 # find/replace comments in setup text
-    comment_regex = re.compile("'''\sDOCUMENTATION.*?'''", re.S)
     setup_text = comment_regex.sub('', setup_text)
     setup_text = setup_text.strip()
-    setup_text += '\n\n%s' % file_text
+    setup_text += '\n\n%s' % comment_text
 
 # replace module and version
     dist_regex = re.compile("pocketlab-0.1")
@@ -210,19 +241,198 @@ def update_setup(setup_text):
 
     return setup_text
 
+def construct_setup(module_name):
+
+    '''
+        a method to create the text for a setup.py file for a module
+        
+    :param module_name: string with name of module to create
+    :return: string with text for setup.py file
+    '''
+
+# retrieve setup text
+    file_text = retrieve_template('models/setup.py.txt')
+
+# insert module name
+    import re
+    init_regex = re.compile("init_path\s\=\s''")
+    init_text = "init_path = '%s/__init__.py'" % module_name
+    file_text = init_regex.sub(init_text, file_text)
+
+    return file_text
+
+def construct_init(module_name):
+
+    '''
+        a method to create the text for a __init__.py file for a new module
+        
+    :param module_name: string with name of module to create
+    :return: string with text for init file
+    '''
+
+# retrieve username
+    import os
+    from labpack.platforms.localhost import localhostClient
+    localhost_client = localhostClient()
+    if localhost_client.os.sysname == 'Windows':
+        username = os.environ.get('USERNAME')
+    else:
+        home_path = os.path.abspath(localhost_client.home)
+        root_path, username = os.path.split(home_path)
+
+# retrieve date
+    from datetime import datetime
+    new_date = datetime.utcnow()
+    new_month = str(new_date.month)
+    if len(new_month) == 1:
+        new_month = '0%s' % new_month
+    date_string = '%s.%s' % (str(new_date.year), new_month)
+
+# construct init text
+    init_text = "__author__ = '%s'\n" % username
+    init_text += "__created__ = '%s'\n" % date_string
+    init_text += "__module__ = '%s'\n" % module_name
+    init_text += "__version__ = '0.1'\n"
+    init_text += "__license__ = 'MIT'  # BSD, ALv2, GPLv3+, LGPLv3+, ©%s Collective Acuity\n" % str(new_date.year)
+    init_text += "__team__ = 'Collective Acuity'\n"
+    init_text += "__email__ = 'support@collectiveacuity.com'\n"
+    init_text += "__url__ = 'https://github.com/collectiveacuity/%s'\n" % module_name
+    init_text += "__description__ = 'A Brand New Python Module'\n"
+
+    return init_text
+
+def construct_readme(module_name='', vcs_service='git'):
+
+    '''
+        a method to create the text for a README.rst file for the module
+
+    :param module_name: [optional] string with name of module to create
+    :param vcs_service: [optional] string with name of version control service
+    :return: string with text for readme file
+    '''
+
+# retrieve readme text
+    if module_name:
+        file_path = 'models/readme.rst.txt'
+    else:
+        file_path = 'models/readme.md.txt'
+    file_text = retrieve_template(file_path)
+
+# insert module name
+    if module_name:
+        file_text = file_text.replace('pocketlab', module_name)
+    elif vcs_service == 'mercurial':
+        file_text = file_text.replace('.gitignore', '.hgignore')
+
+    return file_text
+
+def construct_manifest(module_name):
+
+    '''
+        a method to create the text for a MANIFEST.in file for a module
+
+    :param module_name: string with name of module to create
+    :return: string with text for manifest file
+    '''
+
+# retrieve manifest text
+    file_text = retrieve_template('models/manifest.in.txt')
+
+# insert module name
+    file_text = file_text.replace('pocketlab', module_name)
+
+    return file_text
+
+def construct_changes():
+
+# retrieve changes text
+    file_text = retrieve_template('models/changes.rst.txt')
+
+# retrieve date
+    from datetime import datetime
+    new_date = datetime.utcnow()
+    new_month = str(new_date.month)
+    new_day = str(new_date.day)
+    if len(new_month) == 1:
+        new_month = '0%s' % new_month
+    if len(new_day) == 1:
+        new_day = '0%s' % new_day
+    date_string = '%s.%s.%s' % (str(new_date.year), new_month, new_day)
+
+# replace date
+    file_text = file_text.replace('2001.01.01', date_string)
+
+    return file_text
+
+def construct_license(license_type='MIT'):
+
+# retrieve license text
+    file_text = ''
+    if license_type =='MIT':
+        file_text = retrieve_template('models/license.mit.txt')
+
+# retrieve username
+    import os
+    from labpack.platforms.localhost import localhostClient
+    localhost_client = localhostClient()
+    if localhost_client.os.sysname == 'Windows':
+        username = os.environ.get('USERNAME')
+    else:
+        home_path = os.path.abspath(localhost_client.home)
+        root_path, username = os.path.split(home_path)
+
+# retrieve date
+    from datetime import datetime
+    new_date = datetime.utcnow()
+    new_year = str(new_date.year)
+
+# replace terms in license
+    file_text = file_text.replace('2017', new_year)
+    file_text = file_text.replace('Collective Acuity', username)
+
+    return file_text
+
+def construct_mkdocs(module_name):
+
+# retrieve changes text
+    file_text = retrieve_template('models/mkdocs.yaml.txt')
+
+# replace module name
+    file_text = file_text.replace('pocketlab', module_name)
+
+    return file_text
+
 if __name__ == '__main__':
     user_path = '../../tests/lab.yaml'
     standard_path = '../models/lab-config.json'
     from labpack.records.settings import load_settings
     standard_schema = load_settings(standard_path)
     text = compile_yaml(standard_schema, user_path)
-    print(text)
+    # print(text)
 
     init_path = '../__init__.py'
     readme_path = '../../README.rst'
     setup_kwargs = inject_init(init_path, readme_path, {})
-    print(setup_kwargs)
+    # print(setup_kwargs)
 
     setup_text = open('../../setup.py').read()
     new_text = update_setup(setup_text)
-    print(new_text)
+    # print(new_text)
+
+    module_name = 'newmodule'
+    setup_text = construct_setup(module_name)
+    # print(setup_text)
+    init_text = construct_init(module_name)
+    # print(init_text)
+    readme_text = construct_readme(module_name)
+    # print(readme_text)
+    service_text = construct_readme(vcs_service='mercurial')
+    # print(service_text)
+    manifest_text = construct_manifest(module_name)
+    # print(manifest_text)
+    changes_text = construct_changes()
+    # print(changes_text)
+    license_text = construct_license()
+    # print(license_text)
+    mkdocs_text = construct_mkdocs(module_name)
+    print(mkdocs_text)

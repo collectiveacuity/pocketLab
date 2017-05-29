@@ -12,8 +12,8 @@ setup_kwargs = {
         'tabulate>=0.7.7',
         'ruamel.yaml>=0.14.12'
     ],
-    # https://docs.python.org/3.6/distutils/setupscript.html#additional-meta-data
     'classifiers': [
+        # https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
@@ -76,7 +76,7 @@ hgrc [paths] default = ssh://hg@bitbucket.org/collectiveacuity/pocketlab
 Git Public Setup:
 .gitignore (add dist/, *.egg-info/, dev/, tests_dev/, docs/, docs_dev/, .hg/, .hgignore)
 git init
-git remote add origin https://github.com/collectiveacuity/pocketLab.git
+git remote add origin git@github.com:collectiveacuity/pocketLab.git
 
 Git Public Updates:
 git add -A
