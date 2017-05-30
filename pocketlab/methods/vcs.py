@@ -26,7 +26,7 @@ def load_ignore(vcs='git'):
 def merge_ignores(standard_text, insert_text):
 
     ''' a method to upsert one ignore text into another '''
-
+    
 # define regex patterns
     import re
     section_regex = re.compile('\n(#+\s+.*?\s+#+\n.*?)(?=$|\n#)', re.S)
@@ -41,7 +41,7 @@ def merge_ignores(standard_text, insert_text):
     standard_lines = standard_text.splitlines()
 
     extra_lines = []
-
+    
 # insert lines into standard text
     for section in insert_sections:
         section_lines = section.splitlines()
@@ -63,10 +63,15 @@ def merge_ignores(standard_text, insert_text):
                             standard_lines.insert(index, add_list[j])
                         section_exists = True
                         break
-        if not section_exists and add_list:
-            extra_lines.append(header_line)
-            extra_lines.extend(add_list)
-            extra_lines.append('')
+# add non-existent sections to extra lines
+        if not section_exists:
+            if len(section_lines) > 1:
+                if add_list or not(section_lines[1]):
+                    if not extra_lines:
+                        extra_lines.extend(['',''])
+                    extra_lines.append(header_line)
+                    extra_lines.extend(add_list)
+                    extra_lines.append('')
 
 # rejoin text
     merged_text = ''
@@ -74,6 +79,7 @@ def merge_ignores(standard_text, insert_text):
         if not title_regex.findall(standard_lines[0]):
             merged_text = '\n'.join([ title_line, '', ''])
     merged_text += '\n'.join(standard_lines)
+    merged_text = merged_text.strip()
     merged_text += '\n'.join(extra_lines)
 
 # remove extra lines
