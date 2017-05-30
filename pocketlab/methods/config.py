@@ -16,7 +16,7 @@ def retrieve_template(file_path):
     from importlib.util import find_spec
     module_path = find_spec(__module__).submodule_search_locations[0]
     absolute_path = path.join(module_path, file_path)
-    file_text = open(absolute_path).read()
+    file_text = open(absolute_path, 'rt').read()
 
     return file_text
 
@@ -289,7 +289,8 @@ def construct_init(module_name):
     date_string = '%s.%s' % (str(new_date.year), new_month)
 
 # construct init text
-    init_text = "__author__ = '%s'\n" % username
+    init_text = "''' A Brand New Python Module '''"
+    init_text += "__author__ = '%s'\n" % username
     init_text += "__created__ = '%s'\n" % date_string
     init_text += "__module__ = '%s'\n" % module_name
     init_text += "__version__ = '0.1'\n"
@@ -393,7 +394,7 @@ def construct_license(license_type='mit'):
 
 def construct_mkdocs(module_name):
 
-# retrieve changes text
+# retrieve mkdocs text
     file_text = retrieve_template('models/mkdocs.yaml.txt')
 
 # replace module name
@@ -401,8 +402,18 @@ def construct_mkdocs(module_name):
 
     return file_text
 
+def construct_index(module_name):
+
+# retrieve index text
+    file_text = retrieve_template('models/index.md.txt')
+
+# replace module name
+    file_text = file_text.replace('pocketlab', module_name)
+
+    return file_text
+
 if __name__ == '__main__':
-    user_path = '../../tests/lab.yaml'
+    user_path = '../../tests/testservice/lab.yaml'
     standard_path = '../models/lab-config.json'
     from labpack.records.settings import load_settings
     standard_schema = load_settings(standard_path)
@@ -435,3 +446,5 @@ if __name__ == '__main__':
     # print(license_text)
     mkdocs_text = construct_mkdocs(module_name)
     # print(mkdocs_text)
+    index_text = construct_index(module_name)
+    print(index_text)

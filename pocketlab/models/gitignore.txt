@@ -24,12 +24,22 @@ sdist/
 .installed.cfg
 *.manifest
 *.spec
+*.so
 site/
 target/
 .webassets-cache/
 platforms/
 plugins/
 hooks/
+
+#################  unit testing   #################
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
 
 #################  dependencies   #################
 node_modules/
@@ -44,7 +54,6 @@ nbproject
 .idea
 .node_history
 __pycache__
-*.so
 
 #################   backup sync   #################
 desktop.ini

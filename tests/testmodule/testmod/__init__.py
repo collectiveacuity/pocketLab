@@ -1,4 +1,4 @@
-__author__ = 'rcj1492'
+''' A Brand New Python Module '''__author__ = 'rcj1492'
 __created__ = '2017.05'
 __module__ = 'testmod'
 __version__ = '0.1'

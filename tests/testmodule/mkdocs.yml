@@ -1,4 +1,5 @@
 site_name: testmod
 pages:
   - Home: index.md
+  - Ref: mkdocs.md
 markdown_extensions: [ footnotes, smarty, abbr ]

@@ -28,6 +28,8 @@ setup(**setup_kwargs)
 
 ''' DOCUMENTATION
 References:
+https://docs.python.org/3.6/distutils/setupscript.html
+
 https://python-packaging-user-guide.readthedocs.org/en/latest/
 https://docs.python.org/3.5/distutils/index.html
 https://github.com/jgehrcke/python-cmdline-bootstrap
@@ -82,4 +84,7 @@ Git Public Updates:
 git add -A
 git commit -m 'updates'
 git push origin master
+
+Git Remove History: [Run as admin and pause syncing]
+git filter-branch --force --index-filter 'git rm -rf --cached --ignore-unmatch dev/*' --prune-empty --tag-name-filter cat -- --all
 '''

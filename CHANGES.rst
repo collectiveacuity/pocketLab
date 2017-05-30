@@ -1,8 +1,13 @@
 ChangeLog
 =========
 
-0.2 (TBD)
+0.3 (TBD)
 ---------
+* [FEATURE ADDED] init commmand has option to setup framework for python modules
+* [FEATURE ADDED] update command updates the setup.py comments
+
+0.2 (2017.05.27)
+----------------
 * Upload of Module to PyPi
 * Creation of GitHub Repo
 * Separation of WIP methods into Mercurial Repo

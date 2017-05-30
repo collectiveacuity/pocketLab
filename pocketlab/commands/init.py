@@ -106,11 +106,21 @@ def init(module_name='', vcs_service='', license_type='MIT', verbose=True):
             makedirs('docs')
             _printer('docs')
 
+    # create mkdocs markdown file
+        mkdocs_path = path.join('docs', 'mkdocs.md')
+        if not path.exists(mkdocs_path):
+            from pocketlab.methods.config import retrieve_template
+            mkdocs_text = retrieve_template('models/mkdocs.md.txt')
+            with open(mkdocs_path, 'wt') as f:
+                f.write(mkdocs_text)
+                f.close()
+            _printer(mkdocs_path)
+
     # create index markdown file
         index_path = path.join('docs', 'index.md')
         if not path.exists(index_path):
-            from pocketlab.methods.config import retrieve_template
-            index_text = retrieve_template('models/index.md.txt')
+            from pocketlab.methods.config import construct_index
+            index_text = construct_index(module_name)
             with open(index_path, 'wt') as f:
                 f.write(index_text)
                 f.close()

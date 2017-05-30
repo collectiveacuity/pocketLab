@@ -1,3 +1,4 @@
+''' A Command Line Tool for Managing Laboratory Projects '''
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 __command__ = 'lab'

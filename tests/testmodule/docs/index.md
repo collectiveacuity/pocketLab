@@ -1,17 +1,45 @@
-# Welcome to MkDocs
+# testmod
+_A Brand New Python Module_  
+by [Collective Acuity](http://collectiveacuity.com)
 
-For full documentation visit [mkdocs.org](http://mkdocs.org).
+<table>
+  <tbody>
+    <tr>
+      <td><b>Downloads</b></td>
+      <td><a href="http://pypi.python.org/pypi/testmod">http://pypi.python.org/pypi/testmod</a></td>
+    </tr>
+    <tr>
+      <td><b>Source</b></td>
+      <td><a href="https://github.com/collectiveacuity/testmod">https://github.com/collectiveacuity/testmod</a></td>
+    </tr>
+    <tr>
+      <td><b>Documentation</b></td>
+      <td><a href="https://testmod.github.io">https://collectiveacuity.github.io/testmod/</a></td>
+    </tr>
+  </tbody>
+</table>
 
-## Commands
+## Introduction
+This module solves a problem which has vexed many.
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs help` - Print this help message.
+## Installation
+From PyPi
+```bash
+    $ pip install testmod
+```
+From GitHub
+```bash
+    $ git clone https://github.com/collectiveacuity/testmod
+    $ cd testmod
+    $ python setup.py install
+```
 
-## Project layout
+## Getting Started
+This module is designed to do something that no python module has ever done before.
 
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+To make something new::
+
+    from testmod import testmod
+    shiny_new_thing = testmod.new()
+
+For more information about all the things this module can do, refer to the [Reference Page](mkdocs.md)
