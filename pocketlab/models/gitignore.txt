@@ -28,7 +28,6 @@ sdist/
 site/
 target/
 .webassets-cache/
-platforms/
 plugins/
 hooks/
 

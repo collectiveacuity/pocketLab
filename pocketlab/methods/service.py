@@ -35,3 +35,59 @@ def retrieve_service_root(service_name, command_context=''):
         raise ValueError(error_msg)
 
     return service_root
+
+def retrieve_services(service_list=None, all=False):
+    
+    '''
+        a method to generate the root path for one or more services
+        
+    :param service_list: list of strings with name of services
+    :param all: boolean to indicate the retrieve all paths in registry
+    :return: list of dictionaries, string with exit message insert
+    '''
+    
+# define default returns
+    path_list = []
+    msg_insert = 'local service'
+    
+# add named service to service list
+    if service_list:
+        msg_insert = ''
+        for i in range(len(service_list)):
+            service = service_list[i]
+            if msg_insert:
+                if i + 1 == len(service_list):
+                    msg_insert += ' and '
+                else:
+                    msg_insert += ', '
+            msg_insert += '"%s"' % service
+            service_root = retrieve_service_root(service)
+            service_details = {
+                'name': service,
+                'path': service_root
+            }
+            path_list.append(service_details)
+
+# add all services in registry to service list
+    elif all:
+        msg_insert = 'all services'
+        from pocketlab import __module__
+        from labpack.storage.appdata import appdataClient
+        registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+        from labpack.records.settings import load_settings
+        for file_path in registry_client.localhost.walk(registry_client.collection_folder):
+            try:
+                details = load_settings(file_path)
+                service_details = {
+                    'name': details['service_name'],
+                    'path': details['service_root']
+                }
+                path_list.append(service_details)
+            except:
+                pass
+
+# add local path to service list
+    else:
+        path_list.append({'name': '', 'path': './'})
+    
+    return path_list, msg_insert

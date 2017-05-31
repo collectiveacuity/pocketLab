@@ -34,9 +34,6 @@ def update(service_list, all=False, verbose=True):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
-# define message insert
-    msg_insert = 'local service'
-
 # retrieve vcs templates
     from pocketlab.methods.vcs import load_ignore
     vcs_templates = {
@@ -44,6 +41,7 @@ def update(service_list, all=False, verbose=True):
         'mercurial': load_ignore(vcs='mercurial')
     }
 
+# define update process
     def _apply_update(root_path, service_name=''):
 
     # construct message
@@ -117,49 +115,9 @@ def update(service_list, all=False, verbose=True):
                 if verbose:
                     print('setup.py file for %s updated.' % msg_insert)
 
-# construct service list
-    update_list = []
-
-# add named service to service list
-    if service_list:
-        msg_insert = ''
-        for i in range(len(service_list)):
-            service = service_list[i]
-            if msg_insert:
-                if i + 1 == len(service_list):
-                    msg_insert += ' and '
-                else:
-                    msg_insert += ', '
-            msg_insert += '"%s"' % service
-            from pocketlab.methods.service import retrieve_service_root
-            service_root = retrieve_service_root(service)
-            service_details = {
-                'name': service,
-                'path': service_root
-            }
-            update_list.append(service_details)
-
-# add all services in registry to service list
-    elif all:
-        msg_insert = 'all services'
-        from pocketlab import __module__
-        from labpack.storage.appdata import appdataClient
-        registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
-        from labpack.records.settings import load_settings
-        for file_path in registry_client.localhost.walk(registry_client.collection_folder):
-            try:
-                details = load_settings(file_path)
-                service_details = {
-                    'name': details['service_name'],
-                    'path': details['service_root']
-                }
-                update_list.append(service_details)
-            except:
-                pass
-
-# add local path to service list
-    else:
-        update_list.append({'name':'', 'path':'./'})
+# construct update list
+    from pocketlab.methods.service import retrieve_services
+    update_list, msg_insert = retrieve_services(service_list, all)
 
 # apply updates
     for service in update_list:
