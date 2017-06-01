@@ -94,6 +94,9 @@ def start(service_list, verbose=True, virtualbox='default'):
         
 # validate mount paths exist
         
+        if verbose:
+            print('.', end='', flush=True)
+        
 # end validations
     if verbose:
         print(' done.')
@@ -102,7 +105,7 @@ def start(service_list, verbose=True, virtualbox='default'):
     if box_running:
         from subprocess import check_output
         sys_command = 'docker-machine ip %s' % virtualbox
-        system_ip = check_output(sys_command).decode('utf-8')
+        system_ip = check_output(sys_command).decode('utf-8').strip()
     else:
         from labpack.platforms.localhost import localhostClient
         localhost_client = localhostClient()
@@ -131,6 +134,8 @@ def start(service_list, verbose=True, virtualbox='default'):
             for key, value in service_config['docker_mount_volumes'].items():
                 sys_command += ' -v "%s":"%s"' % (key, value)
         sys_command += ' -it -d'
+        port_count = 0
+        port_value = ''
         if service_config['docker_port_mapping']:
             for key, value in service_config['docker_port_mapping'].items():
                 port_value = value
@@ -142,14 +147,19 @@ def start(service_list, verbose=True, virtualbox='default'):
                         if not port_value in port_list:
                             break
                 port_list.append(port_value)
+                port_count += 1
                 sys_command += ' -p %s:%s' % (str(port_value), key)
         sys_command += ' %s' % service_config['docker_image_name'] 
     
+    # determine port message
+        port_msg = ''
+        if port_count == 1:
+            port_msg = ' at %s:%s' % (system_ip, port_value)
+            
     # run command
         from subprocess import check_output
         docker_response = check_output(sys_command).decode('utf-8')
-        exit_msg = 'Container "%s" started.\nTo stop "%s": docker rm -f %s' % (
-    container_name, container_name, container_name)
+        exit_msg = 'Container "%s" started%s' % (container_name, port_msg)
 
     return exit_msg
 
