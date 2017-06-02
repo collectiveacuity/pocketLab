@@ -33,7 +33,7 @@ def compile_yaml(config_schema, yaml_path=''):
 # construct config model
     from jsonmodel.validators import jsonModel
     config_model = jsonModel(config_schema)
-
+    
 # construct order dict
     config_list = []
     config_details = config_model.ingest()
@@ -68,16 +68,40 @@ def compile_yaml(config_schema, yaml_path=''):
         comment_stub = '\n'
         if item['comments']:
             comment_stub = ' # %s\n' % item['comments']
+        try:
+            float(item['key'])
+            item_key = "'%s'" % item['key']
+        except:
+            item_key = item['key']
         if isinstance(item['value'], dict):
-            line_text = '%s:%s' % (item['key'], comment_stub)
+            line_text = '%s:%s' % (item_key, comment_stub)
             for key, value in item['value'].items():
-                line_text += '  %s: %s\n' % (key, value)
+                try:
+                    float(key)
+                    key_text = "'%s'" % key
+                except:
+                    key_text = key
+                value_text = value
+                if isinstance(value, str):
+                    try:
+                        float(value)
+                        value_text = "'%s'" % value
+                    except:
+                        pass              
+                line_text += '  %s: %s\n' % (key_text, value_text)
         elif isinstance(item['value'], list):
-            line_text = '%s:%s' % (item['key'], comment_stub)
-            for sub_item in item['value']:
-                line_text += '  - %s\n' % sub_item
+            line_text = '%s:%s' % (item_key, comment_stub)
+            for i in range(len(item['value'])):
+                value_text = item['value'][i]
+                if isinstance(value_text, str):
+                    try:
+                        float(value_text)
+                        value_text = "'%s'" % value_text
+                    except:
+                        pass
+                line_text += '  - %s\n' % value_text
         else:
-            line_text = '%s: %s%s' % (item['key'], str(item['value']), comment_stub)
+            line_text = '%s: %s%s' % (item_key, str(item['value']), comment_stub)
         config_text += line_text
 
 # update user config

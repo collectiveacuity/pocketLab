@@ -2,12 +2,9 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 __license__ = 'MIT'
 
-from os import system
-from subprocess import check_output
-
 class dockerClient(object):
 
-    def __init__(self, virtualbox_name=''):
+    def __init__(self, virtualbox_name='', verbose=False):
 
         '''
             a method to initialize the dockerClient class
@@ -18,28 +15,38 @@ class dockerClient(object):
     
     # construct vbox property
         self.vbox = virtualbox_name
-    
+        self.verbose = verbose
+        
     # construct localhost
         from labpack.platforms.localhost import localhostClient
         self.localhost = localhostClient()
         
+    # verbosity
+        if self.verbose:
+            print('Checking docker installation...', end='', flush=True)
+            
     # validate docker installation
-        self._validate_docker()
-    
+        self._validate_install()
+        if self.verbose:
+            print('.', end='', flush=True)
+            
     # validate virtualbox installation
         box_running = self._validate_virtualbox()
+        if self.verbose:
+            print('.', end='', flush=True)
     
     # set virtualbox variables
         if box_running:
             self._set_virtualbox()
+            if self.verbose:
+                print('.', end='', flush=True)
         
-    def _validate_docker(self):
+        if self.verbose:
+            print(' done.')
+        
+    def _validate_install(self):
 
-        '''
-            a method to validate docker is installed
-
-        :return: True
-        '''
+        ''' a method to validate docker is installed '''
     
         from os import devnull
         from subprocess import call
@@ -133,6 +140,7 @@ class dockerClient(object):
         '''
 
         import re
+        from subprocess import check_output
         gap_pattern = re.compile('\t|\s{2,}')
         image_list = []
         sys_command = 'docker images'
@@ -166,6 +174,7 @@ class dockerClient(object):
         '''
 
         import re
+        from subprocess import check_output
         gap_pattern = re.compile('\t|\s{2,}')
         container_list = []
         sys_command = 'docker ps -a'
@@ -198,6 +207,7 @@ class dockerClient(object):
         { TOO MANY TO LIST }
         '''
 
+        from subprocess import check_output
         sys_arg = container_alias
         if docker_image:
             sys_arg = docker_image
@@ -212,6 +222,7 @@ class dockerClient(object):
 
     def run(self, run_script):
 
+        from subprocess import check_output
         output_lines = check_output(run_script).decode('utf-8').split('\n')
         container_id = output_lines[0]
 
@@ -227,6 +238,7 @@ class dockerClient(object):
 
     def rmi(self, image_id):
 
+        from subprocess import check_output
         sys_cmd = 'docker rmi %s' % image_id
         output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
 
@@ -240,6 +252,7 @@ class dockerClient(object):
         '''
 
         if self.vbox:
+            from subprocess import check_output
             sys_command = 'docker-machine ip %s' % self.vbox
             system_ip = check_output(sys_command).decode('utf-8').replace('\n','')
         else:
@@ -255,6 +268,7 @@ class dockerClient(object):
         :return: raw output from docker
         '''
 
+        from subprocess import check_output
         return check_output(sys_command).decode('utf-8')
 
     def synopsis(self, container_settings):
@@ -291,20 +305,11 @@ class dockerClient(object):
 
         return settings
 
-    def enter(self, local_os, container_alias):
+    def enter(self, container_alias):
 
+        from os import system
         sys_cmd = 'docker exec -it %s sh' % container_alias
-        if local_os in ('Windows'):
+        if self.localhost.os.sysname in ('Windows'):
             sys_cmd = 'winpty %s' % sys_cmd
 
         system(sys_cmd)
-
-    def cleanup(self):
-
-        '''
-            a method to remove all Exited containers and <none> Images
-
-        :return: boolean
-        '''
-
-        return True

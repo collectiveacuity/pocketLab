@@ -7,7 +7,12 @@ add .ignore file
 add lab.yaml file
 add cred & data folders
 copy cred files from notes to cred
-TODO: python module setup (setup.py, docs folder, <module> folder, __init__)
+add setup.py
+add docs folder
+add index.md to docs folder
+add <module> folder
+add __init__ to <module> folder)
+TODO: add --heroku as a flag to create heroku.yaml
 '''
 
 _init_details = {
@@ -151,7 +156,7 @@ def init(module_name='', vcs_service='', license_type='MIT', verbose=True):
 
     # determine version control service
         if not vcs_service:
-            vcs_service = '.git'
+            vcs_service = 'git'
             if path.exists('.git'):
                 if path.isdir('.git'):
                     vcs_service = 'git'

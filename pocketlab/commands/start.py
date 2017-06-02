@@ -5,7 +5,7 @@ __license__ = 'MIT'
 _start_details = {
     'title': 'Start',
     'description': 'Initiates a container with the Docker image for a service.',
-    'help': 'initiates a Docker container for service',
+    'help': 'initiates Docker containers for services',
     'benefit': 'WIP'
 }
 
@@ -29,15 +29,9 @@ def start(service_list, verbose=True, virtualbox='default'):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
-# validate requirements
-    if verbose:
-        print('Checking dependencies...', end='', flush=True)
-
 # validate installation of docker
     from pocketlab.methods.docker import dockerClient
-    docker_client = dockerClient(virtualbox_name=virtualbox)
-    if verbose:
-        print('.', end='', flush=True)
+    docker_client = dockerClient(virtualbox_name=virtualbox, verbose=verbose)
 
 # construct list of paths to services
     from pocketlab.methods.service import retrieve_services

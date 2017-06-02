@@ -5,7 +5,7 @@ __license__ = 'MIT'
 _stop_details = {
     'title': 'Stop',
     'description': 'Stops and removes a running container for the service.',
-    'help': 'terminates a running service container',
+    'help': 'terminates running Docker containers',
     'benefit': 'WIP'
 }
 
@@ -29,15 +29,9 @@ def stop(service_list, verbose=True, virtualbox='default'):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
-# validate requirements
-    if verbose:
-        print('Checking dependencies...', end='', flush=True)
-
 # validate installation of docker
     from pocketlab.methods.docker import dockerClient
-    docker_client = dockerClient(virtualbox_name=virtualbox)
-    if verbose:
-        print('.', end='', flush=True)
+    docker_client = dockerClient(virtualbox_name=virtualbox, verbose=verbose)
 
 # construct list of paths to services
     from pocketlab.methods.service import retrieve_services
