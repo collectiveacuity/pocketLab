@@ -9,6 +9,7 @@
 	"container_alias": "server",
     "image_name": "flaskserver",
     "module_name": "pocketlab",
+    "platform_name": "heroku",
     "license_type": "MIT",
     "verbose": true,
     "all": true,
@@ -107,6 +108,15 @@
       "field_metadata": {
         "cli_flags": [ "--module" ],
         "cli_help": "name for python module"
+      }
+    },
+    ".platform_name":{
+      "field_description": "Name of platform to host service.",
+      "discrete_values": [ "heroku", "ec2" ],
+      "field_metadata": {
+        "cli_flags": [ "--platform" ],
+        "cli_help": "name of remote platform",
+        "cli_metavar": "PLATFORM"
       }
     },
     ".license_type": {

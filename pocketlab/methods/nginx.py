@@ -85,7 +85,6 @@ def extract_containers(nginx_text, domain_name):
 # search for matches
     domain_search = domain_regex.findall(nginx_text)
     if domain_search:
-        print(domain_search)
         for match in domain_search:
             name = match[0]
             port = int(match[1])

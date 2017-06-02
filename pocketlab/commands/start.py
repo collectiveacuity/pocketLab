@@ -1,5 +1,6 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
+__license__ = 'MIT'
 
 _start_details = {
     'title': 'Start',
@@ -33,34 +34,10 @@ def start(service_list, verbose=True, virtualbox='default'):
         print('Checking dependencies...', end='', flush=True)
 
 # validate installation of docker
-    from pocketlab.methods.validation import validate_docker
-    validate_docker()
+    from pocketlab.methods.docker import dockerClient
+    docker_client = dockerClient(virtualbox_name=virtualbox)
     if verbose:
         print('.', end='', flush=True)
-
-# validate virtualbox running
-    from pocketlab.methods.validation import validate_virtualbox
-    box_running = validate_virtualbox(virtualbox)
-    if verbose:
-        print('.', end='', flush=True)
-
-# inject variables required to connect to virtualbox
-    if box_running:
-        from os import environ
-        if not environ.get('DOCKER_CERT_PATH'):
-            import re
-            from subprocess import check_output
-            sys_command = 'docker-machine env %s' % virtualbox
-            cmd_output = check_output(sys_command).decode('utf-8')
-            variable_list = ['DOCKER_TLS_VERIFY', 'DOCKER_HOST', 'DOCKER_CERT_PATH', 'DOCKER_MACHINE_NAME']
-            for variable in variable_list:
-                env_start = '%s="' % variable
-                env_end = '"\\n'
-                env_regex = '%s.*?%s' % (env_start, env_end)
-                env_pattern = re.compile(env_regex)
-                env_statement = env_pattern.findall(cmd_output)
-                env_var = env_statement[0].replace(env_start, '').replace('"\n', '')
-                environ[variable] = env_var
 
 # construct list of paths to services
     from pocketlab.methods.service import retrieve_services
@@ -102,14 +79,7 @@ def start(service_list, verbose=True, virtualbox='default'):
         print(' done.')
 
 # retrieve system ip
-    if box_running:
-        from subprocess import check_output
-        sys_command = 'docker-machine ip %s' % virtualbox
-        system_ip = check_output(sys_command).decode('utf-8').strip()
-    else:
-        from labpack.platforms.localhost import localhostClient
-        localhost_client = localhostClient()
-        system_ip = localhost_client.ip
+    system_ip = docker_client.ip()
 
 # instantiate containers
     exit_msg = ''
