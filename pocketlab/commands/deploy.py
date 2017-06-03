@@ -6,12 +6,22 @@ _start_details = {
     'title': 'Deploy',
     'description': 'Deploys one or more services as Docker containers on a remote platform.',
     'help': 'deploys services to a remote platform',
-    'benefit': 'WIP'
+    'benefit': 'Makes services available online.'
 }
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_list, verbose=True):
+def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
+    
+    '''
+        a method to deploy the docker image of a service to a remote host
+        
+    :param platform_name: string with name of remote platform to host service
+    :param service_list: list of strings with name of services to deploy
+    :param verbose: [optional] boolean to toggle process messages
+    :param virtualbox: [optional] string with name of virtualbox image (win7/8)
+    :return: string with exit message
+    '''
     
     title = 'deploy'
 
@@ -22,7 +32,8 @@ def deploy(platform_name, service_list, verbose=True):
     input_fields = {
         'service_list': service_list,
         'verbose': verbose,
-        'platform_name': platform_name
+        'platform_name': platform_name,
+        'virtualbox': virtualbox
     }
     for key, value in input_fields.items():
         if value:
@@ -58,21 +69,36 @@ def deploy(platform_name, service_list, verbose=True):
             details['config'] = heroku_details
             details['config'].update(lab_details)
             heroku_list.append(details)
-        
+    
+    # process deployment sequence
         from pocketlab.methods.heroku import herokuClient
         for service in heroku_list:
             heroku_kwargs = {
                 'account_email': service['config']['heroku_account_email'],
                 'account_password': service['config']['heroku_account_password'],
+                'app_subdomain': service['config']['heroku_app_subdomain'],
                 'verbose': verbose
             }
             heroku_client = herokuClient(**heroku_kwargs)
-            heroku_client.validate_access(service['config']['heroku_app_subdomain'])
-            
-        # print heroku_list
-
+            docker_kwargs = {
+                'docker_image': service['config']['docker_image_name'],
+                'virtualbox_name': virtualbox
+            }
+            heroku_client.deploy_docker(**docker_kwargs)
+    
+    # TODO consider rollback options
+        
+    # construct success message  
+            service_insert = 'in working directory'
+            if service['name']:
+                service_insert = '"%s"' % service['name']
+            exit_msg = 'Docker image of service %s deployed to heroku.' % service_insert 
+            if len(heroku_list) > 1:
+                print(exit_msg)
+        
 # placeholder aws
     elif platform_name == 'ec2':
+        raise Exception('ec2 is coming. Only heroku deployment is currently available.')
         
     # what is the state of the system that is trying to be achieved?
         # single instance vs. load balancer/auto-scaling group
@@ -135,7 +161,7 @@ def deploy(platform_name, service_list, verbose=True):
         remote_path = '/etc/nginx/%s' % nginx_name
         ssh_client.transfer(local_path, remote_path, verbose=verbose)
 
-# placeholder exit
-    exit_msg = input_fields
-    
+    if len(service_list) > 1:
+        exit_msg = 'Finished deploying %s to %s.' % (msg_insert, platform_name)
+        
     return exit_msg

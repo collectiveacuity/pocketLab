@@ -3,9 +3,11 @@ ChangeLog
 
 0.3 (TBD)
 ---------
+* [COMMAND ADDED] deploy command deploys docker image to remote host (heroku only)
 * [COMMAND ADDED] stop command terminates docker containers
 * [COMMAND ADDED] start command initiates docker containers
 * [FEATURE ADDED] init commmand has option to setup framework for python modules
+* [FEATURE ADDED] --heroku flag to init command to setup heroku config file
 * [FEATURE ADDED] update command updates the setup.py comments
 
 0.2 (2017.05.27)

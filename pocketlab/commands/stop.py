@@ -6,7 +6,7 @@ _stop_details = {
     'title': 'Stop',
     'description': 'Stops and removes a running container for the service.',
     'help': 'terminates running Docker containers',
-    'benefit': 'WIP'
+    'benefit': 'Ends service availability on localhost'
 }
 
 from pocketlab.init import fields_model
@@ -33,6 +33,10 @@ def stop(service_list, verbose=True, virtualbox='default'):
     from pocketlab.methods.docker import dockerClient
     docker_client = dockerClient(virtualbox_name=virtualbox, verbose=verbose)
 
+# verbosity
+    if verbose:
+        print('Checking service configurations...', end='', flush=True)
+        
 # construct list of paths to services
     from pocketlab.methods.service import retrieve_services
     stop_list, msg_insert = retrieve_services(service_list)
@@ -72,8 +76,16 @@ def stop(service_list, verbose=True, virtualbox='default'):
         container_alias = service['config']['docker_container_alias']
         docker_status = docker_client.rm(container_alias)
         if docker_status == container_alias:
-            exit_msg = 'Container "%s" terminated.' % docker_status
+            service_msg = 'Container "%s" terminated.' % docker_status
+            if len(lab_list) > 1:
+                if verbose:
+                    print(service_msg)
+            else:
+                exit_msg = service_msg
         else:
             raise ValueError(docker_status)
+    
+    if len(lab_list) > 1:
+        exit_msg = 'Finished terminating %s' % msg_insert
         
     return exit_msg

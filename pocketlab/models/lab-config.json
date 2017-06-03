@@ -19,7 +19,8 @@
     ".docker_image_name": {
       "default_value": "flaskserver",
       "max_length": 64,
-      "must_not_contain": [ "[^\\w\\-_/:]" ],
+      "must_contain": [ "^[a-z\\d\\-:_/]+$" ],
+      "must_not_contain": [ "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
         "position": 0,
         "comments": "replace with build image name"
@@ -28,7 +29,7 @@
     ".docker_container_alias": {
       "default_value": "server",
       "max_length": 64,
-      "must_not_contain": [ "[^\\w\\-_]" ],
+      "must_not_contain": [ "[^\\w\\-_]", "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
         "position": 1,
         "comments": "replace with your service name"

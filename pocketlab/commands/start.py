@@ -6,7 +6,7 @@ _start_details = {
     'title': 'Start',
     'description': 'Initiates a container with the Docker image for a service.',
     'help': 'initiates Docker containers for services',
-    'benefit': 'WIP'
+    'benefit': 'Makes services available on localhost'
 }
 
 from pocketlab.init import fields_model
@@ -33,6 +33,10 @@ def start(service_list, verbose=True, virtualbox='default'):
     from pocketlab.methods.docker import dockerClient
     docker_client = dockerClient(virtualbox_name=virtualbox, verbose=verbose)
 
+# verbosity
+    if verbose:
+        print('Checking service configurations...', end='', flush=True)
+        
 # construct list of paths to services
     from pocketlab.methods.service import retrieve_services
     start_list, msg_insert = retrieve_services(service_list)
@@ -123,8 +127,18 @@ def start(service_list, verbose=True, virtualbox='default'):
     # run command
         from subprocess import check_output
         docker_response = check_output(sys_command).decode('utf-8')
-        exit_msg = 'Container "%s" started%s' % (container_name, port_msg)
+        service_msg = 'Container "%s" started%s' % (container_name, port_msg)
+        if len(lab_list) > 1:
+            if verbose:
+                print(service_msg)
+        else:
+            exit_msg = service_msg
 
+    # TODO consider ROLLBACK options
+    
+    if len(lab_list) > 1:
+        exit_msg = 'Finished starting %s' % msg_insert
+        
     return exit_msg
 
 # # import dependencies

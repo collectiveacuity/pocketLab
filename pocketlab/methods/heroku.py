@@ -9,11 +9,12 @@ class herokuClient(object):
             'account_email': 'noreply@collectiveacuity.com',
             'account_password': 'abcDEF123GHI!!!',
             'app_subdomain': 'mycoolappsubdomain',
-            'docker_image': 'appImage'
+            'docker_image': 'appimage',
+            'virtualbox_name': 'default'
         }
     }
     
-    def __init__(self, account_email, account_password, verbose=False):
+    def __init__(self, account_email, account_password, app_subdomain, verbose=False):
         
         ''' a method to initialize the herokuClient class '''
 
@@ -26,17 +27,18 @@ class herokuClient(object):
     # validate inputs
         input_fields = {
             'account_email': account_email,
-            'account_password': account_password
+            'account_password': account_password,
+            'app_subdomain': app_subdomain
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
         self.email = account_email
         self.password = account_password
+        self.subdomain = app_subdomain
 
     # construct class properties
         self.verbose = verbose
-        self.subdomain_list = []
         
     # construct localhost
         from labpack.platforms.localhost import localhostClient
@@ -44,6 +46,9 @@ class herokuClient(object):
     
     # validate installation
         self._validate_install()
+    
+    # validate access
+        self._validate_access()
         
     def _validate_install(self):
 
@@ -93,52 +98,53 @@ class herokuClient(object):
         except CalledProcessError:
             from requests import Request
             from labpack.handlers.requests import handle_requests
-            test_url = 'https://collectiveacuity.com'
+            test_url = 'http://collectiveacuity.com'
             request_object = Request(method='GET', url=test_url)
             request_details = handle_requests(request_object)
             raise ConnectionError(request_details['error'])
         except:
             raise
         
-    def _request_command(self, sys_command):
+    def _request_command(self, sys_command, pipe=False):
 
         ''' a method to handle system commands which require connectivity '''
-        
-        from os import devnull
-        from subprocess import check_output
+
+        import sys
+        from subprocess import Popen, PIPE, check_output
         
         try:
-            response = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8')
-        except:
+            if pipe:
+                response = Popen(sys_command, shell=True, stdout=PIPE)
+                for line in response.stdout:
+                    if self.verbose:
+                        print(line.decode('utf-8').rstrip('\n'))
+                    sys.stdout.flush()
+                response.wait()
+                return response
+            else:
+                response = check_output(sys_command).decode('utf-8')
+                return response
+        except Exception as err:
             from requests import Request
             from labpack.handlers.requests import handle_requests
-            test_url = 'https://collectiveacuity.com'
+            test_url = 'http://www.google.com'
             request_object = Request(method='GET', url=test_url)
             request_details = handle_requests(request_object)
-            raise ConnectionError(request_details['error'])
+            if request_details['error']:
+                raise ConnectionError(request_details['error'])
+            else:
+                raise err
         
-        return response
-        
-    def validate_access(self, app_subdomain):
+    def _validate_access(self):
         
         ''' a method to validate user can access resource '''
         
         title = '%s.validate_access' % self.__class__.__name__
-
-    # validate inputs
-        input_fields = {
-            'app_subdomain': app_subdomain
-        }
-        for key, value in input_fields.items():
-            object_title = '%s(%s=%s)' % (title, key, str(value))
-            self.fields.validate(value, '.%s' % key, object_title)
-    
-        if app_subdomain in self.subdomain_list:
-            return self
             
     # verbosity
+        wait_msg = 'Checking heroku credentials and access to "%s" subdomain...' % self.subdomain
         if self.verbose:
-            print('Checking heroku credentials and access to subdomain...', end='', flush=True)
+            print(wait_msg, end='', flush=True)
 
     # confirm access to account
     # TODO fix error handling for login on LINUX, MAC
@@ -158,23 +164,22 @@ class herokuClient(object):
                 print('.', end='', flush=True)
                 
     # confirm existence of subdomain
-        sys_command = 'heroku ps -a %s' % app_subdomain
+        sys_command = 'heroku ps -a %s' % self.subdomain
         heroku_response = self._request_command(sys_command)    
         if heroku_response.find('find that app') > -1:
-            raise Exception('%s does not exist. Try: heroku create -a %s' % (app_subdomain, app_subdomain))
+            raise Exception('%s does not exist. Try: heroku create -a %s' % (self.subdomain, self.subdomain))
         elif heroku_response.find('have access to the app') > -1:
-            raise Exception('%s belongs to another account.' % app_subdomain)
+            raise Exception('%s belongs to another account.' % self.subdomain)
         elif heroku_response.find('your Heroku credentials') > -1:
             raise Exception('On Windows, you need to login to heroku using cmd.exe.\nWith cmd.exe, try: heroku login')
 
     # return self
-        self.subdomain_list.append(app_subdomain)
         if self.verbose:
             print(' done.')
         
-        return self
+        return True
     
-    def deploy_docker(self, docker_image, app_subdomain, virtualbox_name=''):
+    def deploy_docker(self, docker_image, virtualbox_name='default'):
         
         ''' a method to deploy app to heroku using docker '''
 
@@ -182,8 +187,8 @@ class herokuClient(object):
 
     # validate inputs
         input_fields = {
-            'app_subdomain': app_subdomain,
-            'docker_image': docker_image
+            'docker_image': docker_image,
+            'virtualbox_name': virtualbox_name
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
@@ -194,7 +199,7 @@ class herokuClient(object):
     
     # validate docker client
         from pocketlab.methods.docker import dockerClient
-        docker_client = dockerClient(virtualbox_name, self.verbose)
+        dockerClient(virtualbox_name, self.verbose)
 
     # verbosity
         if self.verbose:
@@ -205,11 +210,10 @@ class herokuClient(object):
             raise Exception('heroku requires a Dockerfile in working directory to deploy using Docker.')
     
     # build docker image
-        sys_command = 'heroku container:push %s --app %s' % (docker_image, app_subdomain)
-        heroku_response = self._request_command(sys_command)
-        print(heroku_response)
-        
-        return heroku_response
+        sys_command = 'heroku container:push %s --app %s' % (docker_image, self.subdomain)
+        self._request_command(sys_command, pipe=True)
+    
+        return True
         
 if __name__ == '__main__':
     
@@ -218,8 +222,8 @@ if __name__ == '__main__':
     heroku_kwargs = {
         'account_email': heroku_config['heroku_account_email'],
         'account_password': heroku_config['heroku_account_password'],
+        'app_subdomain': heroku_config['heroku_app_subdomain'],
         'verbose': True
     }
     heroku_client = herokuClient(**heroku_kwargs)
-    heroku_client.validate_access(heroku_config['heroku_app_subdomain'])
     

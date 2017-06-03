@@ -85,7 +85,7 @@
       "field_description": "Docker container alias for service",
       "default_value": "",
       "max_length": 64,
-      "must_not_contain": [ "[^\\w\\-_]" ],
+      "must_not_contain": [ "[^\\w\\-_]", "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
         "cli_flags": [ "--container" ],
         "cli_help": "alias of docker container for service"
@@ -93,9 +93,9 @@
     },
     ".image_name": {
       "field_description": "Docker image name for service",
-      "default_value": "",
       "max_length": 64,
-      "must_not_contain": [ "[^\\w\\-_/:]" ],
+      "must_contain": [ "^[a-z\\d\\-:_/]+$" ],
+      "must_not_contain": [ "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
         "cli_flags": [ "--image" ],
         "cli_help": "name of docker image for service"
