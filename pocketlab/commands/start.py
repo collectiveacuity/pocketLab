@@ -4,7 +4,7 @@ __license__ = 'MIT'
 
 _start_details = {
     'title': 'Start',
-    'description': 'Initiates a container with the Docker image for a service.',
+    'description': 'Initiates a container with the Docker image for one or more services.',
     'help': 'initiates Docker containers for services',
     'benefit': 'Makes services available on localhost'
 }

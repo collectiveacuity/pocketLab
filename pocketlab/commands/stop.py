@@ -4,7 +4,7 @@ __license__ = 'MIT'
 
 _stop_details = {
     'title': 'Stop',
-    'description': 'Stops and removes a running container for the service.',
+    'description': 'Stops and removes a running container for one or more services.',
     'help': 'terminates running Docker containers',
     'benefit': 'Ends service availability on localhost'
 }

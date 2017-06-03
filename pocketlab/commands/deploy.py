@@ -2,9 +2,9 @@ __author__ = 'rcj1492'
 __created__ = '2017.06'
 __license__ = 'MIT'
 
-_start_details = {
+_deploy_details = {
     'title': 'Deploy',
-    'description': 'Deploys one or more services as Docker containers on a remote platform.',
+    'description': 'Deploys one or more services as Docker containers to a remote platform.',
     'help': 'deploys services to a remote platform',
     'benefit': 'Makes services available online.'
 }
