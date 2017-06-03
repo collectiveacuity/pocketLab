@@ -14,6 +14,7 @@
     "verbose": true,
     "all": true,
     "overwrite": true,
+    "init_heroku": true,
     "print_path": true,
     "paginate": true
   },
@@ -150,6 +151,14 @@
       "field_metadata": {
         "cli_flags": [ "-f", "--force" ],
         "cli_help": "overwrite the existing resource"
+      }
+    },
+    ".init_heroku": {
+      "field_description": "Include heroku config file in credentials.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--heroku" ],
+        "cli_help": "add heroku config to cred folder"
       }
     },
     ".print_path": {

@@ -24,7 +24,7 @@ _init_details = {
 
 from pocketlab.init import fields_model
 
-def init(module_name='', vcs_service='', license_type='MIT', verbose=True):
+def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,verbose=True):
 
     '''
         a method to add lab framework files to the current directory
@@ -32,6 +32,7 @@ def init(module_name='', vcs_service='', license_type='MIT', verbose=True):
     :param module_name: [optional] string with name of module to create
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
+    :param init_heroku: [optional] boolean to add heroku.yaml to cred folder
     :param verbose: [optional] boolean to toggle process messages
     :return: string with success exit message
     '''
@@ -228,7 +229,28 @@ def init(module_name='', vcs_service='', license_type='MIT', verbose=True):
                     for i in range(len(src_list)):
                         copyfile(src_list[i], dst_list[i])
                         _printer(dst_list[i])
-
+    
+    # add config files
+        config_map = {
+            'heroku.yaml': { 
+                'toggle': init_heroku, 
+                'schema_path': 'models/heroku-config.json'
+            } 
+        }
+        for key, value in config_map.items():
+            if value['toggle']:
+                config_path = 'cred/%s' % key
+                if not path.exists(config_path):
+                    from pocketlab import __module__
+                    from jsonmodel.loader import jsonLoader
+                    from pocketlab.methods.config import compile_yaml
+                    config_schema = jsonLoader(__module__, value['schema_path'])
+                    config_text = compile_yaml(config_schema)
+                    with open(config_path, 'wt') as f:
+                        f.write(config_text)
+                        f.close()
+                    _printer(config_path)
+                            
     # add readme file
         readme_path = 'README.md'
         if not path.exists(readme_path):

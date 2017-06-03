@@ -36,6 +36,7 @@ class herokuClient(object):
 
     # construct class properties
         self.verbose = verbose
+        self.subdomain_list = []
         
     # construct localhost
         from labpack.platforms.localhost import localhostClient
@@ -74,22 +75,50 @@ class herokuClient(object):
             
         return True
 
-    def _cli_input(self, command, lambda_sequence):
+    def _cli_input(self, sys_command, lambda_sequence):
         
         ''' a method to answer command line interface inputs '''
 
-        from subprocess import Popen, PIPE
-        command_list = command.split()
-        with Popen(command_list, stdin=PIPE, stdout=PIPE, universal_newlines=True) as p:
-            count = 0
-            for line in p.stdout:
-                answer = lambda_sequence[0](line)
-                count += 1
-                if not answer:
-                    continue
-                print(answer, file=p.stdin)
-                p.stdin.flush()
+        from subprocess import Popen, PIPE, CalledProcessError
+        try:
+            with Popen(sys_command, stdin=PIPE, stdout=PIPE, universal_newlines=True) as p:
+                count = 0
+                for line in p.stdout:
+                    answer = lambda_sequence[0](line)
+                    count += 1
+                    if not answer:
+                        continue
+                    print(answer, file=p.stdin)
+                    p.stdin.flush()
+        except CalledProcessError:
+            from requests import Request
+            from labpack.handlers.requests import handle_requests
+            test_url = 'https://collectiveacuity.com'
+            request_object = Request(method='GET', url=test_url)
+            request_details = handle_requests(request_object)
+            raise ConnectionError(request_details['error'])
+        except:
+            raise
+        
+    def _request_command(self, sys_command):
 
+        ''' a method to handle system commands which require connectivity '''
+        
+        from os import devnull
+        from subprocess import check_output
+        
+        try:
+            response = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8')
+        except:
+            from requests import Request
+            from labpack.handlers.requests import handle_requests
+            test_url = 'https://collectiveacuity.com'
+            request_object = Request(method='GET', url=test_url)
+            request_details = handle_requests(request_object)
+            raise ConnectionError(request_details['error'])
+        
+        return response
+        
     def validate_access(self, app_subdomain):
         
         ''' a method to validate user can access resource '''
@@ -104,6 +133,9 @@ class herokuClient(object):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
     
+        if app_subdomain in self.subdomain_list:
+            return self
+            
     # verbosity
         if self.verbose:
             print('Checking heroku credentials and access to subdomain...', end='', flush=True)
@@ -126,17 +158,17 @@ class herokuClient(object):
                 print('.', end='', flush=True)
                 
     # confirm existence of subdomain
-        from os import devnull
-        from subprocess import check_output
         sys_command = 'heroku ps -a %s' % app_subdomain
-        heroku_response = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8')
+        heroku_response = self._request_command(sys_command)    
         if heroku_response.find('find that app') > -1:
             raise Exception('%s does not exist. Try: heroku create -a %s' % (app_subdomain, app_subdomain))
         elif heroku_response.find('have access to the app') > -1:
             raise Exception('%s belongs to another account.' % app_subdomain)
         elif heroku_response.find('your Heroku credentials') > -1:
             raise Exception('On Windows, you need to login to heroku using cmd.exe.\nWith cmd.exe, try: heroku login')
-    
+
+    # return self
+        self.subdomain_list.append(app_subdomain)
         if self.verbose:
             print(' done.')
         
@@ -158,8 +190,7 @@ class herokuClient(object):
             self.fields.validate(value, '.%s' % key, object_title)
                 
     # import dependencies
-        from os import path, devnull
-        from subprocess import check_output
+        from os import path
     
     # validate docker client
         from pocketlab.methods.docker import dockerClient
@@ -175,7 +206,7 @@ class herokuClient(object):
     
     # build docker image
         sys_command = 'heroku container:push %s --app %s' % (docker_image, app_subdomain)
-        heroku_response = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8')
+        heroku_response = self._request_command(sys_command)
         print(heroku_response)
         
         return heroku_response

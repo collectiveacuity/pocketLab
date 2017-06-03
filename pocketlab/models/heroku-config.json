@@ -1,7 +1,21 @@
 {
+  "metadata": {
+    "comments": "heroku account credentials\nhttps://dashboard.heroku.com/login"
+  },
   "schema": {
     "heroku_account_email": "noreply@collectiveacuity.com",
     "heroku_account_password": "abcDEF123GHI!!!",
     "heroku_app_subdomain": "mycoolappsubdomain"
+  },
+  "components": {
+    ".heroku_account_email": {
+        "default_value": "noreply@collectiveacuity.com"
+    },
+    ".heroku_account_password": {
+        "default_value": "abcDEF123GHI!!!"
+    },
+    ".heroku_app_subdomain": {
+        "default_value": "mycoolappsubdomain"
+    }
   }
 }

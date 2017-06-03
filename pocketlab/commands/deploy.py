@@ -67,7 +67,8 @@ def deploy(platform_name, service_list, verbose=True):
                 'verbose': verbose
             }
             heroku_client = herokuClient(**heroku_kwargs)
-        
+            heroku_client.validate_access(service['config']['heroku_app_subdomain'])
+            
         # print heroku_list
 
 # placeholder aws
