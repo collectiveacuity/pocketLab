@@ -57,76 +57,6 @@ optional arguments:
 ```
   
 
-## List
-_Provides a way to find existing resources._  
-
-**Description:**  
-Generates a list of the resources of a specific type.  
-
-**Usage:**
-```bash
-$ lab list [-h] [--more] RESOURCE
-```
-**Help:** 
-```bash
-Generates a list of the resources of a specific type.
-
-positional arguments:
-  RESOURCE    type of lab resource. eg. services, images...
-
-optional arguments:
-  -h, --help  show this help message and exit
-  --more      paginate results longer than console height
-```
-  
-
-## Update
-_Keeps your services up-to-date with the latest configurations._  
-
-**Description:**  
-Updates the configuration files for a service with the latest pocketlab configurations.  
-
-**Usage:**
-```bash
-$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]
-```
-**Help:** 
-```bash
-Updates the configuration files for a service with the latest pocketlab
-configurations.
-
-positional arguments:
-  SERVICES     list of services in lab registry
-
-optional arguments:
-  -h, --help   show this help message and exit
-  -a, --all    apply to all services in registry
-  -q, --quiet  turn off lab process messages
-```
-  
-
-## Remove
-_Removes a service listing from the lab registry._  
-
-**Description:**  
-Removes clutter from your records.  
-
-**Usage:**
-```bash
-$ lab remove [-h] SERVICE
-```
-**Help:** 
-```bash
-Removes clutter from your records.
-
-positional arguments:
-  SERVICE     name of service in lab registry
-
-optional arguments:
-  -h, --help  show this help message and exit
-```
-  
-
 ## Clean
 _Frees up space by removing superfluous files._  
 
@@ -169,6 +99,51 @@ optional arguments:
   -h, --help           show this help message and exit
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+```
+  
+
+## List
+_Provides a way to find existing resources._  
+
+**Description:**  
+Generates a list of the resources of a specific type.  
+
+**Usage:**
+```bash
+$ lab list [-h] [--more] RESOURCE
+```
+**Help:** 
+```bash
+Generates a list of the resources of a specific type.
+
+positional arguments:
+  RESOURCE    type of lab resource. eg. services, images...
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --more      paginate results longer than console height
+```
+  
+
+## Remove
+_Removes a service listing from the lab registry._  
+
+**Description:**  
+Removes clutter from your records.  
+
+**Usage:**
+```bash
+$ lab remove [-h] SERVICE
+```
+**Help:** 
+```bash
+Removes clutter from your records.
+
+positional arguments:
+  SERVICE     name of service in lab registry
+
+optional arguments:
+  -h, --help  show this help message and exit
 ```
   
 
@@ -217,5 +192,30 @@ optional arguments:
   -h, --help           show this help message and exit
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+```
+  
+
+## Update
+_Keeps your services up-to-date with the latest configurations._  
+
+**Description:**  
+Updates the configuration files for a service with the latest pocketlab configurations.  
+
+**Usage:**
+```bash
+$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]
+```
+**Help:** 
+```bash
+Updates the configuration files for a service with the latest pocketlab
+configurations.
+
+positional arguments:
+  SERVICES     list of services in lab registry
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -a, --all    apply to all services in registry
+  -q, --quiet  turn off lab process messages
 ```
   
