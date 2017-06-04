@@ -86,10 +86,13 @@
         <li class="main active"><a href="#commands">Commands</a></li>
             <li><a href="#home">Home</a></li>
             <li><a href="#init">Init</a></li>
-            <li><a href="#list">List</a></li>
-            <li><a href="#update">Update</a></li>
-            <li><a href="#remove">Remove</a></li>
             <li><a href="#clean">Clean</a></li>
+            <li><a href="#deploy">Deploy</a></li>
+            <li><a href="#list">List</a></li>
+            <li><a href="#remove">Remove</a></li>
+            <li><a href="#start">Start</a></li>
+            <li><a href="#stop">Stop</a></li>
+            <li><a href="#update">Update</a></li>
     </ul>
 </div></div>
                 <div class="col-md-9" role="main">
@@ -105,29 +108,17 @@ Home adds the service name and working directory to the lab registry. On its fir
 
 <p><strong>Help:</strong> </p>
 <pre><code class="bash">Home adds the service name and working directory to the lab registry. On its
-
 first run, it also adds the alias 'home' to bash config. As a result, on
-
 subsequent terminal sessions, typing 'home &lt;service&gt;' will change the working
-
 directory to the folder registered under the service name.
 
-
-
 positional arguments:
-
   SERVICE        name of service in lab registry
 
-
-
 optional arguments:
-
   -h, --help     show this help message and exit
-
   --print        prints path of service root
-
   --path STRING  path to service root
-
   -f, --force    overwrite the existing resource
 </code></pre>
 
@@ -136,109 +127,24 @@ optional arguments:
 <p><strong>Description:</strong><br />
 Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a <code>lab.yaml</code> file in the root directory to manage various configuration options. It will also create, if missing, <code>cred/</code> and <code>data/</code> folders to store sensitive information outside version control along with a <code>.gitignore</code> (or <code>.hgignore</code>) file to escape out standard non-VCS files.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab init [-h] [--vcs STRING]
+<pre><code class="bash">$ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [-q]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
 <pre><code class="bash">Init adds a number of files to the working directory which are required for
-
 other lab processes. If not present, it will create a 'lab.yaml' file in the
-
 root directory to manage various configuration options. It will also create, if
-
 missing, 'cred/' and 'data/' folders to store sensitive information outside
-
 version control along with a '.gitignore' (or '.hgignore') file to escape out
-
 standard non-VCS files.
 
-
-
 optional arguments:
-
-  -h, --help    show this help message and exit
-
-  --vcs STRING  VCS service to generate ignore file
-</code></pre>
-
-<h2 id="list">List</h2>
-<p><em>Provides a way to find existing resources.</em>  </p>
-<p><strong>Description:</strong><br />
-Generates a list of the resources of a specific type.  </p>
-<p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab list [-h] [--more] RESOURCE
-</code></pre>
-
-<p><strong>Help:</strong> </p>
-<pre><code class="bash">Generates a list of the resources of a specific type.
-
-
-
-positional arguments:
-
-  RESOURCE    type of lab resource. eg. services, images...
-
-
-
-optional arguments:
-
-  -h, --help  show this help message and exit
-
-  --more      paginate results longer than console height
-</code></pre>
-
-<h2 id="update">Update</h2>
-<p><em>Keeps your services up-to-date with the latest configurations.</em>  </p>
-<p><strong>Description:</strong><br />
-Updates the configuration files for a service with the latest pocketlab configurations.  </p>
-<p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]
-</code></pre>
-
-<p><strong>Help:</strong> </p>
-<pre><code class="bash">Updates the configuration files for a service with the latest pocketlab
-
-configurations.
-
-
-
-positional arguments:
-
-  SERVICES     list of services in lab registry
-
-
-
-optional arguments:
-
-  -h, --help   show this help message and exit
-
-  -a, --all    apply to all services in registry
-
-  -q, --quiet  turn off lab process messages
-</code></pre>
-
-<h2 id="remove">Remove</h2>
-<p><em>Removes a service listing from the lab registry.</em>  </p>
-<p><strong>Description:</strong><br />
-Removes clutter from your records.  </p>
-<p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab remove [-h] SERVICE
-</code></pre>
-
-<p><strong>Help:</strong> </p>
-<pre><code class="bash">Removes clutter from your records.
-
-
-
-positional arguments:
-
-  SERVICE     name of service in lab registry
-
-
-
-optional arguments:
-
-  -h, --help  show this help message and exit
+  -h, --help        show this help message and exit
+  --module STRING   name for python module
+  --vcs STRING      VCS service to generate ignore file
+  --license STRING  name of software license type
+  --heroku          add heroku config to cred folder
+  -q, --quiet       turn off lab process messages
 </code></pre>
 
 <h2 id="clean">Clean</h2>
@@ -252,12 +158,127 @@ Removes broken resources from the registries.  </p>
 <p><strong>Help:</strong> </p>
 <pre><code class="bash">Removes broken resources from the registries.
 
+optional arguments:
+  -h, --help   show this help message and exit
+  -q, --quiet  turn off lab process messages
+</code></pre>
 
+<h2 id="deploy">Deploy</h2>
+<p><em>Makes services available online.</em>  </p>
+<p><strong>Description:</strong><br />
+Deploys one or more services as Docker containers to a remote platform.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab deploy [-h] [-q] [--virtualbox STRING] PLATFORM [SERVICES [SERVICES ...]]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Deploys one or more services as Docker containers to a remote platform.
+
+positional arguments:
+  PLATFORM             name of remote platform
+  SERVICES             list of services in lab registry
 
 optional arguments:
+  -h, --help           show this help message and exit
+  -q, --quiet          turn off lab process messages
+  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+</code></pre>
 
+<h2 id="list">List</h2>
+<p><em>Provides a way to find existing resources.</em>  </p>
+<p><strong>Description:</strong><br />
+Generates a list of the resources of a specific type.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab list [-h] [--more] RESOURCE
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Generates a list of the resources of a specific type.
+
+positional arguments:
+  RESOURCE    type of lab resource. eg. services, images...
+
+optional arguments:
+  -h, --help  show this help message and exit
+  --more      paginate results longer than console height
+</code></pre>
+
+<h2 id="remove">Remove</h2>
+<p><em>Removes a service listing from the lab registry.</em>  </p>
+<p><strong>Description:</strong><br />
+Removes clutter from your records.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab remove [-h] SERVICE
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Removes clutter from your records.
+
+positional arguments:
+  SERVICE     name of service in lab registry
+
+optional arguments:
+  -h, --help  show this help message and exit
+</code></pre>
+
+<h2 id="start">Start</h2>
+<p><em>Makes services available on localhost</em>  </p>
+<p><strong>Description:</strong><br />
+Initiates a container with the Docker image for one or more services.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab start [-h] [-q] [--virtualbox STRING] [SERVICES [SERVICES ...]]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Initiates a container with the Docker image for one or more services.
+
+positional arguments:
+  SERVICES             list of services in lab registry
+
+optional arguments:
+  -h, --help           show this help message and exit
+  -q, --quiet          turn off lab process messages
+  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+</code></pre>
+
+<h2 id="stop">Stop</h2>
+<p><em>Ends service availability on localhost</em>  </p>
+<p><strong>Description:</strong><br />
+Stops and removes a running container for one or more services.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab stop [-h] [-q] [--virtualbox STRING] [SERVICES [SERVICES ...]]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Stops and removes a running container for one or more services.
+
+positional arguments:
+  SERVICES             list of services in lab registry
+
+optional arguments:
+  -h, --help           show this help message and exit
+  -q, --quiet          turn off lab process messages
+  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+</code></pre>
+
+<h2 id="update">Update</h2>
+<p><em>Keeps your services up-to-date with the latest configurations.</em>  </p>
+<p><strong>Description:</strong><br />
+Updates the configuration files for a service with the latest pocketlab configurations.  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Updates the configuration files for a service with the latest pocketlab
+configurations.
+
+positional arguments:
+  SERVICES     list of services in lab registry
+
+optional arguments:
   -h, --help   show this help message and exit
-
+  -a, --all    apply to all services in registry
   -q, --quiet  turn off lab process messages
 </code></pre></div>
         </div>
