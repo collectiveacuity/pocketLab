@@ -6,7 +6,7 @@
     "docker_image_name": "flaskserver",
     "docker_container_alias": "server",
     "docker_mount_volumes": {
-      "data/": "opt/data/"
+      "data/": "/opt/data/"
     },
     "docker_port_mapping": {
       "5000": 5000

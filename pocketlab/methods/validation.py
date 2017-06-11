@@ -78,7 +78,9 @@ def validate_lab(lab_model, file_path, service_name=''):
 
 # validate lab yaml keys
     from jsonmodel.exceptions import InputValidationError
-    for key, value in lab_details.items():
+    from copy import deepcopy
+    test_details = deepcopy(lab_details)
+    for key, value in test_details.items():
         try:
             object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
             lab_model.validate(value, '.%s' % key, object_title)

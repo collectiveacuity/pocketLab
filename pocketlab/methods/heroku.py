@@ -210,7 +210,7 @@ class herokuClient(object):
             raise Exception('heroku requires a Dockerfile in working directory to deploy using Docker.')
     
     # build docker image
-        sys_command = 'heroku container:push %s --app %s' % (docker_image, self.subdomain)
+        sys_command = 'heroku container:push web --app %s' % self.subdomain
         self._request_command(sys_command, pipe=True)
     
         return True

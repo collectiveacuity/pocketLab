@@ -2,6 +2,15 @@ __author__ = 'rcj1492'
 __created__ = '2017.06'
 __license__ = 'MIT'
 
+
+# TODO: handle heroku error:
+# error parsing HTTP 400 response body: unexpected end of JSON input: ""
+# failed to do heroku container:login (Windows requires login in docker shell)
+
+# TODO: make changedir before heroku container
+
+# TODO: error on heroku caused from not committing dynos (ps:scale web=1 --app <subdomain>)
+
 _deploy_details = {
     'title': 'Deploy',
     'description': 'Deploys one or more services as Docker containers to a remote platform.',

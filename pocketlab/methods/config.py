@@ -313,12 +313,12 @@ def construct_init(module_name):
     date_string = '%s.%s' % (str(new_date.year), new_month)
 
 # construct init text
-    init_text = "''' A Brand New Python Module '''"
+    init_text = "''' A Brand New Python Module '''\n"
     init_text += "__author__ = '%s'\n" % username
     init_text += "__created__ = '%s'\n" % date_string
     init_text += "__module__ = '%s'\n" % module_name
     init_text += "__version__ = '0.1'\n"
-    init_text += "__license__ = 'MIT'  # BSD, ALv2, GPLv3+, LGPLv3+, ©%s Collective Acuity\n" % str(new_date.year)
+    init_text += "__license__ = 'MIT'  # MIT, BSD, ALv2, GPLv3+, LGPLv3+, ©%s Collective Acuity\n" % str(new_date.year)
     init_text += "__team__ = 'Collective Acuity'\n"
     init_text += "__email__ = 'support@collectiveacuity.com'\n"
     init_text += "__url__ = 'https://github.com/collectiveacuity/%s'\n" % module_name

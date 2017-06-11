@@ -106,11 +106,15 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
                 f.close()
             _printer(init_path)
 
-    # create docs folder
+    # create docs folders
         if not path.exists('docs'):
             from os import makedirs
             makedirs('docs')
             _printer('docs')
+        if not path.exists('docs_dev'):
+            from os import makedirs
+            makedirs('docs_dev')
+            _printer('docs_dev')
 
     # create mkdocs markdown file
         mkdocs_path = path.join('docs', 'mkdocs.md')
@@ -121,6 +125,39 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
                 f.write(mkdocs_text)
                 f.close()
             _printer(mkdocs_path)
+
+    # create roadmap markdown files
+        roadmap_docs = path.join('docs', 'roadmap.md')
+        roadmap_temp = path.join('docs_dev', 'roadmap.md')
+        roadmap_list = [ roadmap_docs, roadmap_temp ]
+        for file_path in roadmap_list:
+            if not path.exists(file_path):
+                from pocketlab.methods.config import retrieve_template
+                roadmap_text = retrieve_template('models/roadmap.md.txt')
+                with open(file_path, 'wt') as f:
+                    f.write(roadmap_text)
+                    f.close()
+                _printer(file_path)
+
+    # create components yaml file
+        components_path = path.join('docs_dev', 'components.yaml')
+        if not path.exists(components_path):
+            from pocketlab.methods.config import retrieve_template
+            components_text = retrieve_template('models/components.yaml.txt')
+            with open(components_path, 'wt') as f:
+                f.write(components_text)
+                f.close()
+            _printer(components_path)
+
+    # create generate script file
+        generate_path = path.join('docs_dev', 'generate.py')
+        if not path.exists(generate_path):
+            from pocketlab.methods.config import retrieve_template
+            generate_text = retrieve_template('models/generate.py.txt')
+            with open(generate_path, 'wt') as f:
+                f.write(generate_text)
+                f.close()
+            _printer(generate_path)
 
     # create index markdown file
         index_path = path.join('docs', 'index.md')
