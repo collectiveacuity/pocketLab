@@ -53,6 +53,7 @@ nbproject
 .idea
 .node_history
 __pycache__
+.~lock.*
 
 #################   backup sync   #################
 desktop.ini

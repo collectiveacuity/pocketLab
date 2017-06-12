@@ -140,10 +140,10 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
                 _printer(file_path)
 
     # create components yaml file
-        components_path = path.join('docs_dev', 'components.yaml')
+        components_path = path.join('docs_dev', 'components.csv')
         if not path.exists(components_path):
             from pocketlab.methods.config import retrieve_template
-            components_text = retrieve_template('models/components.yaml.txt')
+            components_text = retrieve_template('models/components.csv.txt')
             with open(components_path, 'wt') as f:
                 f.write(components_text)
                 f.close()

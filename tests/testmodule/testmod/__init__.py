@@ -1,8 +1,9 @@
-''' A Brand New Python Module '''__author__ = 'rcj1492'
-__created__ = '2017.05'
+''' A Brand New Python Module '''
+__author__ = 'rcj1492'
+__created__ = '2017.06'
 __module__ = 'testmod'
 __version__ = '0.1'
-__license__ = 'MIT'  # BSD, ALv2, GPLv3+, LGPLv3+, ©2017 Collective Acuity
+__license__ = 'MIT'  # MIT, BSD, ALv2, GPLv3+, LGPLv3+, ©2017 Collective Acuity
 __team__ = 'Collective Acuity'
 __email__ = 'support@collectiveacuity.com'
 __url__ = 'https://github.com/collectiveacuity/testmod'

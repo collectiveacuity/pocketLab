@@ -7,11 +7,11 @@ def generate_roadmap():
 
     ''' a method to generate the roadmap markdown from template and yaml details '''
 
+    import csv
     from os import path
-    from labpack.records.settings import load_settings
     from tabulate import tabulate
 
-    components_path = 'components.yaml'
+    components_path = 'components.csv'
     roadmap_temp = 'roadmap.md'
     docs_folder = '../docs'
 
@@ -27,22 +27,17 @@ def generate_roadmap():
     if not skip:
         roadmap_text = open(roadmap_temp).read()
 
-        components_dict = load_settings(components_path)
-        components_list = components_dict['components']
-        components_headers = ['Name', 'Description', 'Status']
+        components_text = open(components_path, newline='')
+        components_csv = csv.reader(components_text, delimiter=',', quotechar='|')
+        components_headers = []
         components_table = []
-        for component in components_list:
-            comp = component['component']
-            comp_item = []
-            for i in range(len(comp)):
-                key, value = next(iter(comp[i].items()))
-                if i < len(components_headers):
-                    item_value = ''
-                    if components_headers[i].lower() == key:
-                        if value:
-                            item_value = value
-                    comp_item.append(item_value)
-            components_table.append(comp_item)
+        count = 0
+        for row in components_csv:
+            if not count:
+                components_headers = row
+            else:
+                components_table.append(row)
+            count += 1
 
         def replace_url(x):
             url_text = '<a href="%s">%s</a>' % (x.group(1), x.group(0))

@@ -28,7 +28,6 @@ sdist/
 site/
 target/
 .webassets-cache/
-platforms/
 plugins/
 hooks/
 
@@ -58,6 +57,7 @@ nbproject
 .idea
 .node_history
 __pycache__
+.~lock.*
 
 #################   backup sync   #################
 desktop.ini
