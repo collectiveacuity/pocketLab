@@ -28,7 +28,7 @@ def generate_roadmap():
         roadmap_text = open(roadmap_temp).read()
 
         components_text = open(components_path, newline='')
-        components_csv = csv.reader(components_text, delimiter=',', quotechar='|')
+        components_csv = csv.reader(components_text, delimiter=',', quotechar='"')
         components_headers = []
         components_table = []
         count = 0
