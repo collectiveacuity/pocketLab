@@ -17,6 +17,7 @@
     "all": true,
     "overwrite": true,
     "init_heroku": true,
+    "init_aws": true,
     "print_path": true,
     "paginate": true
   },
@@ -25,7 +26,7 @@
       "field_description": "Name of service in lab registry",
       "default_value": "",
       "max_length": 64,
-      "must_not_contain": [ "[^\\w\\-_]" ],
+      "must_not_contain": [ "[^\\w\\-_]", "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
         "cli_flag": [ "-s", "--service" ],
         "cli_help": "name of service in lab registry",
@@ -177,7 +178,15 @@
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--heroku" ],
-        "cli_help": "add heroku config to cred folder"
+        "cli_help": "add heroku config to .lab folder"
+      }
+    },
+    ".init_aws": {
+      "field_description": "Include aws config file in credentials.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--aws" ],
+        "cli_help": "add aws config to .lab folder"
       }
     },
     ".print_path": {

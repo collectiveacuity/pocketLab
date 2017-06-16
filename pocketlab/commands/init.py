@@ -24,7 +24,7 @@ _init_details = {
 
 from pocketlab.init import fields_model
 
-def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,verbose=True):
+def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, init_aws=False, verbose=True):
 
     '''
         a method to add lab framework files to the current directory
@@ -32,7 +32,8 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
     :param module_name: [optional] string with name of module to create
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
-    :param init_heroku: [optional] boolean to add heroku.yaml to cred folder
+    :param init_heroku: [optional] boolean to add heroku.yaml to .lab folder
+    :param init_aws: [optional] boolean to add aws.yaml to .lab folder
     :param verbose: [optional] boolean to toggle process messages
     :return: string with success exit message
     '''
@@ -228,6 +229,23 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
             from jsonmodel.loader import jsonLoader
             config_schema = jsonLoader(__module__, 'models/lab-config.json')
 
+        # modify config schema defaults from values in registry
+            from pocketlab.methods.service import retrieve_service_name
+            service_name = retrieve_service_name('./')
+            if service_name:
+                config_schema['components']['.docker_container_alias']['default_value'] = service_name
+                service_root = path.abspath('./')
+                root_path, root_folder = path.split(service_root)
+                if root_folder:
+                    folder_name = root_folder.lower().replace(' ', '-')
+                    from jsonmodel.validators import jsonModel
+                    config_model = jsonModel(config_schema)
+                    try:
+                        folder_name = config_model.validate(folder_name, '.docker_image_name')
+                        config_schema['components']['.docker_image_name']['default_value'] = folder_name
+                    except:
+                        pass
+
         # compile yaml
             from pocketlab.methods.config import compile_yaml
             config_text = compile_yaml(config_schema)
@@ -278,11 +296,15 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
             'heroku.yaml': { 
                 'toggle': init_heroku, 
                 'schema_path': 'models/heroku-config.json'
-            } 
+            },
+            'aws.yaml': {
+                'toggle': init_aws,
+                'schema_path': 'models/aws-config.json'
+            }
         }
         for key, value in config_map.items():
             if value['toggle']:
-                config_path = 'cred/%s' % key
+                config_path = '.lab/%s' % key
                 if not path.exists(config_path):
                     from pocketlab import __module__
                     from jsonmodel.loader import jsonLoader

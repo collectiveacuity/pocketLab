@@ -4,7 +4,8 @@ __license__ = 'MIT'
 
 # initialize logging
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 # retrieve schemas
 from pocketlab import __module__

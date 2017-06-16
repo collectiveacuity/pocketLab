@@ -1,6 +1,8 @@
 {
+  "title": "heroku.yaml",
   "metadata": {
-    "comments": "heroku account credentials\nhttps://dashboard.heroku.com/login"
+    "comments": "heroku account credentials\nhttps://dashboard.heroku.com/login",
+    "flag": "--heroku"
   },
   "schema": {
     "heroku_account_email": "noreply@collectiveacuity.com",
@@ -9,13 +11,22 @@
   },
   "components": {
     ".heroku_account_email": {
-        "default_value": "noreply@collectiveacuity.com"
+        "default_value": "noreply@collectiveacuity.com",
+        "field_metadata": {
+          "position": 1
+        }
     },
     ".heroku_account_password": {
-        "default_value": "abcDEF123GHI!!!"
+        "default_value": "abcDEF123GHI!!!",
+        "field_metadata": {
+          "position": 2
+        }
     },
     ".heroku_app_subdomain": {
-        "default_value": "mycoolappsubdomain"
+        "default_value": "mycoolappsubdomain",
+        "field_metadata": {
+          "position": 3
+        }
     }
   }
 }

@@ -22,8 +22,8 @@
       "must_contain": [ "^[a-z\\d\\-:_/]+$" ],
       "must_not_contain": [ "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
-        "position": 0,
-        "comments": "replace with build image name"
+        "position": 1,
+        "comments": "replace with preferred build image name"
       }
     },
     ".docker_container_alias": {
@@ -31,28 +31,28 @@
       "max_length": 64,
       "must_not_contain": [ "[^\\w\\-_]", "^\\d", "^\\-", "\\-$" ],
       "field_metadata": {
-        "position": 1,
-        "comments": "replace with your service name"
+        "position": 2,
+        "comments": "replace with preferred container alias"
       }
     },
     ".docker_mount_volumes": {
-      "extra_fields": true,
-      "field_metadata": {
-        "position": 2,
-        "comments": ""
-      }
-    },
-    ".docker_port_mapping": {
       "extra_fields": true,
       "field_metadata": {
         "position": 3,
         "comments": ""
       }
     },
-    ".docker_environment_variables": {
+    ".docker_port_mapping": {
       "extra_fields": true,
       "field_metadata": {
         "position": 4,
+        "comments": ""
+      }
+    },
+    ".docker_environment_variables": {
+      "extra_fields": true,
+      "field_metadata": {
+        "position": 5,
         "comments": ""
       }
     },

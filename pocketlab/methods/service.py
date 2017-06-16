@@ -2,6 +2,29 @@ __author__ = 'rcj1492'
 __created__ = '2016.10'
 __license__ = 'MIT'
 
+def retrieve_service_name(service_root):
+
+    service_name = ''
+
+# construct registry client
+    from os import path
+    from pocketlab import __module__
+    from labpack.storage.appdata import appdataClient
+    registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+
+# walk registry for
+    from labpack.records.settings import load_settings
+    for file_path in registry_client.localhost.walk(registry_client.collection_folder):
+        try:
+            details = load_settings(file_path)
+            if details['service_root'] == path.abspath(service_root):
+                service_name = details['service_name']
+                break
+        except:
+            pass
+
+    return service_name
+
 def retrieve_service_root(service_name, command_context=''):
 
 # construct registry client
@@ -52,15 +75,9 @@ def retrieve_services(service_list=None, all=False):
     
 # add named service to service list
     if service_list:
-        msg_insert = ''
-        for i in range(len(service_list)):
-            service = service_list[i]
-            if msg_insert:
-                if i + 1 == len(service_list):
-                    msg_insert += ' and '
-                else:
-                    msg_insert += ', '
-            msg_insert += '"%s"' % service
+        from labpack.parsing.grammar import join_words
+        msg_insert = join_words(service_list)
+        for service in service_list:
             service_root = retrieve_service_root(service)
             service_details = {
                 'name': service,
@@ -91,3 +108,9 @@ def retrieve_services(service_list=None, all=False):
         path_list.append({'name': '', 'path': './'})
     
     return path_list, msg_insert
+
+if __name__ == '__main__':
+
+    lab_root = retrieve_service_root('lab')
+    lab_name = retrieve_service_name(lab_root)
+    assert lab_name == 'lab'
