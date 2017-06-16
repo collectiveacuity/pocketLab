@@ -2,12 +2,12 @@ __author__ = 'rcj1492'
 __created__ = '2017.05'
 __license__ = 'MIT'
 
-def validate_config(config_model, service_root, service_name=''):
+def validate_platform(platform_model, service_root, service_name=''):
     
     '''
         a method to validate yaml configuration file in .lab folder
         
-    :param config_model: jsonModel object with config schema
+    :param platform_model: jsonModel object with config schema
     :param service_root: string with path to root of service
     :param service_name: [optional] string with name of service
     :return: dictionary with file configurations
@@ -21,8 +21,8 @@ def validate_config(config_model, service_root, service_name=''):
 
 # validate config file exists
     from os import path
-    file_flag = config_model.metadata['flag']
-    file_name = config_model.title
+    file_flag = platform_model.metadata['flag']
+    file_name = platform_model.title
     file_path = path.join(service_root, '.lab/%s' % file_name)
     file_init = 'lab init %s' % file_flag
     if not path.exists(file_path):
@@ -40,7 +40,7 @@ def validate_config(config_model, service_root, service_name=''):
     for key, value in config_details.items():
         try:
             object_title = 'Field %s in %s in %s' % (key, file_name, msg_insert_2)
-            config_model.validate(value, '.%s' % key, object_title)
+            platform_model.validate(value, '.%s' % key, object_title)
         except InputValidationError as err:
             error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
             if err.message.find(error_msg) > -1:

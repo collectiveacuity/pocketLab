@@ -61,7 +61,7 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
 
     # validate heroku and lab files
         from os import path
-        from pocketlab.methods.validation import validate_config, validate_lab
+        from pocketlab.methods.validation import validate_platform, validate_lab
         from pocketlab import __module__
         from jsonmodel.loader import jsonLoader
         from jsonmodel.validators import jsonModel
@@ -71,7 +71,7 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
         lab_model = jsonModel(lab_schema)
         for details in deploy_list:
             service_name = details['name']
-            heroku_details = validate_config(heroku_model, details['path'], service_name)
+            heroku_details = validate_platform(heroku_model, details['path'], service_name)
             lab_path = path.join(details['path'], 'lab.yaml')
             lab_details = validate_lab(lab_model, lab_path, service_name)
             details['config'] = heroku_details

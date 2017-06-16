@@ -13,6 +13,7 @@
     "license_type": "MIT",
     "environment_type": "prod",
     "resource_tag": "20170615",
+    "region_name": "us-east-1",
     "verbose": true,
     "all": true,
     "overwrite": true,
@@ -134,7 +135,6 @@
     },
     ".environment_type":{
       "field_description": "Type of development environment.",
-      "default_value": "prod",
       "field_metadata": {
         "cli_flags": [ "--env" ],
         "cli_help": "type of development environment"
@@ -143,10 +143,15 @@
     ".resource_tag": {
       "field_description": "Tag value associated with resource.",
       "field_metadata": {
-        "cli_flags": [
-          "--tag"
-        ],
+        "cli_flags": [ "--tag" ],
         "cli_help": "tag associated with resource"
+      }
+    },
+    ".region_name": {
+      "field_description": "Name of remote host platform region.",
+      "field_metadata": {
+        "cli_flags": [ "--region" ],
+        "cli_help": "name of platform region"
       }
     },
     ".verbose": {

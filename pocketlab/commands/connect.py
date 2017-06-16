@@ -9,14 +9,14 @@ TODO: connect to other platforms
 
 _connect_details = {
     'title': 'connect',
-    'description': 'Opens up a direct ssh connection to remote host.',
+    'description': 'Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.\n\nPLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. When the deploy command is complete, instances will automatically be tagged with the container alias of each service deployed to them. In the meantime, a tag must be added manually with key "Containers" and value "<container_alias>"',
     'help': 'connects to remote host through ssh',
     'benefit': 'Edit settings on remote host manually.'
 }
 
 from pocketlab.init import fields_model
 
-def connect(platform_name, service_name='', environment_type='prod', resource_tag='',verbose=True):
+def connect(platform_name, service_name='', environment_type='', resource_tag='', region_name='', verbose=True):
 
     title = 'connect'
 
@@ -44,7 +44,7 @@ def connect(platform_name, service_name='', environment_type='prod', resource_ta
 
 # retrieve lab config
     from os import path
-    from pocketlab.methods.validation import validate_lab, validate_config
+    from pocketlab.methods.validation import validate_lab, validate_platform
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
     from jsonmodel.validators import jsonModel
@@ -59,10 +59,18 @@ def connect(platform_name, service_name='', environment_type='prod', resource_ta
 # handle ec2 platform
     if platform_name == 'ec2':
 
+    # check for dependencies
+        from pocketlab.methods.dependencies import import_boto3
+        import_boto3('ec2 platform')
+        from platform import uname
+        local_os = uname()
+        if local_os.system in ('Windows'):
+            raise Exception('%s command is not available for Windows. Try using instead: putty.exe' % title)
+
     # retrieve aws config
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
-        aws_config = validate_config(aws_model, service_root, service_name)
+        aws_config = validate_platform(aws_model, service_root, service_name)
 
     # verify access to ec2
         ec2_config = {
@@ -73,53 +81,76 @@ def connect(platform_name, service_name='', environment_type='prod', resource_ta
             'user_name': aws_config['aws_user_name'],
             'verbose': False
         }
-    # TODO add region support
+        if region_name:
+            ec2_config['region_name'] = region_name
+        from labpack.authentication.aws.iam import AWSConnectionError
         from labpack.platforms.aws.ec2 import ec2Client
         from pocketlab.init import logger
         logger.disabled = True
-        ec2_client = ec2Client(**ec2_config)
+        try:
+            ec2_client = ec2Client(**ec2_config)
+        except AWSConnectionError as err:
+            error_lines = str(err).splitlines()
+            raise Exception('AWS configuration has the following problem:\n%s' % error_lines[-1])
         try:
             ec2_client.list_keypairs()
         except:
             raise Exception('Service %s does not have privileges to access EC2.' % service_insert)
 
-    # retrieve instance ip and pem file details from ec2
-        tag_values = [ environment_type ]
-        resource_insert = ''
+    # retrieve instance list using filter criteria
+        valid_instances = []
+        filter_insert = 'for container "%s" in AWS region %s' % (container_alias, ec2_client.iam.region_name)
+        tag_values = []
+        if environment_type:
+            filter_insert += ' in the "%s" env' % environment_type
+            tag_values.append(environment_type)
         if resource_tag:
-            resource_insert = ' with a %s tag value.'
+            filter_insert += ' with a "%s" tag' % resource_tag
             tag_values.append(resource_tag)
-        instance_list = ec2_client.list_instances(tag_values=tag_values)
-        error_msg = 'No instances found in AWS region %s in the "%s" environment' % (ec2_config['region_name'], environment_type)
-        if not instance_list:
-            raise Exception('%s%s.' % (error_msg, resource_insert))
-        instance_id = instance_list[0]
-        instance_details = ec2_client.read_instance(instance_id)
-        pem_name = instance_details['keypair']
+        if tag_values:
+            instance_list = ec2_client.list_instances(tag_values=tag_values)
+        else:
+            instance_list = ec2_client.list_instances()
+        for instance_id in instance_list:
+            instance_details = ec2_client.read_instance(instance_id)
+            if instance_details['tags']:
+                for tag in instance_details['tags']:
+                    if tag['Key'] == 'Containers':
+                        if tag['Value'].find(container_alias) > -1:
+                            valid_instances.append(instance_details)
+                            break
+
+    # verify only one instance exists
+        if not valid_instances:
+            raise Exception('No instances found %s. Try: lab list instances aws' % filter_insert)
+        elif len(valid_instances) > 1:
+            raise Exception('More than one instance was found %s. Try adding optional flags as filters.')
+
+    # verify pem file exists
         from os import path
+        instance_details = valid_instances[0]
+        pem_name = instance_details['keypair']
         pem_folder = path.join(service_root, '.lab')
         pem_file = path.join(pem_folder, '%s.pem' % pem_name)
         if not path.exists(pem_file):
-            raise Exception('Pem file %s.pem missing from .lab folder of service %s.' % (pem_name, service_insert))
+            raise Exception('SSH requires %s.pem file in the .lab folder of service %s.' % (pem_name, service_insert))
 
     # construct ssh client and open terminal
         ssh_config = {
-            'instance_id': instance_id,
+            'instance_id': instance_details['instance_id'],
             'pem_file': pem_file
         }
         ssh_config.update(ec2_config)
-        # ssh_client = sshClient(**client_kwargs)
-        # ssh_client.terminal()
-
-        print(ssh_config)
+        ssh_config['verbose'] = verbose
+        from labpack.platforms.aws.ssh import sshClient
+        ssh_client = sshClient(**ssh_config)
         logger.disabled = False
+        ssh_client.terminal()
 
 # handle heroku error
     elif platform_name == 'heroku':
         raise Exception('It is not possible to connect to instances on heroku.')
 
+    exit_msg = 'Code is growing like gangbusters.'
 
-
-
-
-    return input_fields
+    return exit_msg
