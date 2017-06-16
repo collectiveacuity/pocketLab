@@ -3,6 +3,7 @@
     "service_name": "lab",
     "service_path": "~/lab",
     "service_list": [ "lab" ],
+    "service_option": [ "lab" ],
     "vcs_service": "git",
     "resource_type": "services",
     "virtualbox": "default",
@@ -52,6 +53,22 @@
       }
     },
     ".service_list[0]": {
+      "field_description": "Service in list of services from lab registry",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]" ]
+    },
+    ".service_option": {
+      "field_description": "(Optional) service in lab registry.",
+      "min_size": 0,
+      "max_size": 1,
+      "field_metadata": {
+        "cli_flag": [ "-s", "--services" ],
+        "cli_help": "(optional) service in lab registry",
+        "cli_metavar": "SERVICE"
+      }
+    },
+    ".service_option[0]": {
       "field_description": "Service in list of services from lab registry",
       "default_value": "",
       "max_length": 64,

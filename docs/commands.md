@@ -36,7 +36,7 @@ Init adds a number of files to the working directory which are required for othe
 
 **Usage:**
 ```bash
-$ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [-q]
+$ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [--aws] [-q]
 ```
 **Help:** 
 ```bash
@@ -52,7 +52,8 @@ optional arguments:
   --module STRING   name for python module
   --vcs STRING      VCS service to generate ignore file
   --license STRING  name of software license type
-  --heroku          add heroku config to cred folder
+  --heroku          add heroku config to .lab folder
+  --aws             add aws config to .lab folder
   -q, --quiet       turn off lab process messages
 ```
   
@@ -74,6 +75,42 @@ Removes broken resources from the registries.
 optional arguments:
   -h, --help   show this help message and exit
   -q, --quiet  turn off lab process messages
+```
+  
+
+## Connect
+_Edit settings on remote host manually._  
+
+**Description:**  
+Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.
+
+PLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. When the deploy command is complete, instances will automatically be tagged with the container alias of each service deployed to them. In the meantime, a tag must be added manually with key "Containers" and value "<container_alias>"  
+
+**Usage:**
+```bash
+$ lab connect [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] PLATFORM [SERVICE]
+```
+**Help:** 
+```bash
+Opens up a direct ssh connection to remote host. Connect is currently only
+available to the Amazon ec2 platform and only on systems running ssh natively.
+To connect to a remote host on Windows, try using Putty instead. PLEASE NOTE:
+connect uses the docker container alias value specified in the lab.yaml
+configuration file to determine which instance to connect to. When the deploy
+command is complete, instances will automatically be tagged with the container
+alias of each service deployed to them. In the meantime, a tag must be added
+manually with key "Containers" and value "<container_alias>"
+
+positional arguments:
+  PLATFORM         name of remote platform
+  SERVICE          (optional) service in lab registry
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --env STRING     type of development environment
+  --tag STRING     tag associated with resource
+  --region STRING  name of platform region
+  -q, --quiet      turn off lab process messages
 ```
   
 
@@ -106,7 +143,7 @@ optional arguments:
 _Provides a way to find existing resources._  
 
 **Description:**  
-Generates a list of the resources of a specific type.  
+Generates a list of the resources of a specific type. Only the service resource type is supported, but docker oriented and remote host kinds of resources are coming.  
 
 **Usage:**
 ```bash
@@ -114,7 +151,9 @@ $ lab list [-h] [--more] RESOURCE
 ```
 **Help:** 
 ```bash
-Generates a list of the resources of a specific type.
+Generates a list of the resources of a specific type. Only the service resource
+type is supported, but docker oriented and remote host kinds of resources are
+coming.
 
 positional arguments:
   RESOURCE    type of lab resource. eg. services, images...

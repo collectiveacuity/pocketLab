@@ -10,7 +10,7 @@ TODO: list containers
 
 _list_details = {
     'title': 'List',
-    'description': 'Generates a list of the resources of a specific type.',
+    'description': 'Generates a list of the resources of a specific type. Only the service resource type is supported, but docker oriented and remote host kinds of resources are coming.',
     'help': 'lists the instances of a resource type',
     'benefit': 'Provides a way to find existing resources.'
 }

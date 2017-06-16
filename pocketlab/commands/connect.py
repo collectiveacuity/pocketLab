@@ -16,13 +16,16 @@ _connect_details = {
 
 from pocketlab.init import fields_model
 
-def connect(platform_name, service_name='', environment_type='', resource_tag='', region_name='', verbose=True):
+def connect(platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True):
 
     title = 'connect'
 
 # validate inputs
+    if isinstance(service_option, str):
+        if service_option:
+            service_option = [service_option]
     input_fields = {
-        'service_name': service_name,
+        'service_option': service_option,
         'verbose': verbose,
         'platform_name': platform_name,
         'environment_type': environment_type,
@@ -32,6 +35,11 @@ def connect(platform_name, service_name='', environment_type='', resource_tag=''
         if value:
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
+
+# determine service name
+    service_name = ''
+    if service_option:
+        service_name = service_option[0]
 
 # construct path to service root
     from pocketlab.methods.service import retrieve_service_root

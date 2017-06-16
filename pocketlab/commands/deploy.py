@@ -115,10 +115,13 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
         # fresh account vs. account configuration exists
         # add/subtract services vs update services
         # ephemeral vs persistent data (service that backs-up data)
+        # single container vs multiple containers
     
     # from awsDocker.awsCompose import awsCompose
     # from awsDocker.awsSSH import awsSSH
     # from pocketlab.platforms.docker import dockerClient
+        from labpack.platforms.aws.ec2 import ec2Client
+        from labpack.platforms.aws.ssh import sshClient
         ec2_client = None
         ssh_client = None
         docker_client = None
