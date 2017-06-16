@@ -11,6 +11,8 @@
     "module_name": "pocketlab",
     "platform_name": "heroku",
     "license_type": "MIT",
+    "environment_type": "prod",
+    "resource_tag": "20170615",
     "verbose": true,
     "all": true,
     "overwrite": true,
@@ -127,6 +129,23 @@
       "field_metadata": {
         "cli_flags": [ "--license" ],
         "cli_help": "name of software license type"
+      }
+    },
+    ".environment_type":{
+      "field_description": "Type of development environment.",
+      "default_value": "prod",
+      "field_metadata": {
+        "cli_flags": [ "--env" ],
+        "cli_help": "type of development environment"
+      }
+    },
+    ".resource_tag": {
+      "field_description": "Tag value associated with resource.",
+      "field_metadata": {
+        "cli_flags": [
+          "--tag"
+        ],
+        "cli_help": "tag associated with resource"
       }
     },
     ".verbose": {

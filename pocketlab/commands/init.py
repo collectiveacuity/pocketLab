@@ -238,9 +238,15 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False,v
                 f.close()
             _printer(config_path)
 
+    # add lab folder
+        from os import makedirs
+        lab_path = '.lab'
+        if not path.exists(lab_path):
+            makedirs(lab_path)
+            _printer(lab_path)
+
     # add a data folder
         data_path = 'data'
-        from os import makedirs
         if not path.exists(data_path):
             makedirs(data_path)
             _printer(data_path)

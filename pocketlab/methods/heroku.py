@@ -98,7 +98,7 @@ class herokuClient(object):
         except CalledProcessError:
             from requests import Request
             from labpack.handlers.requests import handle_requests
-            test_url = 'http://collectiveacuity.com'
+            test_url = 'https://www.google.com'
             request_object = Request(method='GET', url=test_url)
             request_details = handle_requests(request_object)
             raise ConnectionError(request_details['error'])
