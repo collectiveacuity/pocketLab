@@ -17,7 +17,7 @@ TODO: add --heroku as a flag to create heroku.yaml
 
 _init_details = {
     'title': 'Init',
-    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.',
+    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.',
     'help': 'creates a lab framework in workdir',
     'benefit': 'Init adds the config files for other lab commands.'
 }

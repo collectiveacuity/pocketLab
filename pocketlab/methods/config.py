@@ -149,7 +149,7 @@ def inject_init(init_path, readme_path, setup_kwargs):
     init_text = ''
     if not path.exists(init_path):
         raise ValueError('%s is not a valid path' % init_path)
-    init_text = open(init_path).read()
+    init_text = open(init_path, encoding='utf-8').read()
 
 # retrieve init settings
     init_kwargs = {
