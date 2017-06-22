@@ -88,11 +88,11 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
                 'verbose': verbose
             }
             heroku_client = herokuClient(**heroku_kwargs)
-            docker_kwargs = {
-                'docker_image': service['config']['docker_image_name'],
-                'virtualbox_name': virtualbox
-            }
-            heroku_client.deploy_docker(**docker_kwargs)
+            # docker_kwargs = {
+            #     'docker_image': service['config']['docker_image_name'],
+            #     'virtualbox_name': virtualbox
+            # }
+            # heroku_client.deploy_docker(**docker_kwargs)
     
     # TODO consider rollback options
         
@@ -106,6 +106,7 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
         
 # placeholder aws
     elif platform_name == 'ec2':
+        
         raise Exception('ec2 is coming. Only heroku deployment is currently available.')
         
     # what is the state of the system that is trying to be achieved?
