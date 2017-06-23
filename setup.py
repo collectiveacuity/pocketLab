@@ -10,7 +10,8 @@ setup_kwargs = {
         'jsonmodel',
         'labpack',
         'tabulate>=0.7.7',
-        'ruamel.yaml>=0.14.12'
+        'ruamel.yaml>=0.14.12',
+        'pexpect'
     ],
     'classifiers': [
         # https://pypi.python.org/pypi?%3Aaction=list_classifiers

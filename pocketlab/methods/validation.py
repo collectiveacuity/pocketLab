@@ -85,16 +85,17 @@ def validate_lab(lab_model, file_path, service_name=''):
     from copy import deepcopy
     test_details = deepcopy(lab_details)
     for key, value in test_details.items():
-        try:
-            object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
-            lab_model.validate(value, '.%s' % key, object_title)
-        except InputValidationError as err:
-            error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
-            if err.message.find(error_msg) > -1:
-                pass
-            else:
+        if key in lab_model.keyMap.items():
+            try:
+                object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
+                lab_model.validate(value, '.%s' % key, object_title)
+            except InputValidationError as err:
+                error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
+                if err.message.find(error_msg) > -1:
+                    pass
+                else:
+                    raise
+            except:
                 raise
-        except:
-            raise
     
     return lab_details

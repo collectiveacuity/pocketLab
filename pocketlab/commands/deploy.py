@@ -20,7 +20,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
+def deploy(platform_name, service_list, verbose=True, virtualbox='default', static_folder='', app_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -29,6 +29,8 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
     :param service_list: list of strings with name of services to deploy
     :param verbose: [optional] boolean to toggle process messages
     :param virtualbox: [optional] string with name of virtualbox image (win7/8)
+    :param static_folder: [optional] string with path to static index.html site folder
+    :param app_folder: [optional] string with path to single app site folder
     :return: string with exit message
     '''
     
@@ -42,7 +44,9 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
         'service_list': service_list,
         'verbose': verbose,
         'platform_name': platform_name,
-        'virtualbox': virtualbox
+        'virtualbox': virtualbox,
+        'static_folder': static_folder,
+        'app_folder': app_folder
     }
     for key, value in input_fields.items():
         if value:
@@ -81,6 +85,9 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
     # process deployment sequence
         from pocketlab.methods.heroku import herokuClient
         for service in heroku_list:
+            service_insert = 'in working directory'
+            if service['name']:
+                service_insert = '"%s"' % service['name']
             heroku_kwargs = {
                 'account_email': service['config']['heroku_account_email'],
                 'account_password': service['config']['heroku_account_password'],
@@ -88,21 +95,23 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default'):
                 'verbose': verbose
             }
             heroku_client = herokuClient(**heroku_kwargs)
-            # docker_kwargs = {
-            #     'docker_image': service['config']['docker_image_name'],
-            #     'virtualbox_name': virtualbox
-            # }
-            # heroku_client.deploy_docker(**docker_kwargs)
-    
-    # TODO consider rollback options
-        
-    # construct success message  
-            service_insert = 'in working directory'
-            if service['name']:
-                service_insert = '"%s"' % service['name']
-            exit_msg = 'Docker image of service %s deployed to heroku.' % service_insert 
+            if static_folder:
+                heroku_client.deploy_static(static_folder)
+                exit_msg = 'Static site of service %s deployed to heroku.' % service_insert
+            elif app_folder:
+                exit_msg = 'Stand-alone app of service %s deployed to heroku.' % service_insert
+            else:
+                # docker_kwargs = {
+                #     'docker_image': service['config']['docker_image_name'],
+                #     'virtualbox_name': virtualbox
+                # }
+                # heroku_client.deploy_docker(**docker_kwargs)
+                exit_msg = 'Docker image of service %s deployed to heroku.' % service_insert
             if len(heroku_list) > 1:
                 print(exit_msg)
+    
+    # TODO consider rollback options    
+            
         
 # placeholder aws
     elif platform_name == 'ec2':
