@@ -7,8 +7,6 @@ __license__ = 'MIT'
 # error parsing HTTP 400 response body: unexpected end of JSON input: ""
 # failed to do heroku container:login (Windows requires login in docker shell)
 
-# TODO: make changedir before heroku container
-
 # TODO: error on heroku caused from not committing dynos (ps:scale web=1 --app <subdomain>)
 
 _deploy_details = {
@@ -20,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_list, verbose=True, virtualbox='default', static_folder='', app_folder=''):
+def deploy(platform_name, service_list, verbose=True, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -29,8 +27,12 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', stat
     :param service_list: list of strings with name of services to deploy
     :param verbose: [optional] boolean to toggle process messages
     :param virtualbox: [optional] string with name of virtualbox image (win7/8)
-    :param static_folder: [optional] string with path to static index.html site folder
-    :param app_folder: [optional] string with path to single app site folder
+    :param html_folder: [optional] string with path to static html site folder root
+    :param php_folder: [optional] string with path to php app folder root
+    :param python_folder: [optional] string with path to python app folder root
+    :param java_folder: [optional] string with path to java app folder root
+    :param ruby_folder: [optional] string with path to ruby app folder root
+    :param node_folder: [optional] string with path to node app folder root
     :return: string with exit message
     '''
     
@@ -45,8 +47,12 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', stat
         'verbose': verbose,
         'platform_name': platform_name,
         'virtualbox': virtualbox,
-        'static_folder': static_folder,
-        'app_folder': app_folder
+        'html_folder': html_folder,
+        'php_folder': php_folder,
+        'python_folder': python_folder,
+        'java_folder': java_folder,
+        'ruby_folder': ruby_folder,
+        'node_folder': node_folder
     }
     for key, value in input_fields.items():
         if value:
@@ -81,9 +87,18 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', stat
             details['config'] = heroku_details
             details['config'].update(lab_details)
             heroku_list.append(details)
-    
+
+    # define site folder path function
+        def _site_path(site_folder, service_root, service_insert, runtime_type):
+            from os import path
+            if path.isabs(site_folder):
+                raise Exception('--%s %s must be a path relative to root of service %s' % (
+                runtime_type, site_folder, service_insert))
+            site_path = path.join(service_root, site_folder)
+            return site_path
+            
     # process deployment sequence
-        from pocketlab.methods.heroku import herokuClient
+        from labpack.platforms.heroku import herokuClient
         for service in heroku_list:
             service_insert = 'in working directory'
             if service['name']:
@@ -95,18 +110,39 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', stat
                 'verbose': verbose
             }
             heroku_client = herokuClient(**heroku_kwargs)
-            if static_folder:
-                heroku_client.deploy_static(static_folder)
-                exit_msg = 'Static site of service %s deployed to heroku.' % service_insert
-            elif app_folder:
-                exit_msg = 'Stand-alone app of service %s deployed to heroku.' % service_insert
+            heroku_insert = "service %s deployed to heroku.\nIf you haven't already, you must allocate resources to this heroku service.\nTry: heroku ps:scale web=1 --app %s" % (service_insert, service['config']['heroku_app_subdomain'])
+            
+            if html_folder:
+                html_folder = _site_path(html_folder, service['path'], service_insert, 'html')
+                heroku_client.deploy_app(html_folder)
+                exit_msg = 'Static site of %s' % heroku_insert
+            elif php_folder:
+                php_folder = _site_path(php_folder, service['path'], service_insert, 'php')
+                heroku_client.deploy_app(php_folder, 'php')
+                exit_msg = 'Php app of %s' % heroku_insert
+            elif python_folder:
+                python_folder = _site_path(python_folder, service['path'], service_insert, 'python')
+                heroku_client.deploy_app(python_folder, 'python')
+                exit_msg = 'Python app of %s' % heroku_insert
+            elif java_folder:
+                java_folder = _site_path(java_folder, service['path'], service_insert, 'java')
+                heroku_client.deploy_app(java_folder, 'java')
+                exit_msg = 'Java app of %s' % heroku_insert
+            elif ruby_folder:
+                ruby_folder = _site_path(ruby_folder, service['path'], service_insert, 'ruby')
+                heroku_client.deploy_app(ruby_folder, 'ruby')
+                exit_msg = 'Ruby app of %s' % heroku_insert
+            elif node_folder:
+                node_folder = _site_path(node_folder, service['path'], service_insert, 'node')
+                heroku_client.deploy_app(node_folder, 'node')
+                exit_msg = 'Node app of %s' % heroku_insert
             else:
-                # docker_kwargs = {
-                #     'docker_image': service['config']['docker_image_name'],
-                #     'virtualbox_name': virtualbox
-                # }
-                # heroku_client.deploy_docker(**docker_kwargs)
-                exit_msg = 'Docker image of service %s deployed to heroku.' % service_insert
+                docker_kwargs = {
+                    'dockerfile_path': path.join(service['path'], 'Dockerfile'),
+                    'virtualbox_name': virtualbox
+                }
+                heroku_client.deploy_docker(**docker_kwargs)
+                exit_msg = 'Docker image of %s' % heroku_insert
             if len(heroku_list) > 1:
                 print(exit_msg)
     

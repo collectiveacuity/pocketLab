@@ -38,17 +38,18 @@ def validate_platform(platform_model, service_root, service_name=''):
 # validate heroku yaml keys
     from jsonmodel.exceptions import InputValidationError
     for key, value in config_details.items():
-        try:
-            object_title = 'Field %s in %s in %s' % (key, file_name, msg_insert_2)
-            platform_model.validate(value, '.%s' % key, object_title)
-        except InputValidationError as err:
-            error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
-            if err.message.find(error_msg) > -1:
-                pass
-            else:
+        if key in platform_model.keyMap.items():
+            try:
+                object_title = 'Field %s in %s in %s' % (key, file_name, msg_insert_2)
+                platform_model.validate(value, '.%s' % key, object_title)
+            except InputValidationError as err:
+                error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
+                if err.message.find(error_msg) > -1:
+                    pass
+                else:
+                    raise
+            except:
                 raise
-        except:
-            raise
     
     return config_details
 

@@ -15,8 +15,12 @@
     "environment_type": "prod",
     "resource_tag": "20170615",
     "region_name": "us-east-1",
-    "static_folder": "site/",
-    "app_folder": "server/",
+    "html_folder": "site/",
+    "php_folder": "www/",
+    "python_folder": "server/",
+    "java_folder": "server/",
+    "ruby_folder": "server/",
+    "node_folder": "app/",
     "verbose": true,
     "all": true,
     "overwrite": true,
@@ -173,20 +177,52 @@
         "cli_help": "name of platform region"
       }
     },
-    ".static_folder": {
-      "field_description": "Path to static index.html site folder.",
+    ".html_folder": {
+      "field_description": "Path to HTML site root folder.",
       "field_metadata": {
-        "cli_group": "A",
-        "cli_flags": [ "--static" ],
-        "cli_help": "path to static site folder"
+        "cli_group": "runtimes",
+        "cli_flags": [ "--html" ],
+        "cli_help": "path to folder with index.html"
       }
     },
-    ".app_folder": {
-      "field_description": "Path to stand-alone app root folder.",
+    ".php_folder": {
+      "field_description": "Path to PHP app root folder.",
       "field_metadata": {
-        "cli_group": "A",
-        "cli_flags": [ "--app" ],
-        "cli_help": "path to stand-alone app folder"
+        "cli_group": "runtimes",
+        "cli_flags": [ "--php" ],
+        "cli_help": "path to folder with index.php"
+      }
+    },
+    ".python_folder": {
+      "field_description": "Path to Python app root folder.",
+      "field_metadata": {
+        "cli_group": "runtimes",
+        "cli_flags": [ "--python" ],
+        "cli_help": "path to folder with requirements.txt"
+      }
+    },
+    ".java_folder": {
+      "field_description": "Path to Java app root folder.",
+      "field_metadata": {
+        "cli_group": "runtimes",
+        "cli_flags": [ "--java" ],
+        "cli_help": "path to folder with Java Procfile"
+      }
+    },
+    ".ruby_folder": {
+      "field_description": "Path to Ruby app root folder.",
+      "field_metadata": {
+        "cli_group": "runtimes",
+        "cli_flags": [ "--ruby" ],
+        "cli_help": "path to folder with Ruby Procfile"
+      }
+    },
+    ".node_folder": {
+      "field_description": "Path to Node app root folder.",
+      "field_metadata": {
+        "cli_group": "runtimes",
+        "cli_flags": [ "--node" ],
+        "cli_help": "path to folder with package.json"
       }
     },
     ".verbose": {
