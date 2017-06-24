@@ -11,7 +11,7 @@ __license__ = 'MIT'
 
 _deploy_details = {
     'title': 'Deploy',
-    'description': 'Deploys one or more services as Docker containers to a remote platform.',
+    'description': 'Deploys one or more services as Docker containers to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)',
     'help': 'deploys services to a remote platform',
     'benefit': 'Makes services available online.'
 }
@@ -92,8 +92,7 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
         def _site_path(site_folder, service_root, service_insert, runtime_type):
             from os import path
             if path.isabs(site_folder):
-                raise Exception('--%s %s must be a path relative to root of service %s' % (
-                runtime_type, site_folder, service_insert))
+                raise Exception('--%s %s must be a path relative to root of service %s' % (runtime_type, site_folder, service_insert))
             site_path = path.join(service_root, site_folder)
             return site_path
             
@@ -105,11 +104,11 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
                 service_insert = '"%s"' % service['name']
             heroku_kwargs = {
                 'account_email': service['config']['heroku_account_email'],
-                'account_password': service['config']['heroku_account_password'],
-                'app_subdomain': service['config']['heroku_app_subdomain'],
+                'auth_token': service['config']['heroku_auth_token'],
                 'verbose': verbose
             }
             heroku_client = herokuClient(**heroku_kwargs)
+            heroku_client.access(service['config']['heroku_app_subdomain'])
             heroku_insert = "service %s deployed to heroku.\nIf you haven't already, you must allocate resources to this heroku service.\nTry: heroku ps:scale web=1 --app %s" % (service_insert, service['config']['heroku_app_subdomain'])
             
             if html_folder:
@@ -146,7 +145,8 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
             if len(heroku_list) > 1:
                 print(exit_msg)
     
-    # TODO consider rollback options    
+    # TODO consider rollback options   
+    # TODO consider build versioning/storage
             
         
 # placeholder aws

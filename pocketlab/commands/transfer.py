@@ -1,22 +1,22 @@
 __author__ = 'rcj1492'
 __created__ = '2017.06'
-__license__ = 'MIT'
+__licence__ = 'MIT'
 
 '''
-connect to aws instance
-TODO: connect to other platforms (bluemix, azure, gcp)
+transfer to aws instance
+TODO: transfer to other platforms (bluemix, azure, gcp)
 '''
 
-_connect_details = {
-    'title': 'connect',
-    'description': 'Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.\n\nPLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
-    'help': 'connects to remote host through ssh',
-    'benefit': 'Edit settings on remote host manually.'
+_transfer_details = {
+    'title': 'transfer',
+    'description': 'Copies a local file or folder to user home on remote host. Connect is currently only available to the Amazon ec2 platform.\n\nPLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
+    'help': 'transfer a file to remote host through scp',
+    'benefit': 'Copy files from your local machine.'
 }
 
 from pocketlab.init import fields_model
 
-def connect(platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True):
+def transfer(platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True):
 
     title = 'connect'
 

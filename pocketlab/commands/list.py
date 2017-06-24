@@ -69,11 +69,11 @@ def list(resource_type, paginate=False):
             path_text = row[1]
             if row_width > console_columns:
                 cut_char = row_width - console_columns
-                left_index = (len(row[1]) - cut_char - 10) * -1
+                left_index = (len(row[1]) - cut_char - 12) * -1
                 if left_index > -1:
                     path_text = '%s...' % row[1]
                 else:
-                    path_text = '%s...%s' % (row[1][0:7], row[1][left_index:])
+                    path_text = '%s...%s' % (row[1][0:9], row[1][left_index:])
             formatted_rows.append([row[0], path_text])
 
     # print out list

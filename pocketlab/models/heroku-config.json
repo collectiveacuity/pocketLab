@@ -1,32 +1,43 @@
 {
   "title": "heroku.yaml",
   "metadata": {
-    "comments": "heroku account credentials\nhttps://dashboard.heroku.com/login",
+    "comments": "heroku account credentials\nhttps://dashboard.heroku.com/login\nonce account is setup, run 'heroku login' on machine, then 'heroku auth:token' to retrieve auth token\non windows, 'heroku login' must be run from cmd.exe",
     "flag": "--heroku"
   },
   "schema": {
     "heroku_account_email": "noreply@collectiveacuity.com",
     "heroku_account_password": "abcDEF123GHI!!!",
-    "heroku_app_subdomain": "mycoolappsubdomain"
+    "heroku_app_subdomain": "mycoolappsubdomain",
+    "heroku_auth_token": "abcdef01-2345-6789-abcd-ef0123456789"
   },
   "components": {
     ".heroku_account_email": {
         "default_value": "noreply@collectiveacuity.com",
         "field_metadata": {
-          "position": 1
+          "position": 3
         }
     },
     ".heroku_account_password": {
         "default_value": "abcDEF123GHI!!!",
         "field_metadata": {
-          "position": 2
+          "position": 4
         }
     },
     ".heroku_app_subdomain": {
         "default_value": "mycoolappsubdomain",
         "field_metadata": {
-          "position": 3
+          "position": 1
         }
+    },
+    ".heroku_auth_token": {
+        "default_value": "abcdef01-2345-6789-abcd-ef0123456789",
+        "min_length": 36,
+        "max_length": 36,
+        "must_not_contain": [ "[^a-f0-9\\-]"],
+        "field_metadata": {
+          "position": 2,
+          "comments": "replace with value from 'heroku login', then 'heroku auth:token'"
+      }
     }
   }
 }
