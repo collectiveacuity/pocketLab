@@ -3,21 +3,22 @@ __created__ = '2017.06'
 __licence__ = 'MIT'
 
 '''
-put file to aws instance
-TODO: put to other platforms (bluemix, azure, gcp)
+get file from aws instance
+TODO: get from other platforms (bluemix, azure, gcp)
 '''
 
-_put_details = {
-    'title': 'put',
-    'description': 'Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.\n\nPLEASE NOTE: put uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
-    'help': 'copy a file to remote host through scp',
-    'benefit': 'Copy files from your local machine.'
+_get_details = {
+    'title': 'get',
+    'description': 'Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.\n\nPLEASE NOTE: get uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
+    'help': 'copy a file from remote host through scp',
+    'benefit': 'Copies remote files to your local machine.'
 }
 
 from pocketlab.init import fields_model
 
-def put(file_path, platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
 
+def get(file_path, platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
+    
     title = 'connect'
 
 # validate inputs
@@ -37,11 +38,6 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
-# verify local path exists
-    from os import path
-    if not path.exists(file_path):
-        raise ValueError('%s is not a valid path on localhost.' % file_path)
-    
 # determine service name
     service_name = ''
     if service_option:
@@ -57,6 +53,7 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         service_root = './'
 
 # retrieve lab config
+    from os import path
     from pocketlab.methods.validation import validate_lab, validate_platform
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
@@ -103,7 +100,7 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         if not path.exists(pem_file):
             raise Exception('SSH requires %s.pem file in the .lab folder of service %s.' % (pem_name, service_insert))
 
-    # construct ssh client and run put
+    # construct ssh client and run get
         ssh_config = {
             'instance_id': instance_details['instance_id'],
             'pem_file': pem_file
@@ -113,12 +110,12 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         from labpack.platforms.aws.ssh import sshClient
         ssh_client = sshClient(**ssh_config)
         logger.disabled = False
-        ssh_client.put(file_path, synopsis=False, overwrite=overwrite)
+        ssh_client.get(file_path, synopsis=False, overwrite=overwrite)
 
 # handle heroku error
     elif platform_name == 'heroku':
         raise Exception('It is not possible to connect to instances on heroku.')
 
-    exit_msg = 'Transfer of %s to %s instance "%s" complete' % (file_path, platform_name, container_alias)
+    exit_msg = 'Transfer of %s from %s instance "%s" complete' % (file_path, platform_name, container_alias)
 
     return exit_msg
