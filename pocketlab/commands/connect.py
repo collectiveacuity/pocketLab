@@ -80,63 +80,22 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         aws_model = jsonModel(aws_schema)
         aws_config = validate_platform(aws_model, service_root, service_name)
 
-    # verify access to ec2
+    # retrieve instance details from ec2
+        from pocketlab.init import logger
+        logger.disabled = True
         ec2_config = {
             'access_id': aws_config['aws_access_key_id'],
             'secret_key': aws_config['aws_secret_access_key'],
             'region_name': aws_config['aws_default_region'],
             'owner_id': aws_config['aws_owner_id'],
             'user_name': aws_config['aws_user_name'],
-            'verbose': False
+            'verbose': verbose
         }
-        if region_name:
-            ec2_config['region_name'] = region_name
-        from labpack.authentication.aws.iam import AWSConnectionError
-        from labpack.platforms.aws.ec2 import ec2Client
-        from pocketlab.init import logger
-        logger.disabled = True
-        try:
-            ec2_client = ec2Client(**ec2_config)
-        except AWSConnectionError as err:
-            error_lines = str(err).splitlines()
-            raise Exception('AWS configuration has the following problem:\n%s' % error_lines[-1])
-        try:
-            ec2_client.list_keypairs()
-        except:
-            raise Exception('Service %s does not have privileges to access EC2.' % service_insert)
-
-    # retrieve instance list using filter criteria
-        valid_instances = []
-        filter_insert = 'for container "%s" in AWS region %s' % (container_alias, ec2_client.iam.region_name)
-        tag_values = []
-        if environment_type:
-            filter_insert += ' in the "%s" env' % environment_type
-            tag_values.append(environment_type)
-        if resource_tag:
-            filter_insert += ' with a "%s" tag' % resource_tag
-            tag_values.append(resource_tag)
-        if tag_values:
-            instance_list = ec2_client.list_instances(tag_values=tag_values)
-        else:
-            instance_list = ec2_client.list_instances()
-        for instance_id in instance_list:
-            instance_details = ec2_client.read_instance(instance_id)
-            if instance_details['tags']:
-                for tag in instance_details['tags']:
-                    if tag['Key'] == 'Containers':
-                        if tag['Value'].find(container_alias) > -1:
-                            valid_instances.append(instance_details)
-                            break
-
-    # verify only one instance exists
-        if not valid_instances:
-            raise Exception('No instances found %s. Try: lab list instances aws' % filter_insert)
-        elif len(valid_instances) > 1:
-            raise Exception('More than one instance was found %s. Try adding optional flags as filters.')
+        from pocketlab.methods.aws import construct_client_ec2, retrieve_instance_details
+        ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+        instance_details = retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag)
 
     # verify pem file exists
-        from os import path
-        instance_details = valid_instances[0]
         pem_name = instance_details['keypair']
         pem_folder = path.join(service_root, '.lab')
         pem_file = path.join(pem_folder, '%s.pem' % pem_name)

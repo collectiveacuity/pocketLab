@@ -7,6 +7,7 @@
     "vcs_service": "git",
     "resource_type": "services",
     "virtualbox": "default",
+    "file_path": "images/icon.png",
 	"container_alias": "server",
     "image_name": "flaskserver",
     "module_name": "pocketlab",
@@ -106,6 +107,15 @@
       "field_metadata": {
         "cli_flags": [ "--virtualbox" ],
         "cli_help": "name of docker virtualbox on Win7/8 (default: %(default)s)"
+      }
+    },
+    ".file_path": {
+      "field_description": "Path to file or folder",
+      "default_value": "",
+      "field_metadata": {
+        "cli_flags": [ "--path" ],
+        "cli_help": "path to file or folder",
+        "cli_metavar": "PATH"
       }
     },
     ".container_alias": {

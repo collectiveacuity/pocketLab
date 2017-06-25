@@ -3,20 +3,20 @@ __created__ = '2017.06'
 __licence__ = 'MIT'
 
 '''
-transfer to aws instance
-TODO: transfer to other platforms (bluemix, azure, gcp)
+put file to aws instance
+TODO: put to other platforms (bluemix, azure, gcp)
 '''
 
-_transfer_details = {
-    'title': 'transfer',
-    'description': 'Copies a local file or folder to user home on remote host. Connect is currently only available to the Amazon ec2 platform.\n\nPLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
-    'help': 'transfer a file to remote host through scp',
+_put_details = {
+    'title': 'put',
+    'description': 'Copies a local file or folder to user home on remote host. Put is currently only available to the Amazon ec2 platform.\n\nPLEASE NOTE: put uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
+    'help': 'copy a file to remote host through scp',
     'benefit': 'Copy files from your local machine.'
 }
 
 from pocketlab.init import fields_model
 
-def transfer(platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True):
+def put(file_path, platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
 
     title = 'connect'
 
@@ -25,6 +25,7 @@ def transfer(platform_name, service_option, environment_type='', resource_tag=''
         if service_option:
             service_option = [service_option]
     input_fields = {
+        'file_path': file_path,
         'service_option': service_option,
         'verbose': verbose,
         'platform_name': platform_name,
@@ -36,6 +37,11 @@ def transfer(platform_name, service_option, environment_type='', resource_tag=''
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
+# verify local path exists
+    from os import path
+    if not path.exists(file_path):
+        raise ValueError('%s is not a valid path on localhost.' % file_path)
+    
 # determine service name
     service_name = ''
     if service_option:
@@ -51,7 +57,6 @@ def transfer(platform_name, service_option, environment_type='', resource_tag=''
         service_root = './'
 
 # retrieve lab config
-    from os import path
     from pocketlab.methods.validation import validate_lab, validate_platform
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
@@ -70,73 +75,28 @@ def transfer(platform_name, service_option, environment_type='', resource_tag=''
     # check for dependencies
         from pocketlab.methods.dependencies import import_boto3
         import_boto3('ec2 platform')
-        from platform import uname
-        local_os = uname()
-        if local_os.system in ('Windows'):
-            raise Exception('%s command is not available for Windows. Try using instead: putty.exe' % title)
 
     # retrieve aws config
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
         aws_config = validate_platform(aws_model, service_root, service_name)
 
-    # verify access to ec2
+    # retrieve instance details from ec2
+        from pocketlab.init import logger
+        logger.disabled = True
         ec2_config = {
             'access_id': aws_config['aws_access_key_id'],
             'secret_key': aws_config['aws_secret_access_key'],
             'region_name': aws_config['aws_default_region'],
             'owner_id': aws_config['aws_owner_id'],
             'user_name': aws_config['aws_user_name'],
-            'verbose': False
+            'verbose': verbose
         }
-        if region_name:
-            ec2_config['region_name'] = region_name
-        from labpack.authentication.aws.iam import AWSConnectionError
-        from labpack.platforms.aws.ec2 import ec2Client
-        from pocketlab.init import logger
-        logger.disabled = True
-        try:
-            ec2_client = ec2Client(**ec2_config)
-        except AWSConnectionError as err:
-            error_lines = str(err).splitlines()
-            raise Exception('AWS configuration has the following problem:\n%s' % error_lines[-1])
-        try:
-            ec2_client.list_keypairs()
-        except:
-            raise Exception('Service %s does not have privileges to access EC2.' % service_insert)
-
-    # retrieve instance list using filter criteria
-        valid_instances = []
-        filter_insert = 'for container "%s" in AWS region %s' % (container_alias, ec2_client.iam.region_name)
-        tag_values = []
-        if environment_type:
-            filter_insert += ' in the "%s" env' % environment_type
-            tag_values.append(environment_type)
-        if resource_tag:
-            filter_insert += ' with a "%s" tag' % resource_tag
-            tag_values.append(resource_tag)
-        if tag_values:
-            instance_list = ec2_client.list_instances(tag_values=tag_values)
-        else:
-            instance_list = ec2_client.list_instances()
-        for instance_id in instance_list:
-            instance_details = ec2_client.read_instance(instance_id)
-            if instance_details['tags']:
-                for tag in instance_details['tags']:
-                    if tag['Key'] == 'Containers':
-                        if tag['Value'].find(container_alias) > -1:
-                            valid_instances.append(instance_details)
-                            break
-
-    # verify only one instance exists
-        if not valid_instances:
-            raise Exception('No instances found %s. Try: lab list instances aws' % filter_insert)
-        elif len(valid_instances) > 1:
-            raise Exception('More than one instance was found %s. Try adding optional flags as filters.')
+        from pocketlab.methods.aws import construct_client_ec2, retrieve_instance_details
+        ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+        instance_details = retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag)
 
     # verify pem file exists
-        from os import path
-        instance_details = valid_instances[0]
         pem_name = instance_details['keypair']
         pem_folder = path.join(service_root, '.lab')
         pem_file = path.join(pem_folder, '%s.pem' % pem_name)
@@ -153,12 +113,12 @@ def transfer(platform_name, service_option, environment_type='', resource_tag=''
         from labpack.platforms.aws.ssh import sshClient
         ssh_client = sshClient(**ssh_config)
         logger.disabled = False
-        ssh_client.terminal()
+        ssh_client.put(file_path, synopsis=False, overwrite=overwrite)
 
 # handle heroku error
     elif platform_name == 'heroku':
         raise Exception('It is not possible to connect to instances on heroku.')
 
-    exit_msg = 'Code is growing like gangbusters.'
+    exit_msg = 'Transfer of %s to %s instance "%s" complete' % (file_path, platform_name, container_alias)
 
     return exit_msg
