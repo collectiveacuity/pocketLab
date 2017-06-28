@@ -96,7 +96,7 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         instance_details = retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag)
 
     # verify pem file exists
-        pem_name = instance_details['keypair']
+        pem_name = instance_details['key_name']
         pem_folder = path.join(service_root, '.lab')
         pem_file = path.join(pem_folder, '%s.pem' % pem_name)
         if not path.exists(pem_file):

@@ -1,4 +1,4 @@
-Name, Description, Status
+Name,Description,Status
 smtp key,create a password key for email client smtp forwarding,done
 sending domain,retrieve spf and dkim records from smtp host,
 DNS update,add spf and dkim records from smtp host to DNS record,
