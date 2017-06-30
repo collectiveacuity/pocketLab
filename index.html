@@ -85,7 +85,7 @@
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#pocket-lab">Pocket Lab</a></li>
             <li><a href="#introduction">Introduction</a></li>
-            <li><a href="#system-requirements">System Requirements</a></li>
+            <li><a href="#integrated-services">Integrated Services</a></li>
             <li><a href="#installation">Installation</a></li>
             <li><a href="#getting-started">Getting Started</a></li>
             <li><a href="#further-reading">Further Reading</a></li>
@@ -115,10 +115,12 @@ by <a href="http://collectiveacuity.com">Collective Acuity</a></p>
 
 <h2 id="introduction">Introduction</h2>
 <p>Pocket Lab is a python-based command-line tool which is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon Docker to provide consistency across development environments but it also streamlines the Docker workflow without compromising the security of credentials and sensitive code.  </p>
-<h2 id="system-requirements">System Requirements</h2>
+<h2 id="integrated-services">Integrated Services</h2>
 <ul>
 <li><strong>Docker</strong>: https://www.docker.com</li>
 <li><strong>Virtualbox</strong>: (on Windows 7/8)</li>
+<li><strong>Heroku</strong>: https://devcenter.heroku.com/articles/heroku-cli</li>
+<li><strong>AWS</strong>: https://console.aws.amazon.com</li>
 </ul>
 <h2 id="installation">Installation</h2>
 <p>From PyPi</p>
@@ -136,7 +138,7 @@ by <a href="http://collectiveacuity.com">Collective Acuity</a></p>
 <h2 id="getting-started">Getting Started</h2>
 <p>All commands for Pocket Lab use the &lsquo;lab&rsquo; keyword. So, at any time, you can type <code>lab --help</code> from the terminal to see the help menu for the module. In order to use the module for building and deployment with docker, you will first need to setup the service framework around your project with a couple of commands. </p>
 <p>Register a service in the working directory::</p>
-<pre><code>$ lab home &lt;project&gt;
+<pre><code>$ lab home &lt;service&gt;
 </code></pre>
 <p>Initialize the lab framework in the working directory::</p>
 <pre><code>$ lab init
@@ -181,6 +183,6 @@ by <a href="http://collectiveacuity.com">Collective Acuity</a></p>
 </html>
 
 <!--
-MkDocs version : 0.16.2
-Build Date UTC : 2017-06-04 00:35:54
+MkDocs version : 0.16.3
+Build Date UTC : 2017-06-30 18:24:12
 -->
