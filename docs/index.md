@@ -22,9 +22,11 @@ by [Collective Acuity](http://collectiveacuity.com)
 ## Introduction
 Pocket Lab is a python-based command-line tool which is designed to manage the development operations of lab projects and make it easier to deploy code across different platforms. Pocket Lab relies heavily upon Docker to provide consistency across development environments but it also streamlines the Docker workflow without compromising the security of credentials and sensitive code.  
 
-## System Requirements
+## Integrated Services
 - **Docker**: https://www.docker.com
 - **Virtualbox**: (on Windows 7/8)
+- **Heroku**: https://devcenter.heroku.com/articles/heroku-cli
+- **AWS**: https://console.aws.amazon.com
 
 ## Installation
 From PyPi
@@ -45,7 +47,7 @@ All commands for Pocket Lab use the 'lab' keyword. So, at any time, you can type
 
 Register a service in the working directory::
 
-    $ lab home <project>
+    $ lab home <service>
 
 Initialize the lab framework in the working directory::
 

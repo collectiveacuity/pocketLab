@@ -286,9 +286,10 @@ def compile_commands(folder_path, module_name, fields_model, preferred_order=Non
     command_list = []
     py_file = re.compile('\\.pyc?$')
     for file in listdir(folder_path):
-        if py_file.findall(file):
-            command_list.append(py_file.sub('', file))
-    command_list.sort()
+        if file != '__init__.py':
+            if py_file.findall(file):
+                command_list.append(py_file.sub('', file))
+        command_list.sort()
 
 # customize the order of commands in help
     for i in range(len(preferred_order)):

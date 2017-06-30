@@ -1,8 +1,17 @@
 ChangeLog
 =========
 
-0.3 (TBD)
----------
+0.4 (2017.06.30)
+----------------
+* [COMMAND ADDED] connect command uses ssh to connect to instances (ec2 only)
+* [COMMAND ADDED] put command uses scp to transfer file to instance (ec2 only)
+* [COMMAND ADDED] get command uses scp to transfer file from instance (ec2 only)
+* [FEATURE ADDED] --html flag to deploy command to deploy html site (heroku only)
+* [FEATURE ADDED] --aws flag to init command to setup aws config file
+* [FEATURE ADDED] .lab folder created in root directory by init commmand
+
+0.3 (2017.06.04)
+----------------
 * [COMMAND ADDED] deploy command deploys docker image to remote host (heroku only)
 * [COMMAND ADDED] stop command terminates docker containers
 * [COMMAND ADDED] start command initiates docker containers

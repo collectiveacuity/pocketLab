@@ -1,6 +1,7 @@
 ###############  .gitignore   ##################
 
 ################ credentials  ##################
+.lab/
 cred/
 keys/
 
@@ -44,6 +45,7 @@ docs_dev/
 generate.py
 
 ###############   IDE files   ##################
+.~lock.*
 *.so
 .DS_STORE
 .netbeans
@@ -67,3 +69,12 @@ node_modules/
 
 #################   backup sync   #################
 *.gdoc
+
+#################  unit testing   #################
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml

@@ -32,7 +32,9 @@ optional arguments:
 _Init adds the config files for other lab commands._  
 
 **Description:**  
-Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.  
+Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.
+
+PLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.  
 
 **Usage:**
 ```bash
@@ -41,11 +43,13 @@ $ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [
 **Help:** 
 ```bash
 Init adds a number of files to the working directory which are required for
-other lab processes. If not present, it will create a 'lab.yaml' file in the
-root directory to manage various configuration options. It will also create, if
-missing, 'cred/' and 'data/' folders to store sensitive information outside
-version control along with a '.gitignore' (or '.hgignore') file to escape out
-standard non-VCS files.
+other lab processes. If not present, it will create a 'lab.yaml' file and a
+'.lab' folder in the root directory to manage various configuration options. It
+will also create, if missing, 'cred/' and 'data/' folders to store sensitive
+project information outside version control along with a '.gitignore' (or
+'.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With the
+option '--module <module_name>', init creates instead a standard framework for
+publishing a python module.
 
 optional arguments:
   -h, --help        show this help message and exit
@@ -84,7 +88,7 @@ _Edit settings on remote host manually._
 **Description:**  
 Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.
 
-PLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. When the deploy command is complete, instances will automatically be tagged with the container alias of each service deployed to them. In the meantime, a tag must be added manually with key "Containers" and value "<container_alias>"  
+PLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
 
 **Usage:**
 ```bash
@@ -96,10 +100,9 @@ Opens up a direct ssh connection to remote host. Connect is currently only
 available to the Amazon ec2 platform and only on systems running ssh natively.
 To connect to a remote host on Windows, try using Putty instead. PLEASE NOTE:
 connect uses the docker container alias value specified in the lab.yaml
-configuration file to determine which instance to connect to. When the deploy
-command is complete, instances will automatically be tagged with the container
-alias of each service deployed to them. In the meantime, a tag must be added
-manually with key "Containers" and value "<container_alias>"
+configuration file to determine which instance to connect to. A tag must be
+added manually to the instance with key "Containers" and value
+"<container_alias>".
 
 positional arguments:
   PLATFORM         name of remote platform
@@ -118,15 +121,18 @@ optional arguments:
 _Makes services available online._  
 
 **Description:**  
-Deploys one or more services as Docker containers to a remote platform.  
+Deploys one or more services as Docker containers to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)  
 
 **Usage:**
 ```bash
-$ lab deploy [-h] [-q] [--virtualbox STRING] PLATFORM [SERVICES [SERVICES ...]]
+$ lab deploy [-h] [-q] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING] PLATFORM [SERVICES [SERVICES ...]]
 ```
 **Help:** 
 ```bash
-Deploys one or more services as Docker containers to a remote platform.
+Deploys one or more services as Docker containers to a remote platform. Deploy
+is currently only available for the heroku platform. Deploy can also deploy
+static html sites and apps using their dependencies if the root folder is added
+to one of the runtime type flags (ex. lab deploy heroku --html site/)
 
 positional arguments:
   PLATFORM             name of remote platform
@@ -136,6 +142,47 @@ optional arguments:
   -h, --help           show this help message and exit
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+  --html STRING        path to folder with index.html
+  --php STRING         path to folder with index.php
+  --python STRING      path to folder with requirements.txt
+  --java STRING        path to folder with Java Procfile
+  --ruby STRING        path to folder with Ruby Procfile
+  --node STRING        path to folder with package.json
+```
+  
+
+## Get
+_Copies remote files to your local machine._  
+
+**Description:**  
+Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.
+
+PLEASE NOTE: get uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+
+**Usage:**
+```bash
+$ lab get [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PLATFORM [SERVICE]
+```
+**Help:** 
+```bash
+Copies a file or folder on remote host to working directory on localhost. Get is
+currently only available for the Amazon ec2 platform. PLEASE NOTE: get uses the
+docker container alias value specified in the lab.yaml configuration file to
+determine which instance to connect to. A tag must be added manually to the
+instance with key "Containers" and value "<container_alias>".
+
+positional arguments:
+  PATH             path to file or folder
+  PLATFORM         name of remote platform
+  SERVICE          (optional) service in lab registry
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --env STRING     type of development environment
+  --tag STRING     tag associated with resource
+  --region STRING  name of platform region
+  -q, --quiet      turn off lab process messages
+  -f, --force      overwrite the existing resource
 ```
   
 
@@ -161,6 +208,41 @@ positional arguments:
 optional arguments:
   -h, --help  show this help message and exit
   --more      paginate results longer than console height
+```
+  
+
+## Put
+_Copy files from your local machine._  
+
+**Description:**  
+Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.
+
+PLEASE NOTE: put uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+
+**Usage:**
+```bash
+$ lab put [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PLATFORM [SERVICE]
+```
+**Help:** 
+```bash
+Copies a local file or folder to user home on remote host. Put is currently only
+available for the Amazon ec2 platform. PLEASE NOTE: put uses the docker
+container alias value specified in the lab.yaml configuration file to determine
+which instance to connect to. A tag must be added manually to the instance with
+key "Containers" and value "<container_alias>".
+
+positional arguments:
+  PATH             path to file or folder
+  PLATFORM         name of remote platform
+  SERVICE          (optional) service in lab registry
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --env STRING     type of development environment
+  --tag STRING     tag associated with resource
+  --region STRING  name of platform region
+  -q, --quiet      turn off lab process messages
+  -f, --force      overwrite the existing resource
 ```
   
 
