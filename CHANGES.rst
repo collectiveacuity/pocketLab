@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.5 (2017.06.30)
+----------------
+* [BUG FIX] fixed element key name error in tags collected for aws instances
+
 0.4 (2017.06.30)
 ----------------
 * [COMMAND ADDED] connect command uses ssh to connect to instances (ec2 only)

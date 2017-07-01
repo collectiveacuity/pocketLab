@@ -37,8 +37,8 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
         instance_details = ec2_client.read_instance(instance_id)
         if instance_details['tags']:
             for tag in instance_details['tags']:
-                if tag['Key'] == 'Containers':
-                    if tag['Value'].find(container_alias) > -1:
+                if tag['key'] == 'Containers':
+                    if tag['value'].find(container_alias) > -1:
                         valid_instances.append(instance_details)
                         break
 
