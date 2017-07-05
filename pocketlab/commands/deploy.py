@@ -11,20 +11,20 @@ __license__ = 'MIT'
 
 _deploy_details = {
     'title': 'Deploy',
-    'description': 'Deploys one or more services as Docker containers to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)',
-    'help': 'deploys services to a remote platform',
-    'benefit': 'Makes services available online.'
+    'description': 'Deploys a project to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)',
+    'help': 'deploys project to a remote platform',
+    'benefit': 'Makes a project available online.'
 }
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_list, verbose=True, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
+def deploy(platform_name, project_option, verbose=True, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
         
     :param platform_name: string with name of remote platform to host service
-    :param service_list: list of strings with name of services to deploy
+    :param project_option: [optional] string with name of project in lab registry
     :param verbose: [optional] boolean to toggle process messages
     :param virtualbox: [optional] string with name of virtualbox image (win7/8)
     :param html_folder: [optional] string with path to static html site folder root
@@ -39,11 +39,11 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
     title = 'deploy'
 
 # validate inputs
-    if isinstance(service_list, str):
-        if service_list:
-            service_list = [service_list]
+    if isinstance(project_option, str):
+        if project_option:
+            project_option = [project_option]
     input_fields = {
-        'service_list': service_list,
+        'project_option': project_option,
         'verbose': verbose,
         'platform_name': platform_name,
         'virtualbox': virtualbox,
@@ -59,9 +59,24 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
-# construct list of paths to services
-    from pocketlab.methods.service import retrieve_services
-    deploy_list, msg_insert = retrieve_services(service_list)
+# determine project name
+    project_name = ''
+    if project_option:
+        project_name = project_option[0]
+
+# construct path to project root
+    from pocketlab.methods.service import retrieve_service_root
+    if project_name:
+        project_insert = '"%s"' % project_name
+        project_root = retrieve_service_root(project_name)
+    else:
+        project_insert = 'in working directory'
+        project_root = './'
+    details = {
+        'name': project_name,
+        'insert': project_insert,
+        'path': project_root
+    }
         
 # deploy to heroku
     if platform_name == 'heroku':
@@ -79,29 +94,27 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
         heroku_model = jsonModel(heroku_schema)
         lab_schema = jsonLoader(__module__, 'models/lab-config.json')
         lab_model = jsonModel(lab_schema)
-        for details in deploy_list:
-            service_name = details['name']
-            heroku_details = validate_platform(heroku_model, details['path'], service_name)
-            lab_path = path.join(details['path'], 'lab.yaml')
-            lab_details = validate_lab(lab_model, lab_path, service_name)
-            details['config'] = heroku_details
-            details['config'].update(lab_details)
-            heroku_list.append(details)
+        heroku_details = validate_platform(heroku_model, project_root, project_name)
+        lab_path = path.join(project_name, 'lab.yaml')
+        lab_details = validate_lab(lab_model, lab_path, project_name)
+        details['config'] = heroku_details
+        details['config'].update(lab_details)
+        heroku_list.append(details)
 
     # define site folder path function
-        def _site_path(site_folder, service_root, service_insert, runtime_type):
+        def _site_path(site_folder, project_root, project_insert, runtime_type):
             from os import path
             if path.isabs(site_folder):
-                raise Exception('--%s %s must be a path relative to root of service %s' % (runtime_type, site_folder, service_insert))
-            site_path = path.join(service_root, site_folder)
+                raise Exception('--%s %s must be a path relative to root of service %s' % (runtime_type, site_folder, project_insert))
+            site_path = path.join(project_root, site_folder)
             return site_path
             
     # process deployment sequence
         from labpack.platforms.heroku import herokuClient
         for service in heroku_list:
-            service_insert = 'in working directory'
+            project_insert = 'in working directory'
             if service['name']:
-                service_insert = '"%s"' % service['name']
+                project_insert = '"%s"' % service['name']
             heroku_kwargs = {
                 'account_email': service['config']['heroku_account_email'],
                 'auth_token': service['config']['heroku_auth_token'],
@@ -109,30 +122,30 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
             }
             heroku_client = herokuClient(**heroku_kwargs)
             heroku_client.access(service['config']['heroku_app_subdomain'])
-            heroku_insert = "service %s deployed to heroku.\nIf you haven't already, you must allocate resources to this heroku service.\nTry: heroku ps:scale web=1 --app %s" % (service_insert, service['config']['heroku_app_subdomain'])
+            heroku_insert = "service %s deployed to heroku.\nIf you haven't already, you must allocate resources to this heroku service.\nTry: heroku ps:scale web=1 --app %s" % (project_insert, service['config']['heroku_app_subdomain'])
             
             if html_folder:
-                html_folder = _site_path(html_folder, service['path'], service_insert, 'html')
+                html_folder = _site_path(html_folder, service['path'], project_insert, 'html')
                 heroku_client.deploy_app(html_folder)
                 exit_msg = 'Static site of %s' % heroku_insert
             elif php_folder:
-                php_folder = _site_path(php_folder, service['path'], service_insert, 'php')
+                php_folder = _site_path(php_folder, service['path'], project_insert, 'php')
                 heroku_client.deploy_app(php_folder, 'php')
                 exit_msg = 'Php app of %s' % heroku_insert
             elif python_folder:
-                python_folder = _site_path(python_folder, service['path'], service_insert, 'python')
+                python_folder = _site_path(python_folder, service['path'], project_insert, 'python')
                 heroku_client.deploy_app(python_folder, 'python')
                 exit_msg = 'Python app of %s' % heroku_insert
             elif java_folder:
-                java_folder = _site_path(java_folder, service['path'], service_insert, 'java')
+                java_folder = _site_path(java_folder, service['path'], project_insert, 'java')
                 heroku_client.deploy_app(java_folder, 'java')
                 exit_msg = 'Java app of %s' % heroku_insert
             elif ruby_folder:
-                ruby_folder = _site_path(ruby_folder, service['path'], service_insert, 'ruby')
+                ruby_folder = _site_path(ruby_folder, service['path'], project_insert, 'ruby')
                 heroku_client.deploy_app(ruby_folder, 'ruby')
                 exit_msg = 'Ruby app of %s' % heroku_insert
             elif node_folder:
-                node_folder = _site_path(node_folder, service['path'], service_insert, 'node')
+                node_folder = _site_path(node_folder, service['path'], project_insert, 'node')
                 heroku_client.deploy_app(node_folder, 'node')
                 exit_msg = 'Node app of %s' % heroku_insert
             else:
@@ -218,7 +231,7 @@ def deploy(platform_name, service_list, verbose=True, virtualbox='default', html
         remote_path = '/etc/nginx/%s' % nginx_name
         ssh_client.transfer(local_path, remote_path, verbose=verbose)
 
-    if len(service_list) > 1:
+    if len(project_list) > 1:
         exit_msg = 'Finished deploying %s to %s.' % (msg_insert, platform_name)
         
     return exit_msg

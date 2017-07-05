@@ -45,7 +45,7 @@ python3 setup.py sdist --format=gztar,zip
 pip3 wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.5.tar.gz
 
 Upload (or Register) Distributions to PyPi:
-twine upload dist/[module-version]*
+twine upload dist/pocketlab-0.5*
 
 Upload Documentation to Github:
 mkdocs gh-deploy

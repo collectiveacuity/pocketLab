@@ -1,9 +1,11 @@
 {
   "schema": {
-    "service_name": "lab",
-    "service_path": "~/lab",
-    "service_list": [ "lab" ],
-    "service_option": [ "lab" ],
+    "service_name": "server",
+    "service_path": "~/server",
+    "service_list": [ "server" ],
+    "service_option": [ "server" ],
+    "project_name": "website",
+    "project_option": [ "website" ],
     "vcs_service": "git",
     "resource_type": "services",
     "virtualbox": "default",
@@ -12,6 +14,7 @@
     "image_name": "flaskserver",
     "module_name": "pocketlab",
     "platform_name": "heroku",
+    "platform_option": [ "heroku" ],
     "license_type": "MIT",
     "environment_type": "prod",
     "resource_tag": "20170615",
@@ -77,6 +80,33 @@
     },
     ".service_option[0]": {
       "field_description": "Service in list of services from lab registry",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]" ]
+    },
+    ".project_name": {
+      "field_description": "Name of project in lab registry",
+      "default_value": "",
+      "max_length": 64,
+      "must_not_contain": [ "[^\\w\\-_]", "^\\d", "^\\-", "\\-$" ],
+      "field_metadata": {
+        "cli_flag": [ "-p", "--project" ],
+        "cli_help": "name of project in lab registry",
+        "cli_metavar": "PROJECT"
+      }
+    },
+    ".project_option": {
+      "field_description": "(Optional) name of project in lab registry.",
+      "min_size": 0,
+      "max_size": 1,
+      "field_metadata": {
+        "cli_flag": [ "-p", "--project" ],
+        "cli_help": "(optional) project in lab registry",
+        "cli_metavar": "PROJECT"
+      }
+    },
+    ".project_option[0]": {
+      "field_description": "Project in list of projects in lab registry",
       "default_value": "",
       "max_length": 64,
       "must_not_contain": [ "[^\\w\\-_]" ]
@@ -149,13 +179,27 @@
       }
     },
     ".platform_name":{
-      "field_description": "Name of platform to host service.",
+      "field_description": "Name of remote platform to host service.",
       "discrete_values": [ "heroku", "ec2" ],
       "field_metadata": {
         "cli_flags": [ "--platform" ],
         "cli_help": "name of remote platform",
         "cli_metavar": "PLATFORM"
       }
+    },
+    ".platform_option": {
+      "field_description": "(Optional) name of remote platform to host service.",
+      "min_size": 0,
+      "max_size": 1,
+      "field_metadata": {
+        "cli_flag": [ "--platform" ],
+        "cli_help": "(optional) name of remote platfrom",
+        "cli_metavar": "PLATFORM"
+      }
+    },
+    ".platform_option[0]": {
+      "field_description": "Platform in list of remote platforms to host service.",
+      "discrete_values": [ "heroku", "ec2" ]
     },
     ".license_type": {
       "field_description": "Type of software license terms for source code.",

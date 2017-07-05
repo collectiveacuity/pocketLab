@@ -12,6 +12,7 @@ Pocket Lab is designed around a service-oriented architecture. A service can be 
 <tr><td>image      </td><td>compilation of code & dependencies for service in a Docker image</td></tr>
 <tr><td>container  </td><td>instantiation of a service in a Docker container                </td></tr>
 <tr><td>platform   </td><td>computational resources that run a service                      </td></tr>
+<tr><td>instance   </td><td>instantiation of a project on a platform                        </td></tr>
 <tr><td>region     </td><td>sub-division of platform to manage content distribution         </td></tr>
 <tr><td>environment</td><td>sub-division of plaform to manage development process           </td></tr>
 <tr><td>repo       </td><td>version control repository containing the files for a service   </td></tr>
