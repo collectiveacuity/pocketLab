@@ -115,11 +115,13 @@ def home(service_name, print_path=False, service_path='', overwrite=False):
         elif not path.isdir(service_path):
             raise ValueError('"%s" is not a valid directory.' % service_path)
         service_root = service_path
+    import yaml
     file_details = {
         'service_name': service_name,
         'service_root': path.abspath(service_root)
     }
-    registry_client.create(file_name, file_details)
+    file_data = yaml.dump(file_details).encode('utf-8')
+    registry_client.save(file_name, file_data)
 
     exit_msg = '"%s" added to registry. To return to workdir, run "home %s"' % (service_name, service_name)
     return exit_msg
