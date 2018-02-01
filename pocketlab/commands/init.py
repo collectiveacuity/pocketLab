@@ -220,41 +220,41 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
                 f.close()
             _printer(vcs_path)
 
-    # add a lab config file
+    # TODO add a docker-compose.yml file
         config_path = 'lab.yaml'
-        if not path.exists(config_path):
-
-        # retrieve config model
-            from pocketlab import __module__
-            from jsonmodel.loader import jsonLoader
-            config_schema = jsonLoader(__module__, 'models/lab-config.json')
-
-        # modify config schema defaults from values in registry
-            from pocketlab.methods.service import retrieve_service_name
-            service_name = retrieve_service_name('./')
-            if service_name:
-                config_schema['components']['.docker_container_alias']['default_value'] = service_name
-                service_root = path.abspath('./')
-                root_path, root_folder = path.split(service_root)
-                if root_folder:
-                    folder_name = root_folder.lower().replace(' ', '-')
-                    from jsonmodel.validators import jsonModel
-                    config_model = jsonModel(config_schema)
-                    try:
-                        folder_name = config_model.validate(folder_name, '.docker_image_name')
-                        config_schema['components']['.docker_image_name']['default_value'] = folder_name
-                    except:
-                        pass
-
-        # compile yaml
-            from pocketlab.methods.config import compile_yaml
-            config_text = compile_yaml(config_schema)
-
-        # save config text
-            with open(config_path, 'wt') as f:
-                f.write(config_text)
-                f.close()
-            _printer(config_path)
+        # if not path.exists(config_path):
+        # 
+        # # retrieve config model
+        #     from pocketlab import __module__
+        #     from jsonmodel.loader import jsonLoader
+        #     config_schema = jsonLoader(__module__, 'models/lab-config.json')
+        # 
+        # # modify config schema defaults from values in registry
+        #     from pocketlab.methods.service import retrieve_service_name
+        #     service_name = retrieve_service_name('./')
+        #     if service_name:
+        #         config_schema['components']['.docker_container_alias']['default_value'] = service_name
+        #         service_root = path.abspath('./')
+        #         root_path, root_folder = path.split(service_root)
+        #         if root_folder:
+        #             folder_name = root_folder.lower().replace(' ', '-')
+        #             from jsonmodel.validators import jsonModel
+        #             config_model = jsonModel(config_schema)
+        #             try:
+        #                 folder_name = config_model.validate(folder_name, '.docker_image_name')
+        #                 config_schema['components']['.docker_image_name']['default_value'] = folder_name
+        #             except:
+        #                 pass
+        # 
+        # # compile yaml
+        #     from pocketlab.methods.config import compile_yaml
+        #     config_text = compile_yaml(config_schema)
+        # 
+        # # save config text
+        #     with open(config_path, 'wt') as f:
+        #         f.write(config_text)
+        #         f.close()
+        #     _printer(config_path)
 
     # add lab folder
         from os import makedirs
