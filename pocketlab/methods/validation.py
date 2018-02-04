@@ -37,11 +37,11 @@ def validate_platform(platform_model, service_root, service_name=''):
 
 # validate heroku yaml keys
     from jsonmodel.exceptions import InputValidationError
-    for key, value in config_details.items():
-        if key in platform_model.keyMap.items():
+    for key, value in platform_model.schema.items():
+        object_title = 'Field %s in %s in %s' % (key, file_name, msg_insert_2)
+        if key in config_details.keys():
             try:
-                object_title = 'Field %s in %s in %s' % (key, file_name, msg_insert_2)
-                platform_model.validate(value, '.%s' % key, object_title)
+                platform_model.validate(config_details[key], '.%s' % key, object_title)
             except InputValidationError as err:
                 error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
                 if err.message.find(error_msg) > -1:
@@ -50,6 +50,9 @@ def validate_platform(platform_model, service_root, service_name=''):
                     raise
             except:
                 raise
+        elif value:
+            missing_msg = '%s is missing' % object_title
+            raise ValueError(missing_msg)
     
     return config_details
 
@@ -85,11 +88,12 @@ def validate_lab(lab_model, file_path, service_name=''):
     from jsonmodel.exceptions import InputValidationError
     from copy import deepcopy
     test_details = deepcopy(lab_details)
-    for key, value in test_details.items():
-        if key in lab_model.keyMap.items():
+    for key, value in lab_model.schema.items():
+        object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
+        if key in test_details.keys():
             try:
                 object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
-                lab_model.validate(value, '.%s' % key, object_title)
+                lab_model.validate(test_details[key], '.%s' % key, object_title)
             except InputValidationError as err:
                 error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
                 if err.message.find(error_msg) > -1:
@@ -98,5 +102,8 @@ def validate_lab(lab_model, file_path, service_name=''):
                     raise
             except:
                 raise
+        elif value:
+            missing_msg = '%s is missing' % object_title
+            raise ValueError(missing_msg)
     
     return lab_details

@@ -77,12 +77,12 @@ def deploy(platform_name, project_option, verbose=True, virtualbox='default', ht
         'insert': project_insert,
         'path': project_root
     }
-        
+
+# construct project list
+    project_list = []   
+
 # deploy to heroku
     if platform_name == 'heroku':
-
-    # construct heroku list
-        heroku_list = []
 
     # validate heroku and lab files
         from os import path
@@ -92,14 +92,19 @@ def deploy(platform_name, project_option, verbose=True, virtualbox='default', ht
         from jsonmodel.validators import jsonModel
         heroku_schema = jsonLoader(__module__, 'models/heroku-config.json')
         heroku_model = jsonModel(heroku_schema)
-        lab_schema = jsonLoader(__module__, 'models/lab-config.json')
-        lab_model = jsonModel(lab_schema)
         heroku_details = validate_platform(heroku_model, project_root, project_name)
-        lab_path = path.join(project_name, 'lab.yaml')
-        lab_details = validate_lab(lab_model, lab_path, project_name)
         details['config'] = heroku_details
-        details['config'].update(lab_details)
-        heroku_list.append(details)
+    
+    # TODO add error handling instructions for getting auth token
+    
+    # TODO replace lab.yaml with docker-compose.yml
+        # lab_schema = jsonLoader(__module__, 'models/lab-config.json')
+        # lab_model = jsonModel(lab_schema)
+        # lab_path = path.join(project_name, 'lab.yaml')
+        # lab_details = validate_lab(lab_model, lab_path, project_name)
+        # details['config'].update(lab_details)
+        
+        project_list.append(details)
 
     # define site folder path function
         def _site_path(site_folder, project_root, project_insert, runtime_type):
@@ -111,7 +116,7 @@ def deploy(platform_name, project_option, verbose=True, virtualbox='default', ht
             
     # process deployment sequence
         from labpack.platforms.heroku import herokuClient
-        for service in heroku_list:
+        for service in project_list:
             project_insert = 'in working directory'
             if service['name']:
                 project_insert = '"%s"' % service['name']
@@ -155,7 +160,7 @@ def deploy(platform_name, project_option, verbose=True, virtualbox='default', ht
                 }
                 heroku_client.deploy_docker(**docker_kwargs)
                 exit_msg = 'Docker image of %s' % heroku_insert
-            if len(heroku_list) > 1:
+            if len(project_list) > 1:
                 print(exit_msg)
     
     # TODO consider rollback options   
