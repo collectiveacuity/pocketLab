@@ -18,8 +18,8 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
-	
-	<script src="../js/jquery-1.10.2.min.js"></script>
+
+        <script src="../js/jquery-1.10.2.min.js"></script>
         <script src="../js/bootstrap-3.0.3.min.js"></script>
         <script src="../js/highlight.pack.js"></script> 
     </head>
@@ -94,7 +94,6 @@
             <li><a href="#put">Put</a></li>
             <li><a href="#remove">Remove</a></li>
             <li><a href="#start">Start</a></li>
-            <li><a href="#stop">Stop</a></li>
             <li><a href="#update">Update</a></li>
     </ul>
 </div></div>
@@ -159,15 +158,16 @@ optional arguments:
 <p><strong>Description:</strong><br />
 Removes broken resources from the registries.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab clean [-h] [-q]
+<pre><code class="bash">$ lab clean [-h] [-q] [--virtualbox STRING]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
 <pre><code class="bash">Removes broken resources from the registries.
 
 optional arguments:
-  -h, --help   show this help message and exit
-  -q, --quiet  turn off lab process messages
+  -h, --help           show this help message and exit
+  -q, --quiet          turn off lab process messages
+  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
 </code></pre>
 
 <h2 id="connect">Connect</h2>
@@ -201,22 +201,22 @@ optional arguments:
 </code></pre>
 
 <h2 id="deploy">Deploy</h2>
-<p><em>Makes services available online.</em>  </p>
+<p><em>Makes a service available online.</em>  </p>
 <p><strong>Description:</strong><br />
-Deploys one or more services as Docker containers to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku &ndash;html site/)  </p>
+Deploys a service to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku &ndash;html site/)  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab deploy [-h] [-q] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING] PLATFORM [SERVICES [SERVICES ...]]
+<pre><code class="bash">$ lab deploy [-h] [-q] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING] PLATFORM [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
-<pre><code class="bash">Deploys one or more services as Docker containers to a remote platform. Deploy
-is currently only available for the heroku platform. Deploy can also deploy
-static html sites and apps using their dependencies if the root folder is added
-to one of the runtime type flags (ex. lab deploy heroku --html site/)
+<pre><code class="bash">Deploys a service to a remote platform. Deploy is currently only available for
+the heroku platform. Deploy can also deploy static html sites and apps using
+their dependencies if the root folder is added to one of the runtime type flags
+(ex. lab deploy heroku --html site/)
 
 positional arguments:
   PLATFORM             name of remote platform
-  SERVICES             list of services in lab registry
+  SERVICE              (optional) service in lab registry
 
 optional arguments:
   -h, --help           show this help message and exit
@@ -349,26 +349,6 @@ optional arguments:
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
 </code></pre>
 
-<h2 id="stop">Stop</h2>
-<p><em>Ends service availability on localhost</em>  </p>
-<p><strong>Description:</strong><br />
-Stops and removes a running container for one or more services.  </p>
-<p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab stop [-h] [-q] [--virtualbox STRING] [SERVICES [SERVICES ...]]
-</code></pre>
-
-<p><strong>Help:</strong> </p>
-<pre><code class="bash">Stops and removes a running container for one or more services.
-
-positional arguments:
-  SERVICES             list of services in lab registry
-
-optional arguments:
-  -h, --help           show this help message and exit
-  -q, --quiet          turn off lab process messages
-  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
-</code></pre>
-
 <h2 id="update">Update</h2>
 <p><em>Keeps your services up-to-date with the latest configurations.</em>  </p>
 <p><strong>Description:</strong><br />
@@ -396,8 +376,11 @@ optional arguments:
             <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>var base_url = '..';</script>
-        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
-        <script src="../js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+        <script src="../js/base.js"></script>
+        <script src="../search/require.js"></script>
+        <script src="../search/search.js"></script>
+
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -420,7 +403,47 @@ optional arguments:
             </div>
         </div>
     </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&larr;</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>&rarr;</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
 </div>
+
 
     </body>
 </html>
