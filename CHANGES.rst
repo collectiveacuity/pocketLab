@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+0.6 (2018.02.05)
+----------------
+* [COMMAND DEPRECATED] stop command removed in preference of native docker stop
+* [FEATURE ADDED] removal of stall docker images and containers added to clean
+* [UPDATE] deploy command updated with latest heroku-cli methods
+* [UPDATE] documentation improvements made
+
 0.5 (2017.06.30)
 ----------------
 * [BUG FIX] fixed element key name error in tags collected for aws instances

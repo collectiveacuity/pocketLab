@@ -24,10 +24,10 @@
 <tr><td>clean    </td><td>cleans registries of broken resources          </td><td>available</td></tr>
 <tr><td>build    </td><td>creates a new image from Dockerfile for service</td><td>         </td></tr>
 <tr><td>start    </td><td>initiates Docker containers for services       </td><td>available</td></tr>
-<tr><td>stop     </td><td>terminates running Docker containers           </td><td>available</td></tr>
+<tr><td>stop     </td><td>terminates a running container for a service   </td><td>         </td></tr>
 <tr><td>enter    </td><td>opens up a shell cli inside a running container</td><td>         </td></tr>
 <tr><td>tunnel   </td><td>creates a tunnel to a remote proxy host        </td><td>         </td></tr>
-<tr><td>deploy   </td><td>deploys services to a remote platform          </td><td>available</td></tr>
+<tr><td>deploy   </td><td>deploys service to a remote platform           </td><td>available</td></tr>
 <tr><td>connect  </td><td>connects to remote host through ssh            </td><td>available</td></tr>
 <tr><td>put      </td><td>copy a file to remote host through scp         </td><td>available</td></tr>
 <tr><td>get      </td><td>copy a file from remote host through scp       </td><td>available</td></tr>

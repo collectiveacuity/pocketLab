@@ -70,15 +70,16 @@ Removes broken resources from the registries.
 
 **Usage:**
 ```bash
-$ lab clean [-h] [-q]
+$ lab clean [-h] [-q] [--virtualbox STRING]
 ```
 **Help:** 
 ```bash
 Removes broken resources from the registries.
 
 optional arguments:
-  -h, --help   show this help message and exit
-  -q, --quiet  turn off lab process messages
+  -h, --help           show this help message and exit
+  -q, --quiet          turn off lab process messages
+  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
 ```
   
 
@@ -118,25 +119,25 @@ optional arguments:
   
 
 ## Deploy
-_Makes services available online._  
+_Makes a service available online._  
 
 **Description:**  
-Deploys one or more services as Docker containers to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)  
+Deploys a service to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)  
 
 **Usage:**
 ```bash
-$ lab deploy [-h] [-q] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING] PLATFORM [SERVICES [SERVICES ...]]
+$ lab deploy [-h] [-q] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING] PLATFORM [SERVICE]
 ```
 **Help:** 
 ```bash
-Deploys one or more services as Docker containers to a remote platform. Deploy
-is currently only available for the heroku platform. Deploy can also deploy
-static html sites and apps using their dependencies if the root folder is added
-to one of the runtime type flags (ex. lab deploy heroku --html site/)
+Deploys a service to a remote platform. Deploy is currently only available for
+the heroku platform. Deploy can also deploy static html sites and apps using
+their dependencies if the root folder is added to one of the runtime type flags
+(ex. lab deploy heroku --html site/)
 
 positional arguments:
   PLATFORM             name of remote platform
-  SERVICES             list of services in lab registry
+  SERVICE              (optional) service in lab registry
 
 optional arguments:
   -h, --help           show this help message and exit
@@ -281,30 +282,6 @@ $ lab start [-h] [-q] [--virtualbox STRING] [SERVICES [SERVICES ...]]
 **Help:** 
 ```bash
 Initiates a container with the Docker image for one or more services.
-
-positional arguments:
-  SERVICES             list of services in lab registry
-
-optional arguments:
-  -h, --help           show this help message and exit
-  -q, --quiet          turn off lab process messages
-  --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
-```
-  
-
-## Stop
-_Ends service availability on localhost_  
-
-**Description:**  
-Stops and removes a running container for one or more services.  
-
-**Usage:**
-```bash
-$ lab stop [-h] [-q] [--virtualbox STRING] [SERVICES [SERVICES ...]]
-```
-**Help:** 
-```bash
-Stops and removes a running container for one or more services.
 
 positional arguments:
   SERVICES             list of services in lab registry
