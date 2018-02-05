@@ -4,8 +4,8 @@ __license__ = 'MIT'
 
 '''
 remove services with non-existent roots from registry
-TODO: remove broken/previous docker images from docker
-TODO: remove exited status 1 containers from docker
+remove broken/previous docker images from docker
+remove exited status 1 containers from docker
 '''
 
 _clean_details = {
@@ -14,6 +14,8 @@ _clean_details = {
     'help': 'cleans registries of broken resources',
     'benefit': 'Frees up space by removing superfluous files.'
 }
+
+from pocketlab.init import fields_model
 
 def clean(verbose=True, virtualbox='default'):
 
@@ -24,7 +26,19 @@ def clean(verbose=True, virtualbox='default'):
     :param virtualbox: [optional] string with name of virtualbox image (win7/8)
     :return: string with exit message
     '''
-    
+
+    title = 'clean'
+
+# validate inputs
+    input_fields = {
+        'verbose': verbose,
+        'virtualbox': virtualbox
+    }
+    for key, value in input_fields.items():
+        if value:
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            fields_model.validate(value, '.%s' % key, object_title)
+
 # construct registry client
     from pocketlab import __module__
     from labpack.storage.appdata import appdataClient

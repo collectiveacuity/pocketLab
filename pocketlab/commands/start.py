@@ -2,6 +2,10 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 __license__ = 'MIT'
 
+'''
+TODO: finish method
+'''
+
 _start_details = {
     'title': 'Start',
     'description': 'Initiates a container with the Docker image for one or more services.',
@@ -14,7 +18,9 @@ from pocketlab.init import fields_model
 def start(service_list, verbose=True, virtualbox='default'):
 
     title = 'start'
-
+    
+    raise Exception('start command is coming.')
+    
 # validate inputs
     if isinstance(service_list, str):
         if service_list:
@@ -30,19 +36,21 @@ def start(service_list, verbose=True, virtualbox='default'):
             fields_model.validate(value, '.%s' % key, object_title)
 
 # validate installation of docker
-    from pocketlab.methods.docker import dockerClient
+    from labpack.platforms.docker import dockerClient
     docker_client = dockerClient(virtualbox_name=virtualbox, verbose=verbose)
 
 # verbosity
     if verbose:
         print('Checking service configurations...', end='', flush=True)
-        
+
 # construct list of paths to services
     from pocketlab.methods.service import retrieve_services
     start_list, msg_insert = retrieve_services(service_list)
 
 # construct lab list
     lab_list = []
+
+# TODO change from lab.yaml to docker-compose.yml
     
 # validate lab files
     from os import path

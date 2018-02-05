@@ -50,6 +50,8 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         service_insert = 'in working directory'
         service_root = './'
 
+# TODO change from lab.yaml to docker-compose.yml
+    
 # retrieve lab config
     from os import path
     from pocketlab.methods.validation import validate_lab, validate_platform

@@ -16,7 +16,6 @@ _get_details = {
 
 from pocketlab.init import fields_model
 
-
 def get(file_path, platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
     
     title = 'connect'
@@ -51,6 +50,8 @@ def get(file_path, platform_name, service_option, environment_type='', resource_
     else:
         service_insert = 'in working directory'
         service_root = './'
+
+# TODO change from lab.yaml to docker-compose.yml
 
 # retrieve lab config
     from os import path

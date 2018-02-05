@@ -102,4 +102,8 @@ def list(resource_type, paginate=False):
     elif resource_type == 'images':
         pass
 
+# list containers
+    elif resource_type == 'containers':
+        pass
+    
     return exit_msg

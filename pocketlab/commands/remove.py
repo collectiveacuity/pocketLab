@@ -3,7 +3,7 @@ __created__ = '2017.05'
 __license__ = 'MIT'
 
 '''
-remove projects
+remove services
 '''
 
 _remove_details = {
@@ -40,9 +40,9 @@ def remove(service_name):
     search_filter = registry_client.conditional_filter(search_condition)
     search_results = registry_client.list(search_filter)
     if not search_results:
-        raise ValueError('"%s" does not exist in project registry.' % service_name)
+        raise ValueError('"%s" does not exist in lab registry.' % service_name)
     else:
         registry_client.delete(search_results[0])
-        exit_msg = '"%s" removed from project registry.' % service_name
+        exit_msg = '"%s" removed from lab registry.' % service_name
 
     return exit_msg

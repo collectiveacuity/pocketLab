@@ -3,7 +3,7 @@ __created__ = '2017.06'
 __licence__ = 'MIT'
 
 '''
-put file to aws instance
+put file to ec2 instance
 TODO: put to other platforms (bluemix, azure, gcp)
 '''
 
@@ -55,6 +55,8 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
     else:
         service_insert = 'in working directory'
         service_root = './'
+
+# TODO change from lab.yaml to docker-compose.yml
 
 # retrieve lab config
     from pocketlab.methods.validation import validate_lab, validate_platform
