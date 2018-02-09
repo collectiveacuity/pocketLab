@@ -71,20 +71,20 @@ def clean(verbose=True, virtualbox='default'):
     except:
         docker_client = None
 
-# remove docker containers with exit 1 status
+# remove docker containers except those running or stopped
     if docker_client:
         for container in docker_client.ps():
-            if container['STATUS'].find('Exited (1)') > -1:
-                try:
-                    docker_client.rm(container['CONTAINER_ID'])
-                    if verbose:
-                        if container['NAMES']:
-                            container_name = 'alias "%s"' % container['NAMES'].split(' ')[0]
-                        else:
-                            container_name = 'of image "%s"' % container['IMAGE']
-                        print('Container %s with exit(1) status removed from docker.' % container_name)
-                except:
-                    pass
+            container_alias = container['NAMES'].split(' ')[0]
+            container_id = container['CONTAINER ID']
+            container_synopsis = docker_client.synopsis(container_id)
+            if container_synopsis['container_status'] == 'exited':
+                docker_client.rm(container_id)
+                if verbose:
+                    if container_alias:
+                        container_name = 'alias "%s"' % container_alias
+                    else:
+                        container_name = 'of image "%s"' % container['IMAGE']
+                    print('Container %s in exit state removed from docker.' % container_name)
 
 # remove docker images with <none> in name tag
     if docker_client:
