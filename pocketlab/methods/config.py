@@ -20,13 +20,14 @@ def retrieve_template(file_path):
 
     return file_text
 
-def compile_yaml(config_schema, yaml_path=''):
+def compile_yaml(config_schema, yaml_path='', ingest_kwargs=None):
 
     '''
         a method to compile a yaml file with top-level comments from a json model
         
     :param config_schema: dictionary with json model schema architecture 
     :param yaml_path: [optional] string with path to user yaml file
+    :param ingest_kwargs: [optional] dictionary with additional kwargs to ingest 
     :return: string with yaml formatted text
     '''
 
@@ -36,7 +37,10 @@ def compile_yaml(config_schema, yaml_path=''):
     
 # construct order dict
     config_list = []
-    config_details = config_model.ingest()
+    if ingest_kwargs and isinstance(ingest_kwargs, dict):
+        config_details = config_model.ingest(**ingest_kwargs)
+    else:
+        config_details = config_model.ingest()
     for key, value in config_details.items():
         details = {
             'key': key,
@@ -129,6 +133,19 @@ def compile_yaml(config_schema, yaml_path=''):
         config_text = ruamel.yaml.dump(user_code, Dumper=ruamel.yaml.RoundTripDumper)
 
     return config_text
+
+def compile_compose(compose_schema, service_schema, service_name):
+
+# add service name to appropriate locations
+    service_schema['schema']['image'] = service_name
+    compose_schema['schema']['services'][service_name] = { 'key': 'value' }
+
+# compile yaml
+    service_text = compile_yaml(service_schema, ingest_kwargs=service_schema['schema'])
+    compose_text = compile_yaml(compose_schema, ingest_kwargs=compose_schema['schema'])
+    compose_text = compose_text.replace("{'key': 'value'}\n", '# name of container alias and lab service\n    ' + service_text.replace('\n', '\n    '))
+
+    return compose_text
 
 def inject_init(init_path, readme_path, setup_kwargs):
 

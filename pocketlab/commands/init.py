@@ -220,36 +220,33 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
                 f.close()
             _printer(vcs_path)
 
-    # TODO change from lab.yaml to docker-compose.yml
-    
-        config_path = 'lab.yaml'
+    # add docker compose file
+        config_path = 'docker-compose.yaml'
         if not path.exists(config_path):
 
-        # retrieve config model
+        # retrieve config schemas
             from pocketlab import __module__
             from jsonmodel.loader import jsonLoader
-            config_schema = jsonLoader(__module__, 'models/lab-config.json')
+            compose_schema = jsonLoader(__module__, 'models/compose-config.json')
+            service_schema = jsonLoader(__module__, 'models/service-config.json')
+    
+        # add default values to schemas
+            default_volume_1 = {'type': 'bind', 'source': './cred', 'target': '/opt/cred'}
+            default_volume_2 = {'type': 'bind', 'source': './data', 'target': '/opt/data'}
+            service_schema['schema']['volumes'].insert(0, default_volume_2)
+            service_schema['schema']['volumes'].insert(0, default_volume_1)
 
         # modify config schema defaults from values in registry
             from pocketlab.methods.service import retrieve_service_name
             service_name = retrieve_service_name('./')
             if service_name:
-                config_schema['components']['.docker_container_alias']['default_value'] = service_name
-                service_root = path.abspath('./')
-                root_path, root_folder = path.split(service_root)
-                if root_folder:
-                    folder_name = root_folder.lower().replace(' ', '-')
-                    from jsonmodel.validators import jsonModel
-                    config_model = jsonModel(config_schema)
-                    try:
-                        folder_name = config_model.validate(folder_name, '.docker_image_name')
-                        config_schema['components']['.docker_image_name']['default_value'] = folder_name
-                    except:
-                        pass
+                service_schema['schema']['image'] = service_name
+            else:
+                service_name = 'server'
 
         # compile yaml
-            from pocketlab.methods.config import compile_yaml
-            config_text = compile_yaml(config_schema)
+            from pocketlab.methods.config import compile_compose
+            config_text = compile_compose(compose_schema, service_schema, service_name)
 
         # save config text
             with open(config_path, 'wt') as f:

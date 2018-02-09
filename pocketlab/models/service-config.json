@@ -1,0 +1,138 @@
+{
+  "schema": {
+    "image": "server",
+    "build": {
+      "context": ".",
+      "dockerfile": "Dockerfile"
+    },
+    "ports": [ "5000:5000" ],
+    "environment": {
+      "PORT": "5000",
+      "SYSTEM_ENVIRONMENT": "dev"
+    },
+    "volumes": [{
+      "type": "bind",
+      "source": "./server",
+      "target": "/opt/server"
+    }],
+    "command": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:$PORT",
+    "networks": [ "host" ]
+  },
+  "components": {
+    ".image": {
+      "required_field": false,
+      "default_value": "server",
+      "max_length": 64,
+      "must_contain": [ "^[a-z\\d\\-:_/]+$" ],
+      "must_not_contain": [ "^\\d", "^\\-", "\\-$" ],
+      "field_metadata": {
+        "position": 1,
+        "comments": "replace with preferred pre-built image name"
+      }
+    },
+    ".build": {
+      "required_field": false,
+      "extra_fields": true,
+      "field_metadata": {
+        "position": 2,
+        "comments": "remove if using pre-built image"
+      }
+    },
+    ".build.context": {
+      "default_value": ".",
+      "field_metadata": {
+        "position": 0,
+        "comments": "relative path to dockerfile"
+      }
+    },
+    ".build.dockerfile": {
+      "required_field": false,
+      "default_value": "Dockerfile",
+      "must_not_contain": [ "^\\d", "^\\-", "\\-$", "/" ],
+      "field_metadata": {
+        "position": 1,
+        "comments": "replace with alternate dockerfile name"
+      }
+    },
+    ".ports": {
+      "required_field": false,
+      "field_metadata": {
+        "position": 3
+      }
+    },
+    ".ports[0]": {
+      "default_value": "5000:5000",
+      "contains_either": [ "\\d{2,5}:\\d{2,5}", "\\d{2,5}\\-\\d{2,5}:\\d{2,5}\\-\\d{2,5}" ]
+    },
+    ".environment": {
+      "required_field": false,
+      "extra_fields": true,
+      "field_metadata": {
+        "position": 4
+      }
+    },
+    ".environment.PORT": {
+      "required_field": false,
+      "default_value": "5000",
+      "field_metadata": {
+        "position": 0
+      }
+    },
+    ".environment.SYSTEM_ENVIRONMENT": {
+      "required_field": false,
+      "default_value": "dev",
+      "field_metadata": {
+        "position": 1
+      }
+    },
+    ".volumes": {
+      "required_field": false,
+      "field_metadata": {
+        "position": 5
+      }
+    },
+    ".volumes[0]": {
+      "extra_fields": true
+    },
+    ".volumes[0].type": {
+      "default_value": "bind",
+      "discrete_values": [ "bind", "volume" ],
+      "field_metadata": {
+        "position": 0,
+        "comments": "use 'volume' for declared shared volumes"
+      }
+    },
+    ".volumes[0].source": {
+      "default_value": "./server",
+      "must_not_contain": [ ":" ],
+      "field_metadata": {
+        "position": 1
+      }
+    },
+    ".volumes[0].target": {
+      "default_value": "/opt/server",
+      "must_not_contain": [ ":" ],
+      "field_metadata": {
+        "position": 2
+      }
+    },
+    ".command": {
+      "required_field": false,
+      "default_value": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:$PORT",
+      "field_metadata": {
+        "position": 6,
+        "comments": "eg."
+      }
+    },
+    ".networks": {
+      "required_field": false,
+      "field_metadata": {
+        "position": 7,
+        "comments": "select from 'none', 'host', 'bridge' and '<custom network>'"
+      }
+    },
+    ".networks[0]": {
+      "default_value": "host"
+    }
+  }
+}

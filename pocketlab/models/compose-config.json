@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "comments": "docker compose configuration file\nhttps://docs.docker.com/compose/compose-file/"
+  },
+  "schema": {
+    "version": "3.2",
+    "services": {}
+  },
+  "components": {
+    ".version": {
+      "field_metadata": {
+        "position": 0
+      }
+    },
+    ".services": {
+      "field_metadata": {
+        "position": 1
+      }
+    }
+  }
+}

@@ -3,7 +3,7 @@ __created__ = '2016.03'
 __license__ = 'MIT'
 
 '''
-TODO: finish method
+starts services in docker containers
 '''
 
 _start_details = {
@@ -18,8 +18,6 @@ from pocketlab.init import fields_model
 def start(service_list, verbose=True, virtualbox='default'):
 
     title = 'start'
-    
-    raise Exception('start command is coming.')
     
 # validate inputs
     if isinstance(service_list, str):
