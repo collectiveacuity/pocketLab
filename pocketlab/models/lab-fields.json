@@ -17,6 +17,7 @@
     "platform_option": [ "heroku" ],
     "license_type": "MIT",
     "environment_type": "prod",
+    "ip_address": "127.0.0.1",
     "resource_tag": "20170615",
     "region_name": "us-east-1",
     "html_folder": "site/",
@@ -211,10 +212,22 @@
       }
     },
     ".environment_type":{
+      "default_value": "dev",
       "field_description": "Type of development environment.",
       "field_metadata": {
         "cli_flags": [ "--env" ],
-        "cli_help": "type of development environment"
+        "cli_help": "type of development environment (default: %(default)s)"
+      }
+    },
+    ".ip_address": {
+      "contains_either": [ 
+        "\\d+\\.\\d+\\.\\d+\\.\\d+", 
+        "[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F:]*:[0-9a-fA-F]+$" 
+      ],
+      "field_description": "IPv4 or IPv6 Address",
+      "field_metadata": {
+        "cli_flags": [ "--ip" ],
+        "cli_help": "ipv4 or ipv6 address"
       }
     },
     ".resource_tag": {

@@ -8,14 +8,14 @@ starts services in docker containers
 
 _start_details = {
     'title': 'Start',
-    'description': 'Initiates a container with the Docker image for one or more services.',
+    'description': 'Initiates a container with the Docker image for one or more services. Unless overridden by flags, lab automatically adds the host machine variables SYSTEM_LOCALHOST=`hostname -i` and SYSTEM_ENVIRONMENT="dev" to the container.',
     'help': 'initiates Docker containers for services',
     'benefit': 'Makes services available on localhost'
 }
 
 from pocketlab.init import fields_model
 
-def start(service_list, verbose=True, virtualbox='default'):
+def start(service_list, verbose=True, virtualbox='default', environment_type='dev', ip_address=''):
 
     title = 'start'
 
@@ -26,7 +26,9 @@ def start(service_list, verbose=True, virtualbox='default'):
     input_fields = {
         'service_list': service_list,
         'verbose': verbose,
-        'virtualbox': virtualbox
+        'virtualbox': virtualbox,
+        'environment_type': environment_type,
+        'ip_address': ip_address
     }
     for key, value in input_fields.items():
         if value:
@@ -104,7 +106,7 @@ def start(service_list, verbose=True, virtualbox='default'):
                 else:
                     image_exists = True
         if not image_exists:
-            raise ValueError('%s image "%s" not found on local device.\nTry either: "docker pull %s" or "docker build -t %s ."' % (compose_insert, image_name, image_name, image_name))
+            raise ValueError('Image "%s" listed in %s not found on local device.\nTry either: "docker pull %s" or "docker build -t %s ."' % (image_name, compose_insert, image_name, image_name))
         details['image'] = image_repo
         details['tag'] = image_tag
         
@@ -121,16 +123,17 @@ def start(service_list, verbose=True, virtualbox='default'):
             if container_alias == alias['NAMES'].split()[0]:
                 container_exists = True
         if container_exists:
-            raise ValueError('%s container alias "%s" already exists.\nTry first: "docker rm -f %s"' % (compose_insert, container_alias, container_alias))
+            raise ValueError('A container already exists for alias "%s". Try first: "docker rm -f %s"' % (container_alias, container_alias))
         details['alias'] = container_alias
         
     # validate mount paths exist
         if 'volumes' in details['config'].keys():
-            for volume in details['config']['volumes']:
+            for i in range(len(details['config']['volumes'])):
+                volume = details['config']['volumes'][i]
                 if volume['type'] == 'bind':
                     volume_path = path.join(details['path'], volume['source'])
                     if not path.exists(volume_path):
-                        raise ValueError('%s volume.source value "%s" is not a valid path.' % (compose_insert, volume['source']))
+                        raise ValueError('Value "%s" for field volume[%s].source in %s is not a valid path.' % (volume['source'], str(i), compose_insert))
 
     # validate ports are available
         if 'ports' in details['config'].keys():
@@ -148,16 +151,16 @@ def start(service_list, verbose=True, virtualbox='default'):
                     test_ports.append(int(port_start))
                 else:
                     if port_end <= port_start:
-                        raise ValueError('%s ports[%s] value "%s" is invalid port mapping.' % (compose_insert, str(i), port_string))
+                        raise ValueError('Value "%s" for field ports[%s] in %s is invalid port mapping.' % (port_string, str(i), compose_insert))
                     for j in range(int(port_start),int(port_end) + 1):
                         test_ports.append(j)
                 for port in test_ports:
                     if port in port_list:
-                        raise ValueError('%s ports[%s] value "%s" is already mapped to another container.' % (compose_insert, str(i), str(port)))
+                        raise ValueError('Value "%s" for field ports[%s] in %s is already mapped to another container.' % (str(port), str(i), compose_insert))
                     else:
                         try:
                             docker_client.command('lsof -Pi :%s -sTCP:LISTEN -t' % port)
-                            raise ValueError('%s ports[%s] value "%s" is already mapped to a local process.' % (compose_insert, str(i), str(port)))
+                            raise ValueError('Value "%s" for field ports[%s] in %s is already mapped to a local process.' % (str(port), str(i), compose_insert))
                         except:
                             pass
                         port_list.append(port)
@@ -172,8 +175,11 @@ def start(service_list, verbose=True, virtualbox='default'):
         print(' done.')
 
 # retrieve system ip
-    system_ip = docker_client.ip()
-
+    if not ip_address:
+        system_ip = docker_client.ip()
+    else:
+        system_ip = ip_address
+        
 # instantiate containers
     exit_msg = ''
     container_list = []
@@ -192,7 +198,8 @@ def start(service_list, verbose=True, virtualbox='default'):
             'container_alias': service_alias, 
             'image_tag': service_tag, 
             'environmental_variables': {
-                'SYSTEM_LOCALHOST': system_ip
+                'SYSTEM_LOCALHOST': system_ip,
+                'SYSTEM_ENVIRONMENT': environment_type
             }, 
             'mapped_ports': None, 
             'mounted_volumes': None, 
@@ -202,7 +209,9 @@ def start(service_list, verbose=True, virtualbox='default'):
 
     # add optional compose variables
         if 'environment' in service_config.keys():
-            run_kwargs['environmental_variables'].update(service_config['environment'])
+            for key, value in service_config['environment'].items():
+                if key.upper() not in run_kwargs['environmental_variables'].keys():
+                    run_kwargs['environmental_variables'][key] = value
         if 'ports' in service_config.keys():
             run_kwargs['mapped_ports'] = {}
             for port in service_config['ports']:
@@ -217,7 +226,12 @@ def start(service_list, verbose=True, virtualbox='default'):
                     volume_path = path.join(service_path, volume['source'])
                     run_kwargs['mounted_volumes'][volume_path] = volume['target']
         if 'command' in service_config.keys():
-            run_kwargs['start_command'] = service_config['command']
+            import re
+            env_pattern = re.compile('\$[A-Z_][A-Z0-9_]+')
+            if env_pattern.findall(service_config['command']):
+                run_kwargs['start_command'] = "sh -c '%s'" % service_config['command']
+            else:
+                run_kwargs['start_command'] = service_config['command']
         if 'networks' in service_config.keys():
             if service_config['networks']:
                 run_kwargs['network_name'] = service_config['networks'][0]
@@ -225,7 +239,7 @@ def start(service_list, verbose=True, virtualbox='default'):
         print(run_kwargs)
         
     # run docker run
-        # docker_client.run(**run_kwargs)
+        docker_client.run(**run_kwargs)
 
     # report outcome
         port_msg = ''

@@ -143,7 +143,7 @@ def compile_compose(compose_schema, service_schema, service_name):
 # compile yaml
     service_text = compile_yaml(service_schema, ingest_kwargs=service_schema['schema'])
     compose_text = compile_yaml(compose_schema, ingest_kwargs=compose_schema['schema'])
-    compose_text = compose_text.replace("{'key': 'value'}\n", '# name of container alias and lab service\n    ' + service_text.replace('\n', '\n    '))
+    compose_text = compose_text.replace("{'key': 'value'}\n", '# name for container alias and service in lab registry\n    ' + service_text.replace('\n', '\n    '))
 
     return compose_text
 

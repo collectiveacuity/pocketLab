@@ -7,16 +7,15 @@
     },
     "ports": [ "5000:5000" ],
     "environment": {
-      "PORT": "5000",
-      "SYSTEM_ENVIRONMENT": "dev"
+      "PORT": "5000"
     },
     "volumes": [{
       "type": "bind",
       "source": "./server",
       "target": "/opt/server"
     }],
-    "command": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:$PORT",
-    "networks": [ "host" ]
+    "command": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:5000",
+    "networks": [ "bridge" ]
   },
   "components": {
     ".image": {
@@ -78,17 +77,11 @@
         "position": 0
       }
     },
-    ".environment.SYSTEM_ENVIRONMENT": {
-      "required_field": false,
-      "default_value": "dev",
-      "field_metadata": {
-        "position": 1
-      }
-    },
     ".volumes": {
       "required_field": false,
       "field_metadata": {
-        "position": 5
+        "position": 5,
+        "comments": "replace with volumes required by service"
       }
     },
     ".volumes[0]": {
@@ -118,7 +111,7 @@
     },
     ".command": {
       "required_field": false,
-      "default_value": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:$PORT",
+      "default_value": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:5000",
       "field_metadata": {
         "position": 6,
         "comments": "eg."
@@ -132,7 +125,7 @@
       }
     },
     ".networks[0]": {
-      "default_value": "host"
+      "default_value": "bridge"
     }
   }
 }
