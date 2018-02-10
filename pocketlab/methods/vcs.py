@@ -20,6 +20,9 @@ def load_ignore(vcs='git'):
         file_text = file_regex.sub(lambda x: '%s$' % x.group(0) if x.group(0).find('/') == -1 else x.group(0), file_text)
         file_text = file_text.replace('.', '\.')
         file_text = file_text.replace('\.gitignore', ' .hgignore')
+    elif vcs.lower() == 'docker':
+        file_path = path.join(module_path, 'models/dockerignore.txt')
+        file_text = open(file_path).read()
 
     return file_text
 

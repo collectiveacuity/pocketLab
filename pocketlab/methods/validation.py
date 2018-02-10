@@ -5,7 +5,7 @@ __license__ = 'MIT'
 def validate_platform(platform_model, service_root, service_name=''):
     
     '''
-        a method to validate yaml configuration file in .lab folder
+        a method to validate a yaml configuration file in .lab folder
         
     :param platform_model: jsonModel object with config schema
     :param service_root: string with path to root of service
@@ -55,6 +55,87 @@ def validate_platform(platform_model, service_root, service_name=''):
             raise ValueError(missing_msg)
     
     return config_details
+
+def validate_compose(compose_model, service_model, file_path, service_name=''):
+
+    '''
+        a method to validate docker-compose.yaml configuration for service
+        
+    :param compose_model: jsonModel object with compose config schema
+    :param service_model: jsonModel object with service config schema 
+    :param file_path: string with path to lab.yaml file for service
+    :param service_name: [optional] string with name of service
+    :return: dictionary with lab configurations
+    '''
+
+# construct message insert
+    msg_insert = 'working directory'
+    if service_name:
+        msg_insert = 'root directory for "%s"' % service_name
+    compose_insert = 'docker-compose.yaml file in %s' % msg_insert
+
+# validate lab yaml exists
+    from os import path
+    if not path.exists(file_path):
+        raise ValueError('docker-compose.yaml does not exist in %s. Try: "lab init" in %s.' % (msg_insert, msg_insert))
+    
+# validate lab yaml is valid
+    from labpack.records.settings import load_settings
+    try:
+        compose_details = load_settings(file_path)
+    except:
+        raise ValueError('%s corrupted. Try deleting and running again: "lab init"' % (compose_insert))
+
+# validate compose schema structure
+    from jsonmodel.exceptions import InputValidationError
+    from copy import deepcopy
+    test_details = deepcopy(compose_details)
+    for key, value in compose_model.schema.items():
+        object_title = 'Field %s in %s' % (key, compose_insert)
+        if key in test_details.keys():
+            try:
+                # object_title = 'Field %s in docker-compose.yaml in %s' % (key, msg_insert)
+                compose_model.validate(test_details[key], '.%s' % key, object_title)
+            except InputValidationError as err:
+                error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
+                if err.message.find(error_msg) > -1:
+                    pass
+                else:
+                    raise
+            except:
+                raise
+        elif value:
+            missing_msg = '%s is missing' % object_title
+            raise ValueError(missing_msg)
+
+# validate services exists
+    if not compose_details['services']:
+        raise ValueError('%s is missing services. Try deleting and running again: "lab init"' % compose_insert)
+    elif service_name and not service_name in compose_details['services'].keys():
+        raise ValueError('%s is missing settings for "%s" service.' % (service_name, compose_insert))
+    elif not service_name and len(compose_details['services'].keys()) > 1:
+        raise ValueError('%s contains more than one service option. Try specifying service: "lab start [SERVICE]' % compose_insert)
+
+# validate service schema structure
+    for key, value in test_details['services'].items():
+        for k, v in service_model.schema.items():
+            object_title = 'Field services.%s.%s in %s' % (key, k, compose_insert)
+            if k in value.keys():
+                try:
+                    service_model.validate(value[k], '.%s' % k, object_title)
+                except InputValidationError as err:
+                    error_msg = "Value None for field .%s failed test 'value_datatype': map" % k
+                    if err.message.find(error_msg) > -1:
+                        pass
+                    else:
+                        raise
+                except:
+                    raise
+            elif value:
+                missing_msg = '%s is missing' % object_title
+                raise ValueError(missing_msg)
+
+    return compose_details
 
 def validate_lab(lab_model, file_path, service_name=''):
     

@@ -18,7 +18,7 @@ from pocketlab.init import fields_model
 def start(service_list, verbose=True, virtualbox='default'):
 
     title = 'start'
-    
+
 # validate inputs
     if isinstance(service_list, str):
         if service_list:
@@ -45,39 +45,128 @@ def start(service_list, verbose=True, virtualbox='default'):
     from pocketlab.methods.service import retrieve_services
     start_list, msg_insert = retrieve_services(service_list)
 
+# retrieve local docker images
+    docker_images = docker_client.images()
+
 # construct lab list
     lab_list = []
+    port_list = []
 
-# TODO change from lab.yaml to docker-compose.yml
-    
-# validate lab files
+# retrieve docker-compose schemas
+    from copy import deepcopy
     from os import path
-    from pocketlab.methods.validation import validate_lab
+    from labpack.parsing.grammar import join_words
+    from pocketlab.methods.validation import validate_compose
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
     from jsonmodel.validators import jsonModel
-    lab_model = jsonModel(jsonLoader(__module__, 'models/lab-config.json'))
+    compose_model = jsonModel(jsonLoader(__module__, 'models/compose-config.json'))
+    service_model = jsonModel(jsonLoader(__module__, 'models/service-config.json'))
+
+# validate docker-compose files
     for details in start_list:
-        file_path = path.join(details['path'], 'lab.yaml')
-        service_name = details['name']
-        lab_details = validate_lab(lab_model, file_path, service_name)
-        details['config'] = lab_details
+        file_path = path.join(details['path'], 'docker-compose.yaml')
+        service_name = deepcopy(details['name'])
+        compose_details = validate_compose(compose_model, service_model, file_path, service_name)
+        if service_name:
+            details['config'] = compose_details['services'][service_name]
+        else:
+            for key, value in compose_details['services'].items():
+                details['config'] = value
+                details['name'] = key
+                break
+        
+    # construct message insert
+        msg_insert = 'working directory'
+        if service_name:
+            msg_insert = 'root directory for "%s"' % service_name
+        compose_insert = 'docker-compose.yaml file in %s' % msg_insert
+        
+    # validate image field in docker compose file 
+        if not 'image' in details['config'].keys():
+            raise ValueError('%s is missing the image field for services.%s' % (compose_insert, details['name']))
+        elif not details['config']['image']:
+            raise ValueError('%s is missing a value for field service.%s.image' % (compose_insert, details['name']))
+        
+    # validate image exists in local docker repository
+        image_exists = False
+        image_name = details['config']['image']
+        image_segments = image_name.split(':')
+        image_repo = image_segments[0]
+        image_tag = ''
+        if len(image_segments) > 1:
+            image_tag = image_segments[1]
+        for image in docker_images:
+            if image_repo == image['REPOSITORY']:
+                if image_tag:
+                    if image_tag == image['TAG']:
+                        image_exists = True
+                else:
+                    image_exists = True
+        if not image_exists:
+            raise ValueError('%s image "%s" not found on local device.\nTry either: "docker pull %s" or "docker build -t %s ."' % (compose_insert, image_name, image_name, image_name))
+        details['image'] = image_repo
+        details['tag'] = image_tag
+        
+    # retrieve list of docker containers
+        docker_containers = docker_client.ps()
+
+    # validate container alias does not already exist
+        if 'container_name' in details['config'].keys():
+            container_alias = details['config']['container_name']
+        else:
+            container_alias = details['name']
+        container_exists = False
+        for alias in docker_containers:
+            if container_alias == alias['NAMES'].split()[0]:
+                container_exists = True
+        if container_exists:
+            raise ValueError('%s container alias "%s" already exists.\nTry first: "docker rm -f %s"' % (compose_insert, container_alias, container_alias))
+        details['alias'] = container_alias
+        
+    # validate mount paths exist
+        if 'volumes' in details['config'].keys():
+            for volume in details['config']['volumes']:
+                if volume['type'] == 'bind':
+                    volume_path = path.join(details['path'], volume['source'])
+                    if not path.exists(volume_path):
+                        raise ValueError('%s volume.source value "%s" is not a valid path.' % (compose_insert, volume['source']))
+
+    # validate ports are available
+        if 'ports' in details['config'].keys():
+            for i in range(len(details['config']['ports'])):
+                test_ports = []
+                port_string = details['config']['ports'][i]
+                port_split = port_string.split(':')
+                sys_port = port_split[0]
+                range_split = sys_port.split('-')
+                port_start = range_split[0]
+                port_end = ''
+                if len(range_split) > 1:
+                    port_end = range_split[1]
+                if not port_end:
+                    test_ports.append(int(port_start))
+                else:
+                    if port_end <= port_start:
+                        raise ValueError('%s ports[%s] value "%s" is invalid port mapping.' % (compose_insert, str(i), port_string))
+                    for j in range(int(port_start),int(port_end) + 1):
+                        test_ports.append(j)
+                for port in test_ports:
+                    if port in port_list:
+                        raise ValueError('%s ports[%s] value "%s" is already mapped to another container.' % (compose_insert, str(i), str(port)))
+                    else:
+                        try:
+                            docker_client.command('lsof -Pi :%s -sTCP:LISTEN -t' % port)
+                            raise ValueError('%s ports[%s] value "%s" is already mapped to a local process.' % (compose_insert, str(i), str(port)))
+                        except:
+                            pass
+                        port_list.append(port)
+
+    # print progress for each service
         lab_list.append(details)
-        
-# retrieve list of docker images
-
-# validate lab config image exists
-        
-# retrieve list of docker containers
-
-# validate lab config container doesn't already exist
-# TODO resolve name conflicts on deploy updating
-        
-# validate mount paths exist
-        
         if verbose:
             print('.', end='', flush=True)
-        
+
 # end validations
     if verbose:
         print(' done.')
@@ -87,53 +176,70 @@ def start(service_list, verbose=True, virtualbox='default'):
 
 # instantiate containers
     exit_msg = ''
-    port_list = []
+    container_list = []
     for service in lab_list:
         service_config = service['config']
+        service_alias = service['alias']
+        service_image = service['image']
+        service_tag = service['tag']
         service_name = service['name']
-        service_root = service['path']
+        service_path = service['path']
+        container_list.append(service_alias)
 
-    # construct environment variables
-        container_envvar = { 'SYSTEM_IP_ADDRESS': system_ip }
-        if service_config['docker_environment_variables']:
-            for key, value in service_config['docker_environment_variables'].items():
-                container_envvar[key.upper()] = '"%s"' % value
-    
-    # construct sys command
-        container_name = service_config['docker_container_alias']
-        sys_command = 'docker run --name %s' % container_name
-        for key, value in container_envvar.items():
-            sys_command += ' -e %s=%s' % (key, value)
-        if service_config['docker_mount_volumes']:
-            for key, value in service_config['docker_mount_volumes'].items():
-                sys_command += ' -v "%s":"%s"' % (key, value)
-        sys_command += ' -it -d'
-        port_count = 0
-        port_value = ''
-        if service_config['docker_port_mapping']:
-            for key, value in service_config['docker_port_mapping'].items():
-                port_value = value
-                if value in port_list:
-                    from copy import deepcopy
-                    port_value = deepcopy(value)
-                    for i in range(1000):
-                        port_value += 1
-                        if not port_value in port_list:
-                            break
-                port_list.append(port_value)
-                port_count += 1
-                sys_command += ' -p %s:%s' % (str(port_value), key)
-        sys_command += ' %s' % service_config['docker_image_name'] 
-    
-    # determine port message
+    # construct default docker run kwargs
+        run_kwargs = {
+            'image_name': service_image, 
+            'container_alias': service_alias, 
+            'image_tag': service_tag, 
+            'environmental_variables': {
+                'SYSTEM_LOCALHOST': system_ip
+            }, 
+            'mapped_ports': None, 
+            'mounted_volumes': None, 
+            'start_command': '', 
+            'network_name': 'host'
+        }
+
+    # add optional compose variables
+        if 'environment' in service_config.keys():
+            run_kwargs['environmental_variables'].update(service_config['environment'])
+        if 'ports' in service_config.keys():
+            run_kwargs['mapped_ports'] = {}
+            for port in service_config['ports']:
+                port_split = port.split(':')
+                sys_port = port_split[0]
+                con_port = port_split[1]
+                run_kwargs['mapped_ports'][sys_port] = con_port
+        if 'volumes' in service_config.keys():
+            run_kwargs['mounted_volumes'] = {}
+            for volume in service_config['volumes']:
+                if volume['type'] == 'bind':
+                    volume_path = path.join(service_path, volume['source'])
+                    run_kwargs['mounted_volumes'][volume_path] = volume['target']
+        if 'command' in service_config.keys():
+            run_kwargs['start_command'] = service_config['command']
+        if 'networks' in service_config.keys():
+            if service_config['networks']:
+                run_kwargs['network_name'] = service_config['networks'][0]
+
+        print(run_kwargs)
+        
+    # run docker run
+        # docker_client.run(**run_kwargs)
+
+    # report outcome
         port_msg = ''
-        if port_count == 1:
-            port_msg = ' at %s:%s' % (system_ip, port_value)
-            
-    # run command
-        from subprocess import check_output
-        docker_response = check_output(sys_command).decode('utf-8')
-        service_msg = 'Container "%s" started%s' % (container_name, port_msg)
+        if 'ports' in service_config.keys():
+            if service_config['ports']:
+                port_string = ''
+                for port in service_config['ports']:
+                    if port_string:
+                        port_string += ','
+                    port_split = port.split(':')
+                    sys_port = port_split[0]
+                    port_string += sys_port
+                port_msg = ' at %s:%s' % (system_ip, port_string)
+        service_msg = 'Container "%s" started%s' % (service_alias, port_msg)
         if len(lab_list) > 1:
             if verbose:
                 print(service_msg)
@@ -141,133 +247,9 @@ def start(service_list, verbose=True, virtualbox='default'):
             exit_msg = service_msg
 
     # TODO consider ROLLBACK options
-    
-    if len(lab_list) > 1:
-        exit_msg = 'Finished starting %s' % msg_insert
-        
-    return exit_msg
 
-# # import dependencies
-#     from os import path
-#     from copy import deepcopy
-#     from pocketlab.importers.config_file import configFile
-#     from pocketlab.clients.localhost_client import localhostClient
-#     from pocketlab.clients.docker_session import dockerSession
-#     from pocketlab.validators.config_model import configModel
-#     from pocketlab.validators.absolute_path import absolutePath
-#     from pocketlab.validators.available_image import availableImage
-#     from pocketlab.compilers.docker_run import dockerRun
-#
-# # ingest verbose options
-#     verbose = kwargs['verbose']
-#
-# # determine system properties
-#     localhost = localhostClient()
-#
-# # ingest & validate component file
-#     component_file = kwargs['componentFile']
-#     comp_details = configFile(component_file, kwargs)
-#     comp_details = configModel(comp_details, 'rules/lab-component-model.json', kwargs, 'component settings')
-#
-# # determine component root from component file
-#     root_path, file_name = path.split(path.abspath(component_file))
-#
-# # construct path details to mounted volumes
-#     mounted_volumes = {}
-#     for volume in comp_details['mounted_volumes']:
-#         host_path = absolutePath(volume, root_path, kwargs, 'mounted volume')
-#         system_path = host_path.replace('\\','/').replace('C:','//c')
-#         absolute_path = deepcopy(host_path)
-#         docker_path = absolute_path.replace(root_path,'')
-#         container_path = docker_path.replace('\\','/')
-#         mounted_volumes[system_path] = container_path
-#
-# # ingest & validate virtualbox property
-#     vbox_name = kwargs['virtualbox']
-#     if not localhost.os in ('Windows','Mac'):
-#         vbox_name = ''
-#
-# # check for docker installation
-#     docker_session = dockerSession(kwargs, vbox_name)
-#
-# # check that docker image is available locally
-#     image_list = docker_session.images()
-#     availableImage(comp_details['docker_image'], comp_details['image_tag'], image_list, kwargs)
-#
-# # retrieve list of active container aliases & busy ports
-#     container_list = docker_session.ps()
-#     busy_ports = []
-#     active_containers = []
-#     for container in container_list:
-#         active_containers.append(container['NAMES'])
-#         container_settings = docker_session.inspect(container_alias=container['NAMES'])
-#         container_synopsis = docker_session.synopsis(container_settings)
-#         if container_synopsis['mapped_ports']:
-#             for key in container_synopsis['mapped_ports'].keys():
-#                 busy_ports.append(key)
-#
-# # check that alias name is available
-#     if comp_details['container_alias'] in active_containers:
-#         from pocketlab.exceptions.lab_exception import labException
-#         header_list = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
-#         error = {
-#             'kwargs': kwargs,
-#             'message': 'Container "%s" already in use. Containers currently active:' % comp_details['container_alias'],
-#             'tprint': { 'headers': header_list, 'rows': container_list },
-#             'error_value': comp_details['container_alias'],
-#             'failed_test': 'unavailable_resource'
-#         }
-#         raise labException(**error)
-#
-# # construct port mappings for mapped ports
-#     mapped_ports = {}
-#     for port in comp_details['exposed_ports']:
-#         open_port = int(deepcopy(port))
-#         while str(open_port) in busy_ports:
-#             open_port += 1
-#         mapped_ports[str(open_port)] = str(port)
-#
-# # add system_ip to injected variables
-#     system_ip = docker_session.ip()
-#     injected_variables = {
-#         'SYSTEM_LOCALHOST': system_ip
-#     }
-#     for key, value in comp_details['injected_variables'].items():
-#         injected_variables[key] = value
-#
-# # compile docker run script from settings
-#     run_details = {
-#         'name': comp_details['container_alias'],
-#         'injected_variables': injected_variables,
-#         'mounted_volumes': mounted_volumes,
-#         'mapped_ports': mapped_ports,
-#         'docker_image': comp_details['docker_image'],
-#         'image_tag': comp_details['image_tag'],
-#         'run_command': comp_details['run_command']
-#     }
-#     run_script = dockerRun(run_details)
-#
-# # start container
-#     container_id = docker_session.run(run_script)
-#     if verbose:
-#         start_text = 'Sweet! Container "%s" started' % comp_details['container_alias']
-#         if run_details['mapped_ports']:
-#             start_text += ' on port'
-#             if len(run_details['mapped_ports'].keys()) > 1:
-#                 start_text += 's'
-#             previous_port = False
-#             for key in run_details['mapped_ports'].keys():
-#                 if previous_port:
-#                     start_text += ','
-#                 start_text += ' %s:%s' % (system_ip, key)
-#                 previous_port = True
-#             start_text += '.'
-#         print(start_text)
-#
-#     container_details = {
-#         'mapped_ports': mapped_ports,
-#         'container_alias': comp_details['container_alias'],
-#         'container_id': container_id
-#     }
-#
-#     return container_details
+    if len(lab_list) > 1:
+        containers_string = join_words(container_list)
+        exit_msg = 'Finished starting containers %s' % containers_string
+
+    return exit_msg

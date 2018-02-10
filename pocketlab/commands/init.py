@@ -220,6 +220,15 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
                 f.close()
             _printer(vcs_path)
 
+    # add docker ignore file
+        docker_path = '.dockerignore'
+        if not path.exists(docker_path):
+            file_text = load_ignore(vcs='docker')
+            with open(docker_path, 'wt') as f:
+                f.write(file_text)
+                f.close()
+            _printer(docker_path)
+
     # add docker compose file
         config_path = 'docker-compose.yaml'
         if not path.exists(config_path):

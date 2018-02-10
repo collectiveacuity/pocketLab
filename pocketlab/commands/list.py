@@ -104,6 +104,8 @@ def list(resource_type, paginate=False):
 
 # list containers
     elif resource_type == 'containers':
+        
+        container_headers = [ 'NAMES', 'STATUS', 'IMAGE', 'PORTS']
         pass
     
     return exit_msg

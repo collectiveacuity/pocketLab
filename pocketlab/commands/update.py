@@ -38,7 +38,8 @@ def update(service_list, all=False, verbose=True):
     from pocketlab.methods.vcs import load_ignore
     vcs_templates = {
         'git': load_ignore(vcs='git'),
-        'mercurial': load_ignore(vcs='mercurial')
+        'mercurial': load_ignore(vcs='mercurial'),
+        'docker': load_ignore(vcs='docker')
     }
 
 # define update process
@@ -61,6 +62,10 @@ def update(service_list, all=False, verbose=True):
             'mercurial': {
                 'path': path.join(root_path, '.hgignore'),
                 'name': '.hgignore'
+            },
+            'docker': {
+                'path': path.join(root_path, '.dockerignore'),
+                'name': '.dockerignore'
             }
         }
         for key, value in vcs_files.items():
