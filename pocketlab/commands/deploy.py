@@ -84,19 +84,18 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
 # deploy to heroku
     if platform_name == 'heroku':
 
-    # validate heroku and lab files
+    # import dependencies
         from os import path
-        from pocketlab.methods.validation import validate_platform
+        from pocketlab.methods.validation import validate_platform, validate_compose
         from pocketlab import __module__
         from jsonmodel.loader import jsonLoader
         from jsonmodel.validators import jsonModel
+    
+    # validate heroku file
         heroku_schema = jsonLoader(__module__, 'models/heroku-config.json')
         heroku_model = jsonModel(heroku_schema)
         heroku_details = validate_platform(heroku_model, service_root, service_name)
         details['config'] = heroku_details
-
-    # TODO add error handling instructions for getting auth token
-
         service_list.append(details)
 
     # define site folder path function
@@ -106,13 +105,19 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
                 raise Exception('--%s %s must be a path relative to root of service %s' % (runtime_type, site_folder, service_insert))
             site_path = path.join(service_root, site_folder)
             return site_path
-            
+
     # process deployment sequence
         from labpack.platforms.heroku import herokuClient
         for service in service_list:
+
+        # construct message inserts
+            msg_insert = 'working directory'
             service_insert = 'in working directory'
             if service['name']:
                 service_insert = '"%s"' % service['name']
+                msg_insert = 'root directory for "%s"' % service['name']
+
+        # initialize heroku client
             heroku_kwargs = {
                 'account_email': service['config']['heroku_account_email'],
                 'auth_token': service['config']['heroku_auth_token'],
@@ -121,7 +126,8 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
             heroku_client = herokuClient(**heroku_kwargs)
             heroku_client.access(service['config']['heroku_app_subdomain'])
             heroku_insert = "service %s deployed to heroku.\nIf you haven't already, you must allocate resources to this heroku service.\nTry: heroku ps:scale web=1 --app %s" % (service_insert, service['config']['heroku_app_subdomain'])
-            
+        
+        # deploy app from requirements
             if html_folder:
                 html_folder = _site_path(html_folder, service['path'], service_insert, 'html')
                 heroku_client.deploy_app(html_folder)
@@ -146,13 +152,133 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
                 node_folder = _site_path(node_folder, service['path'], service_insert, 'node')
                 heroku_client.deploy_app(node_folder, 'node')
                 exit_msg = 'Node app of %s' % heroku_insert
+        
+        # deploy app in docker container
             else:
+            
+            # import dependencies
+                compose_schema = jsonLoader(__module__, 'models/compose-config.json')
+                service_schema = jsonLoader(__module__, 'models/service-config.json')
+                compose_model = jsonModel(compose_schema)
+                service_model = jsonModel(service_schema)
+            
+            # establish path of files
+                from time import time
+                dockerfile_text = ''
+                dockerfile_path = path.join(service['path'], 'Dockerfile')
+                dockerfile_heroku_path = path.join(service['path'], 'DockerfileHeroku')
+                compose_path = path.join(service['path'], 'docker-compose.yaml')
+                dockerfile_temp_path = path.join(service['path'], 'DockerfileTemp%s' % int(time()))
+
+                if verbose:
+                    print('Checking Dockerfile settings in %s ... ' % msg_insert, end='', flush=True)
+
+            # retrieve dockerfile text from DockerfileHeroku
+                if path.exists(dockerfile_heroku_path):
+                    try:
+                        dockerfile_text = open(dockerfile_heroku_path, 'rt').read()
+                        if verbose:
+                            print('done.')
+                    except:
+                        pass
+
+            # fallback to docker compose file
+                if not dockerfile_text:
+                    if path.exists(compose_path):
+
+                # validate docker compose file
+                        compose_details = validate_compose(compose_model, service_model, compose_path, service['name'])
+
+                        if service['name']:
+                            service['config'].update(compose_details['services'][service['name']])
+                        else:
+                            for key, value in compose_details['services'].items():
+                                service['config'].update(value)
+                                service['name'] = key
+                                break
+
+                # retrieve dockerfile in docker compose
+                        if 'build' in service['config'].keys():
+                            dockerfile_name = service['config']['build'].get('dockerfile', 'Dockerfile')
+                            relative_path = path.join(service['config']['build']['context'], dockerfile_name)
+                            if not path.isabs(relative_path):
+                                relative_path = path.join(service['path'], relative_path)
+                            try:
+                                dockerfile_text = open(relative_path, 'rt').read()
+                                if verbose:
+                                    print('done.')
+                            except:
+                                pass
+
+            # fallback to Dockerfile in root
+                if not dockerfile_text:
+                    if path.exists(dockerfile_path):
+                        try:
+                            dockerfile_text = open(dockerfile_path, 'rt').read()
+                            if verbose:
+                                print('done.')
+                        except:
+                            pass
+
+            # catch missing Dockerfile error
+                if not dockerfile_text:
+                    raise ValueError('Deploying %s to heroku using docker requires Dockerfile instructions. Try creating a Dockerfile.' % service_insert)
+
+            # import dependencies
+                import re
+                import os
+                from shutil import copyfile
+                system_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?(\s|#|\n)')
+
+            # # create temporary Dockerfile
+            #     if path.exists(dockerfile_path):
+            #         copyfile(dockerfile_path, dockerfile_temp_path)
+
+            # insert variables into Dockerfile
+                dockerfile_text = dockerfile_text.strip() + '\n'
+                if system_pattern.findall(dockerfile_text):
+                    dockerfile_text = system_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku #', dockerfile_text)
+                else:
+                    dockerfile_text += '\nENV SYSTEM_ENVIRONMENT=heroku'
+                if 'environment' in service['config'].keys():
+                    for key, value in service['config']['environment'].items():
+                        if key != 'PORT':
+                            dockerfile_text += '\nENV %s=%s' % (key.upper(), str(value))
+
+            # insert copy volumes into Dockerfile
+                if 'volumes' in service['config'].keys():
+                    for volume in service['config']['volumes']:
+                        if volume['type'] == 'bind':
+                            volume_path = path.join(service['path'], volume['source'])
+                            dockerfile_text += '\nADD %s %s' % (volume_path, volume['target'])
+                        
+            # TODO verify existence of command or entrypoint
+
                 docker_kwargs = {
-                    'dockerfile_path': path.join(service['path'], 'Dockerfile'),
+                    'dockerfile_path': dockerfile_path,
                     'virtualbox_name': virtualbox
                 }
-                heroku_client.deploy_docker(**docker_kwargs)
+                print(dockerfile_text)
+
+            # # start build and deployment
+            #     try:
+            #         heroku_client.deploy_docker(**docker_kwargs)
+            #     except:
+            # 
+            #     # ROLLBACK Dockerfile
+            #         if path.exists(dockerfile_temp_path):
+            #             copyfile(dockerfile_temp_path, docker_kwargs['dockerfile_path'])
+            #             os.remove(dockerfile_temp_path)
+            # 
+            #         raise
+            # 
+            # # restore Dockefile
+            #     if path.exists(dockerfile_temp_path):
+            #         copyfile(dockerfile_temp_path, docker_kwargs['dockerfile_path'])
+            #         os.remove(dockerfile_temp_path)
+
                 exit_msg = 'Docker image of %s' % heroku_insert
+
             if len(service_list) > 1:
                 print(exit_msg)
 

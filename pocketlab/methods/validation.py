@@ -63,7 +63,7 @@ def validate_compose(compose_model, service_model, file_path, service_name=''):
         
     :param compose_model: jsonModel object with compose config schema
     :param service_model: jsonModel object with service config schema 
-    :param file_path: string with path to lab.yaml file for service
+    :param file_path: string with path to docker-compose.yaml file for service
     :param service_name: [optional] string with name of service
     :return: dictionary with lab configurations
     '''

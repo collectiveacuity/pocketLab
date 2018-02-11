@@ -226,18 +226,11 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
                     volume_path = path.join(service_path, volume['source'])
                     run_kwargs['mounted_volumes'][volume_path] = volume['target']
         if 'command' in service_config.keys():
-            import re
-            env_pattern = re.compile('\$[A-Z_][A-Z0-9_]+')
-            if env_pattern.findall(service_config['command']):
-                run_kwargs['start_command'] = "sh -c '%s'" % service_config['command']
-            else:
-                run_kwargs['start_command'] = service_config['command']
+            run_kwargs['start_command'] = service_config['command']
         if 'networks' in service_config.keys():
             if service_config['networks']:
                 run_kwargs['network_name'] = service_config['networks'][0]
 
-        print(run_kwargs)
-        
     # run docker run
         docker_client.run(**run_kwargs)
 
@@ -260,7 +253,7 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
         else:
             exit_msg = service_msg
 
-    # TODO consider ROLLBACK options
+    # TODO consider ROLLBACK options for failure to start
 
     if len(lab_list) > 1:
         containers_string = join_words(container_list)
