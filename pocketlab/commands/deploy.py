@@ -228,16 +228,20 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
                 import re
                 import os
                 from shutil import copyfile
-                system_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?(\s|#|\n)')
-
-            # # create temporary Dockerfile
-            #     if path.exists(dockerfile_path):
-            #         copyfile(dockerfile_path, dockerfile_temp_path)
+                system_space_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?\s')
+                system_newline_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?\n')
+                system_hash_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?#')
+                command_pattern = re.compile('\nCMD\s')
+                entry_pattern = re.compile('\nENTRYPOINT\s')
 
             # insert variables into Dockerfile
                 dockerfile_text = dockerfile_text.strip() + '\n'
-                if system_pattern.findall(dockerfile_text):
-                    dockerfile_text = system_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku #', dockerfile_text)
+                if system_newline_pattern.findall(dockerfile_text):
+                    dockerfile_text = system_newline_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku\n', dockerfile_text)
+                elif system_space_pattern.findall(dockerfile_text):
+                    dockerfile_text = system_space_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku ', dockerfile_text)
+                elif system_hash_pattern.findall(dockerfile_text):
+                    dockerfile_text = system_hash_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku#', dockerfile_text)
                 else:
                     dockerfile_text += '\nENV SYSTEM_ENVIRONMENT=heroku'
                 if 'environment' in service['config'].keys():
@@ -249,33 +253,50 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
                 if 'volumes' in service['config'].keys():
                     for volume in service['config']['volumes']:
                         if volume['type'] == 'bind':
-                            volume_path = path.join(service['path'], volume['source'])
-                            dockerfile_text += '\nADD %s %s' % (volume_path, volume['target'])
-                        
-            # TODO verify existence of command or entrypoint
+                            volume_line = '\nADD %s %s' % (volume['source'], volume['target'])
+                            if not re.findall(volume_line, dockerfile_text):
+                                dockerfile_text += volume_line
 
+            # add command or entrypoint if none existent
+                if command_pattern.findall(dockerfile_text) or entry_pattern.findall(dockerfile_text):
+                    pass
+                else:
+                    if 'entrypoint' in service['config'].keys():
+                        dockerfile_text += '\nENTRYPOINT %s' % str(service['config']['entrypoint'])
+                    elif 'command' in service['config'].keys():
+                        dockerfile_text += '\nCMD %s' % str(service['config']['command'])
+                    else:
+                        raise ValueError('Deploying %s to heroku with docker requires a start command or entrypoint.' % service_insert)
+
+            # create temporary Dockerfile
+                if path.exists(dockerfile_path):
+                    copyfile(dockerfile_path, dockerfile_temp_path)
+                with open(dockerfile_path, 'wt') as f:
+                    f.write(dockerfile_text)
+                    f.close()
+            
+            # construct deploy kwargs
                 docker_kwargs = {
                     'dockerfile_path': dockerfile_path,
                     'virtualbox_name': virtualbox
                 }
-                print(dockerfile_text)
 
-            # # start build and deployment
-            #     try:
-            #         heroku_client.deploy_docker(**docker_kwargs)
-            #     except:
-            # 
-            #     # ROLLBACK Dockerfile
-            #         if path.exists(dockerfile_temp_path):
-            #             copyfile(dockerfile_temp_path, docker_kwargs['dockerfile_path'])
-            #             os.remove(dockerfile_temp_path)
-            # 
-            #         raise
-            # 
-            # # restore Dockefile
-            #     if path.exists(dockerfile_temp_path):
-            #         copyfile(dockerfile_temp_path, docker_kwargs['dockerfile_path'])
-            #         os.remove(dockerfile_temp_path)
+            # start build and deployment
+                try:
+                    heroku_client.deploy_docker(**docker_kwargs)
+                except:
+
+                # ROLLBACK Dockerfile
+                    if path.exists(dockerfile_temp_path):
+                        copyfile(dockerfile_temp_path, dockerfile_path)
+                        os.remove(dockerfile_temp_path)
+
+                    raise
+
+            # restore Dockerfile
+                if path.exists(dockerfile_temp_path):
+                    copyfile(dockerfile_temp_path, dockerfile_path)
+                    os.remove(dockerfile_temp_path)
 
                 exit_msg = 'Docker image of %s' % heroku_insert
 
