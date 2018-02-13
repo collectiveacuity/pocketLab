@@ -145,6 +145,12 @@ def compile_compose(compose_schema, service_schema, service_name):
     compose_text = compile_yaml(compose_schema, ingest_kwargs=compose_schema['schema'])
     compose_text = compose_text.replace("{'key': 'value'}\n", '# name for container alias and service in lab registry\n    ' + service_text.replace('\n', '\n    '))
 
+# fix version datatype change
+    import re
+    def replace_version(x):
+        return '%s"%s"' % (x.group(1), x.group(2))
+    compose_text = re.sub('(\nversion: )(\d\.?\d?)', replace_version, compose_text)
+
     return compose_text
 
 def inject_init(init_path, readme_path, setup_kwargs):

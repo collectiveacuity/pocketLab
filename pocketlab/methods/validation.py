@@ -131,7 +131,7 @@ def validate_compose(compose_model, service_model, file_path, service_name=''):
                         raise
                 except:
                     raise
-            elif value:
+            elif service_model.components['.%s' % k]['required_field']:
                 missing_msg = '%s is missing' % object_title
                 raise ValueError(missing_msg)
 

@@ -73,7 +73,9 @@ def clean(verbose=True, virtualbox='default'):
 
 # remove docker containers except those running or stopped
     if docker_client:
-        for container in docker_client.ps():
+        container_list = docker_client.ps()
+        image_list = docker_client.images()
+        for container in container_list:
             container_alias = container['NAMES'].split(' ')[0]
             container_id = container['CONTAINER ID']
             container_synopsis = docker_client.synopsis(container_id)
@@ -87,16 +89,24 @@ def clean(verbose=True, virtualbox='default'):
                     print('Container %s in exit state removed from docker.' % container_name)
 
 # remove docker images with <none> in name tag
-    if docker_client:
-        for image in docker_client.images():
+        for image in image_list:
             if image['TAG'] == '<none>':
                 try:
-                    docker_client.rmi(image['IMAGE ID'], override=True)
+                    docker_client.rmi(image['IMAGE ID'])
                     if verbose:
                         image_name = '"%s:%s"' % (image['REPOSITORY'], image['TAG'])
                         print('Image %s removed from docker.' % image_name)
-                except:
-                    pass
+                except Exception as err:
+                    import re
+                    running_search = re.findall('used by running container (\w+?)(\s|\n|$)', str(err))
+                    if running_search:
+                        container_id = running_search[0][0]
+                        container_name = container_id
+                        for container in container_list:
+                            if container_id == container['CONTAINER ID']:
+                                container_name = container['NAMES']
+                        image_name = '"%s:%s"' % (image['REPOSITORY'], image['TAG'])
+                        print('Image %s cannot be removed while container "%s" is running.' % (image_name, container_name))
 
     exit_msg = 'Lab environment has been cleaned up.'
 
