@@ -9,7 +9,7 @@ TODO: connect to other platforms (bluemix, azure, gcp)
 
 _connect_details = {
     'title': 'connect',
-    'description': 'Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.\n\nPLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
+    'description': 'Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.\n\nPLEASE NOTE: connect uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
     'help': 'connects to remote host through ssh',
     'benefit': 'Edit settings on remote host manually.'
 }
@@ -50,21 +50,10 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         service_insert = 'in working directory'
         service_root = './'
 
-# TODO change from lab.yaml to docker-compose.yml
-    
-# retrieve lab config
-    from os import path
-    from pocketlab.methods.validation import validate_lab, validate_platform
-    from pocketlab import __module__
-    from jsonmodel.loader import jsonLoader
-    from jsonmodel.validators import jsonModel
-    lab_schema = jsonLoader(__module__, 'models/lab-config.json')
-    lab_model = jsonModel(lab_schema)
-    lab_path = path.join(service_root, 'lab.yaml')
-    lab_config = validate_lab(lab_model, lab_path, service_name)
-    if not lab_config['docker_container_alias']:
-        raise Exception('lab.yaml for service %s must container a value for docker_container_alias' % service_insert)
-    container_alias = lab_config['docker_container_alias']
+# retrieve service configurations
+    from pocketlab.methods.service import retrieve_service_config
+    service_title = '%s %s' % (title, platform_name)
+    service_config, service_name = retrieve_service_config(service_root, service_name, service_title)
 
 # handle ec2 platform
     if platform_name == 'ec2':
@@ -78,6 +67,10 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
             raise Exception('%s command is not available for Windows. Try using instead: putty.exe' % title)
 
     # retrieve aws config
+        from pocketlab import __module__
+        from jsonmodel.loader import jsonLoader
+        from jsonmodel.validators import jsonModel
+        from pocketlab.methods.validation import validate_platform
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
         aws_config = validate_platform(aws_model, service_root, service_name)
@@ -95,9 +88,10 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         }
         from pocketlab.methods.aws import construct_client_ec2, retrieve_instance_details
         ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
-        instance_details = retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag)
+        instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
 
     # verify pem file exists
+        from os import path
         pem_name = instance_details['key_name']
         pem_folder = path.join(service_root, '.lab')
         pem_file = path.join(pem_folder, '%s.pem' % pem_name)
@@ -112,7 +106,15 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         ssh_config.update(ec2_config)
         ssh_config['verbose'] = verbose
         from labpack.platforms.aws.ssh import sshClient
-        ssh_client = sshClient(**ssh_config)
+        try:
+            ssh_client = sshClient(**ssh_config)
+        except Exception as err:
+            error_msg = str(err)
+            if str(error_msg).find('private key files are NOT accessible by others'):
+                error_msg += '\nTry: "chmod 600 %s.pem" in the .lab folder of service %s.' % (pem_name, service_insert)
+                raise Exception(error_msg)
+            else:
+                raise
         logger.disabled = False
         ssh_client.terminal()
 

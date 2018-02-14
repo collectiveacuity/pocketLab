@@ -44,7 +44,7 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
 
 # verify only one instance exists
     if not valid_instances:
-        raise Exception('No instances found %s. Try: lab list instances aws' % filter_insert)
+        raise Exception('No instances found %s. Try: lab list instances ec2' % filter_insert)
     elif len(valid_instances) > 1:
         raise Exception('More than one instance was found %s. Try adding optional flags as filters.')
 

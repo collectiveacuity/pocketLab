@@ -104,7 +104,7 @@
     },
     ".volumes[0].target": {
       "default_value": "/opt/server",
-      "must_not_contain": [ ":" ],
+      "must_not_contain": [ "^:" ],
       "field_metadata": {
         "position": 2
       }

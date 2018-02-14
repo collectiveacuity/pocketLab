@@ -111,6 +111,32 @@ def retrieve_services(service_list=None, all=False):
     
     return path_list, msg_insert
 
+def retrieve_service_config(service_root, service_name, command_title):
+    
+    from os import path
+    from pocketlab.methods.validation import validate_compose, validate_platform
+    from pocketlab import __module__
+    from jsonmodel.loader import jsonLoader
+    from jsonmodel.validators import jsonModel
+    compose_schema = jsonLoader(__module__, 'models/compose-config.json')
+    service_schema = jsonLoader(__module__, 'models/service-config.json')
+    compose_model = jsonModel(compose_schema)
+    service_model = jsonModel(service_schema)
+    compose_path = path.join(service_root, 'docker-compose.yaml')
+    compose_details = validate_compose(compose_model, service_model, compose_path, service_name)
+    service_config = {}
+    if service_name:
+        service_config = compose_details['services'][service_name]
+    elif len(compose_details['services'].keys()) > 1:
+        raise ValueError('docker-compose.yaml file in working directory contains more than one service.\nTry: lab %s [SERVICE]' % command_title)
+    else:
+        for key, value in compose_details['services'].items():
+            service_config = value
+            service_name = key
+            break
+    
+    return service_config, service_name
+    
 if __name__ == '__main__':
 
     lab_root = retrieve_service_root('lab')
