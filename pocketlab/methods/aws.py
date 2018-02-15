@@ -51,3 +51,85 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
     instance_details = valid_instances[0]
     
     return instance_details
+
+def compile_instances(region_name=''):
+
+    instance_list = []
+
+# check for dependencies
+    from pocketlab.methods.dependencies import import_boto3
+    import_boto3('ec2 platform')
+
+# TODO support compilation of accounts and regions
+
+# retrieve aws config
+    service_root = './'
+    service_name = ''
+    service_insert = 'in working directory'
+    from pocketlab import __module__
+    from jsonmodel.loader import jsonLoader
+    from jsonmodel.validators import jsonModel
+    from pocketlab.methods.validation import validate_platform
+    aws_schema = jsonLoader(__module__, 'models/aws-config.json')
+    aws_model = jsonModel(aws_schema)
+    aws_config = validate_platform(aws_model, service_root, service_name)
+
+# retrieve instance details from ec2
+    from pocketlab.init import logger
+    logger.disabled = True
+    ec2_config = {
+        'access_id': aws_config['aws_access_key_id'],
+        'secret_key': aws_config['aws_secret_access_key'],
+        'region_name': aws_config['aws_default_region'],
+        'owner_id': aws_config['aws_owner_id'],
+        'user_name': aws_config['aws_user_name'],
+        'verbose': False
+    }
+    ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+    ec2_list = ec2_client.list_instances()
+
+# construct instance details
+    for instance_id in ec2_list:
+        instance_details = {
+            'id': instance_id,
+            'updated': '',
+            'state': '',
+            'name': '',
+            'login': '',
+            'services': '',
+            'environment': '',
+            'machine': '',
+            'image': '',
+            'ip_address': '',
+            'region': '',
+            'access_key': ''
+        }
+        ec2_details = ec2_client.read_instance(instance_id)
+        if ec2_details['tags']:
+            for tag in ec2_details['tags']:
+                if tag['key'] == 'Containers':
+                    instance_details['services'] = tag['value'].strip()
+                if tag['key'] == 'Env':
+                    instance_details['environment'] = tag['value'].strip()
+                if tag['key'] == 'Name':
+                    instance_details['name'] = tag['value'].strip()
+                if tag['key'] == 'LoginName':
+                    instance_details['login'] = tag['value'].strip()
+        if 'instance_type' in ec2_details.keys():
+            instance_details['machine'] = ec2_details['instance_type'].strip()
+        if 'key_name' in ec2_details.keys():
+            instance_details['access_key'] = ec2_details['key_name']
+        if 'image_id' in ec2_details.keys():
+            instance_details['image'] = ec2_details['image_id']
+        if 'region' in ec2_details.keys():
+            instance_details['region'] = ec2_details['region']
+        if 'public_ip_address' in ec2_details.keys():
+            instance_details['ip_address'] = ec2_details['public_ip_address']
+        if 'state' in ec2_details.keys():
+            instance_details['state'] = ec2_details['state']['name']
+
+        instance_list.append(instance_details)
+        
+    logger.disabled = False
+    
+    return instance_list
