@@ -124,7 +124,7 @@
     ".resource_type": {
       "field_description": "Type of lab resource. eg. services, images...",
       "default_value": "services",
-      "discrete_values": [ "services" ],
+      "discrete_values": [ "services", "instances" ],
       "field_metadata": {
         "cli_flags": [ "--resource" ],
         "cli_help": "type of lab resource. eg. services, images...",
@@ -200,7 +200,7 @@
     },
     ".platform_option[0]": {
       "field_description": "Platform in list of remote platforms to host service.",
-      "discrete_values": [ "heroku", "ec2" ]
+      "discrete_values": [ "", "heroku", "ec2" ]
     },
     ".license_type": {
       "field_description": "Type of software license terms for source code.",
