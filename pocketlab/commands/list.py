@@ -4,8 +4,10 @@ __license__ = 'MIT'
 
 '''
 list services
+list instances (ec2, heroku)
 TODO: list images
 TODO: list containers
+TODO: list instances on other platforms (gcp, azure, bluemix, rackspace)
 '''
 
 _list_details = {
@@ -97,29 +99,11 @@ def list(resource_type, platform_option, region_name='', paginate=False):
             platform_options = join_words(platform_list, operator='disjunctive')
             raise ValueError('list instances requires a platform name (eg. %s)' % platform_options)
         platform_name = platform_option[0]
-    
-    # construct registry client
-        from pocketlab import __module__
-        from labpack.storage.appdata import appdataClient
-        registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
 
-    # walk registry to compile list of services
-        service_list = []
-        from labpack.records.settings import load_settings
-        for file_path in registry_client.localhost.walk(registry_client.collection_folder):
-            try:
-                details = load_settings(file_path)
-                service_name = details['service_name']
-                service_root = details['service_root']
-                service_list.append({
-                    'name': service_name, 
-                    'path': service_root}
-                )
-            except:
-                pass
+    # compile service list
+        from pocketlab.methods.service import compile_services
+        service_list = compile_services()
 
-    # TODO add http code ???
-    
     # construct empty instance list
         instance_list = []
 
@@ -135,12 +119,16 @@ def list(resource_type, platform_option, region_name='', paginate=False):
     # process ec2
         elif platform_name == 'ec2':
 
-        # compile instance
+        # TODO compile across accounts and regions
+
+        # compile instances
             print('Compiling instance list from ec2 ... ', end='', flush=True)
             from pocketlab.methods.aws import compile_instances
             instance_list = compile_instances(region_name)
             print('done.')
 
+    # TODO add http code ???
+    
     # format list of instances
         table_headers = [ 'Machine', 'Services', 'Env', 'Region', 'IP Address', 'State' ]
         instance_keys = [ 'machine', 'services', 'environment', 'region', 'ip_address', 'state' ]
@@ -161,9 +149,9 @@ def list(resource_type, platform_option, region_name='', paginate=False):
 
 # print out list
     if formatted_rows:
-        
+
         from tabulate import tabulate
-    
+
     # handle pagination
         if paginate and len(formatted_rows) + 5 > console_rows:
             page_rows = []

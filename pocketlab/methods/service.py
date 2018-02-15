@@ -114,7 +114,7 @@ def retrieve_services(service_list=None, all=False):
 def retrieve_service_config(service_root, service_name, command_title):
     
     from os import path
-    from pocketlab.methods.validation import validate_compose, validate_platform
+    from pocketlab.methods.validation import validate_compose
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
     from jsonmodel.validators import jsonModel
@@ -136,9 +136,58 @@ def retrieve_service_config(service_root, service_name, command_title):
             break
     
     return service_config, service_name
+
+def compile_services(registry_only=False):
+
+# construct registry client
+    from pocketlab import __module__
+    from labpack.storage.appdata import appdataClient
+    registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+
+# walk registry to compile list of services
+    service_list = []
+    path_list = []
+    from labpack.records.settings import load_settings
+    for file_path in registry_client.localhost.walk(registry_client.collection_folder):
+        try:
+            details = load_settings(file_path)
+            service_list.append({
+                'name': details['service_name'], 
+                'path': details['service_root']
+            })
+            path_list.append(details['service_root'])
+        except:
+            pass
+
+# add current directory
+    if not registry_only:
+        from os import path
+        current_path = path.abspath('./')
+        if current_path not in path_list:
+            try:
+                file_path = path.join(current_path, 'docker-compose.yaml')
+                from pocketlab.methods.validation import validate_compose
+                from jsonmodel.loader import jsonLoader
+                from jsonmodel.validators import jsonModel
+                compose_model = jsonModel(jsonLoader(__module__, 'models/compose-config.json'))
+                service_model = jsonModel(jsonLoader(__module__, 'models/service-config.json'))
+                compose_details = validate_compose(compose_model, service_model, file_path, '')
+                if len(compose_details['services'].keys()) == 1:
+                    for key in compose_details['services'].keys():
+                        service_list.append({
+                            'name': key,
+                            'path': current_path
+                        })
+            except:
+                pass
+
+    return service_list
     
 if __name__ == '__main__':
 
     lab_root = retrieve_service_root('lab')
     lab_name = retrieve_service_name(lab_root)
     assert lab_name == 'lab'
+    
+    from pprint import pprint
+    pprint(compile_services())

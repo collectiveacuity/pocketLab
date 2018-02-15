@@ -18,7 +18,7 @@ from pocketlab.init import fields_model
 
 def put(file_path, platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
 
-    title = 'connect'
+    title = 'put'
 
 # validate inputs
     if isinstance(service_option, str):
@@ -56,20 +56,10 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         service_insert = 'in working directory'
         service_root = './'
 
-# TODO change from lab.yaml to docker-compose.yml
-
-# retrieve lab config
-    from pocketlab.methods.validation import validate_lab, validate_platform
-    from pocketlab import __module__
-    from jsonmodel.loader import jsonLoader
-    from jsonmodel.validators import jsonModel
-    lab_schema = jsonLoader(__module__, 'models/lab-config.json')
-    lab_model = jsonModel(lab_schema)
-    lab_path = path.join(service_root, 'lab.yaml')
-    lab_config = validate_lab(lab_model, lab_path, service_name)
-    if not lab_config['docker_container_alias']:
-        raise Exception('lab.yaml for service %s must container a value for docker_container_alias' % service_insert)
-    container_alias = lab_config['docker_container_alias']
+# retrieve service configurations
+    from pocketlab.methods.service import retrieve_service_config
+    service_title = '%s %s' % (title, platform_name)
+    service_config, service_name = retrieve_service_config(service_root, service_name, service_title)
 
 # handle ec2 platform
     if platform_name == 'ec2':
@@ -79,6 +69,10 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         import_boto3('ec2 platform')
 
     # retrieve aws config
+        from pocketlab import __module__
+        from jsonmodel.loader import jsonLoader
+        from jsonmodel.validators import jsonModel
+        from pocketlab.methods.validation import validate_platform
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
         aws_config = validate_platform(aws_model, service_root, service_name)
@@ -96,7 +90,7 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         }
         from pocketlab.methods.aws import construct_client_ec2, retrieve_instance_details
         ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
-        instance_details = retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag)
+        instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
 
     # verify pem file exists
         pem_name = instance_details['key_name']
@@ -121,6 +115,6 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
     elif platform_name == 'heroku':
         raise Exception('It is not possible to connect to instances on heroku.')
 
-    exit_msg = 'Transfer of %s to %s instance "%s" complete' % (file_path, platform_name, container_alias)
+    exit_msg = 'Transfer of %s to %s instance with service %s complete' % (file_path, platform_name, service_insert)
 
     return exit_msg
