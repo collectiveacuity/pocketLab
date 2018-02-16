@@ -9,7 +9,7 @@ TODO: get from other platforms (bluemix, azure, gcp)
 
 _get_details = {
     'title': 'get',
-    'description': 'Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.\n\nPLEASE NOTE: get uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
+    'description': 'Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.\n\nPLEASE NOTE: get uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
     'help': 'copy a file from remote host through scp',
     'benefit': 'Copies remote files to your local machine.'
 }

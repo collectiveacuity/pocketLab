@@ -4,7 +4,7 @@ __license__ = 'MIT'
 
 '''
 update the .ignore file
-update the lab.yaml file
+update the docker-compose.yaml file
 update the setup.py file
 TODO: check dependencies and alert new versions
 '''

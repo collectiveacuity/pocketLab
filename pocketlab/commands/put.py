@@ -9,7 +9,7 @@ TODO: put to other platforms (bluemix, azure, gcp)
 
 _put_details = {
     'title': 'put',
-    'description': 'Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.\n\nPLEASE NOTE: put uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
+    'description': 'Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.\n\nPLEASE NOTE: put uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".',
     'help': 'copy a file to remote host through scp',
     'benefit': 'Copy files from your local machine.'
 }

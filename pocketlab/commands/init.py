@@ -4,7 +4,7 @@ __license__ = 'MIT'
 
 '''
 add .ignore file
-add lab.yaml file
+add docker-compose.yaml file
 add cred & data folders
 copy cred files from notes to cred
 add setup.py

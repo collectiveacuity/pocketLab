@@ -22,7 +22,8 @@ setup_kwargs = {
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.5'
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6'
     ]
 }
 setup_kwargs = inject_init(init_path, readme_path, setup_kwargs)
