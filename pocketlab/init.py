@@ -17,5 +17,9 @@ cli_schema = jsonLoader(__module__, 'models/lab-cli.json')
 from pocketlab.utils import compile_model
 fields_model = compile_model(fields_schema, cli_schema)
 
+# initialize colorama
+import colorama
+colorama.init()
+
 if __name__ == '__main__':
     print(fields_model.keyMap)

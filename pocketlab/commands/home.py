@@ -132,7 +132,7 @@ if __name__ == '__main__':
     try:
         import pytest
     except:
-        print('pytest module required to perform unittests. try: pip install pytest')
+        print('pytest module required to perform unittests.\nTry: pip install pytest')
         exit()
     from time import time
     from pocketlab import __module__

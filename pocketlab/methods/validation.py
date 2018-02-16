@@ -77,14 +77,14 @@ def validate_compose(compose_model, service_model, file_path, service_name=''):
 # validate lab yaml exists
     from os import path
     if not path.exists(file_path):
-        raise ValueError('docker-compose.yaml does not exist in %s. Try: "lab init" in %s.' % (msg_insert, msg_insert))
+        raise ValueError('docker-compose.yaml does not exist in %s.\nTry: "lab init" in %s.' % (msg_insert, msg_insert))
     
 # validate lab yaml is valid
     from labpack.records.settings import load_settings
     try:
         compose_details = load_settings(file_path)
     except:
-        raise ValueError('%s corrupted. Try deleting and running again: "lab init"' % (compose_insert))
+        raise ValueError('%s corrupted.\nTry deleting and running again: "lab init"' % (compose_insert))
 
 # validate compose schema structure
     from jsonmodel.exceptions import InputValidationError
@@ -110,11 +110,11 @@ def validate_compose(compose_model, service_model, file_path, service_name=''):
 
 # validate services exists
     if not compose_details['services']:
-        raise ValueError('%s is missing services. Try deleting and running again: "lab init"' % compose_insert)
+        raise ValueError('%s is missing services.\nTry deleting and running again: "lab init"' % compose_insert)
     elif service_name and not service_name in compose_details['services'].keys():
         raise ValueError('%s is missing settings for "%s" service.' % (service_name, compose_insert))
     elif not service_name and len(compose_details['services'].keys()) > 1:
-        raise ValueError('%s contains more than one service option. Try specifying service: "lab start [SERVICE]' % compose_insert)
+        raise ValueError('%s contains more than one service option.\nTry specifying service: "lab start [SERVICE]' % compose_insert)
 
 # validate service schema structure
     for key, value in test_details['services'].items():
@@ -156,14 +156,14 @@ def validate_lab(lab_model, file_path, service_name=''):
 # validate lab yaml exists
     from os import path
     if not path.exists(file_path):
-        raise ValueError('lab.yaml does not exist in %s. Try: "lab init" in %s.' % (msg_insert, msg_insert))
+        raise ValueError('lab.yaml does not exist in %s.\nTry: "lab init" in %s.' % (msg_insert, msg_insert))
     
 # validate lab yaml is valid
     from labpack.records.settings import load_settings
     try:
         lab_details = load_settings(file_path)
     except:
-        raise ValueError('lab.yaml file in %s corrupted. Try deleting and running again: "lab init"' % (msg_insert))
+        raise ValueError('lab.yaml file in %s corrupted.\nTry deleting and running again: "lab init"' % (msg_insert))
 
 # validate lab yaml keys
     from jsonmodel.exceptions import InputValidationError

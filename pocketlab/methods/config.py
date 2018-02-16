@@ -148,8 +148,11 @@ def compile_compose(compose_schema, service_schema, service_name):
 # fix version datatype change
     import re
     def replace_version(x):
-        return '%s"%s"' % (x.group(1), x.group(2))
+        return "%s'%s'" % (x.group(1), x.group(2))
     compose_text = re.sub('(\nversion: )(\d\.?\d?)', replace_version, compose_text)
+
+# replace proxies
+    compose_text = compose_text.replace("server: '5000'", "%s: '5000'" % service_name)
 
     return compose_text
 

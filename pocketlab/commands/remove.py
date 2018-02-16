@@ -36,9 +36,9 @@ def remove(service_name):
 # search for service name
     exit_msg = ''
     service_key = '%s.yaml' % service_name
-    search_condition = [{ 0: { 'discrete_values':[service_key] } }]
+    search_condition = [{ 0: { 'equal_to': service_key } }]
     search_filter = registry_client.conditional_filter(search_condition)
-    search_results = registry_client.list(search_filter)
+    search_results = registry_client.list(filter_function=search_filter)
     if not search_results:
         raise ValueError('"%s" does not exist in lab registry.' % service_name)
     else:

@@ -12,7 +12,7 @@ def import_boto3(resource_name=''):
     try:
         import boto3
     except:
-        raise ImportError('Use of %s requires the boto3 module. try: pip3 install boto3' % resource_name)
+        raise ImportError('Use of %s requires the boto3 module.\nTry: pip3 install boto3' % resource_name)
 
 def import_paramiko(resource_name=''):
 
@@ -34,7 +34,7 @@ PLEASE NOTE:    pycrypto import process is corrupted and requires a correction
             import paramiko
             import scp
         except:
-            raise ImportError('Use of %s on Windows requires paramiko module. try: pip3 install paramiko\n%s' % (resource_name, help_text))
+            raise ImportError('Use of %s on Windows requires paramiko module.\nTry: pip3 install paramiko\n%s' % (resource_name, help_text))
 
 def import_scp(resource_name=''):
 

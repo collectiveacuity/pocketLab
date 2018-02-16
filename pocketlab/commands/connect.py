@@ -64,7 +64,7 @@ def connect(platform_name, service_option, environment_type='', resource_tag='',
         from platform import uname
         local_os = uname()
         if local_os.system in ('Windows'):
-            raise Exception('%s command is not available for Windows. Try using instead: putty.exe' % title)
+            raise Exception('%s command is not available for Windows.\nTry using instead: putty.exe' % title)
 
     # retrieve aws config
         from pocketlab import __module__

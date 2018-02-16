@@ -14,6 +14,7 @@ _start_details = {
 }
 
 from pocketlab.init import fields_model
+from colorama import Fore, Style
 
 def start(service_list, verbose=True, virtualbox='default', environment_type='dev', ip_address=''):
 
@@ -123,7 +124,7 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
             if container_alias == alias['NAMES'].split()[0]:
                 container_exists = True
         if container_exists:
-            raise ValueError('A container already exists for alias "%s". Try first: "docker rm -f %s"' % (container_alias, container_alias))
+            raise ValueError('A container already exists for alias "%s".\nTry first: "docker rm -f %s"' % (container_alias, container_alias))
         details['alias'] = container_alias
         
     # validate mount paths exist
@@ -133,7 +134,8 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
                 if volume['type'] == 'bind':
                     volume_path = path.join(details['path'], volume['source'])
                     if not path.exists(volume_path):
-                        raise ValueError('Value "%s" for field volume[%s].source in %s is not a valid path.' % (volume['source'], str(i), compose_insert))
+                        if verbose:
+                            print('%sWARNING: Value "%s" for field volume[%s].source in %s is not a valid path.\nVolume "%s" will not be mounted.%s' % (Fore.MAGENTA, volume['source'], str(i), compose_insert, volume['source'], Style.RESET_ALL))
 
     # validate ports are available
         if 'ports' in details['config'].keys():
@@ -224,7 +226,8 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
             for volume in service_config['volumes']:
                 if volume['type'] == 'bind':
                     volume_path = path.join(service_path, volume['source'])
-                    run_kwargs['mounted_volumes'][volume_path] = volume['target']
+                    if path.exists(volume_path):
+                        run_kwargs['mounted_volumes'][volume_path] = volume['target']
         if 'command' in service_config.keys():
             run_kwargs['start_command'] = service_config['command']
         if 'networks' in service_config.keys():

@@ -41,10 +41,16 @@ def cli(error=False, command=''):
     try:
         exit_data = run_cmd(**opt_dict)
     except Exception as err:
-        print('Errr! %s' % err)
+        from colorama import Fore, Style
+        import re
+        def try_sub(x):
+            return '%s%s%s' % (Style.RESET_ALL, Fore.CYAN, x.group())
+        err_sub = re.sub('[\n\s]Try.*$', try_sub, str(err))
+        print('%sErrr! %s%s' % (Fore.RED, err_sub, Style.RESET_ALL))
     if exit_data:
         if isinstance(exit_data, str):
-            exit_data = 'Sweet! %s' % exit_data
+            from colorama import Fore, Style
+            exit_data = '%sSweet! %s%s' % (Fore.GREEN, exit_data, Style.RESET_ALL)
         return exit_data
 
 if __name__ == '__main__':

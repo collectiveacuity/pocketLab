@@ -222,7 +222,7 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
 
             # catch missing Dockerfile error
                 if not dockerfile_text:
-                    raise ValueError('Deploying %s to heroku using docker requires Dockerfile instructions. Try creating a Dockerfile.' % service_insert)
+                    raise ValueError('Deploying %s to heroku using docker requires Dockerfile instructions.\nTry creating a Dockerfile.' % service_insert)
 
             # import dependencies
                 import re

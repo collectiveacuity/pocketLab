@@ -11,7 +11,8 @@ setup_kwargs = {
         'labpack',
         'tabulate>=0.7.7',
         'ruamel.yaml>=0.14.12',
-        'pexpect'
+        'pexpect',
+        'colorama'
     ],
     'classifiers': [
         # https://pypi.python.org/pypi?%3Aaction=list_classifiers
