@@ -17,18 +17,19 @@ TODO: add --heroku as a flag to create heroku.yaml
 
 _init_details = {
     'title': 'Init',
-    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.',
+    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.',
     'help': 'creates a lab framework in workdir',
     'benefit': 'Init adds the config files for other lab commands.'
 }
 
 from pocketlab.init import fields_model
 
-def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, init_aws=False, verbose=True):
+def init(service_option, module_name='', vcs_service='', license_type='MIT', init_heroku=False, init_aws=False, verbose=True):
 
     '''
         a method to add lab framework files to the current directory
     
+    :param service_option: [optional] string with name of service in lab registry
     :param module_name: [optional] string with name of module to create
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
@@ -41,7 +42,11 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
     title = 'init'
 
 # validate inputs
+    if isinstance(service_option, str):
+        if service_option:
+            service_option = [service_option]
     input_fields = {
+        'service_option': service_option,
         'module_name': module_name,
         'vcs_service': vcs_service,
         'license_type': license_type
@@ -193,6 +198,11 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
 # setup service architecture
     else:
 
+    # determine service name
+        service_name = ''
+        if service_option:
+            service_name = service_option[0]
+
     # determine version control service
         if not vcs_service:
             vcs_service = 'git'
@@ -246,12 +256,15 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
             service_schema['schema']['volumes'].insert(0, default_volume_1)
 
         # modify config schema defaults from values in registry
-            from pocketlab.methods.service import retrieve_service_name
-            service_name = retrieve_service_name('./')
             if service_name:
                 service_schema['schema']['image'] = service_name
             else:
-                service_name = 'server'
+                from pocketlab.methods.service import retrieve_service_name
+                service_name = retrieve_service_name('./')
+                if service_name:
+                    service_schema['schema']['image'] = service_name
+                else:
+                    service_name = 'server'
 
         # compile yaml
             from pocketlab.methods.config import compile_compose
@@ -297,7 +310,7 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
                     for i in range(len(src_list)):
                         copyfile(src_list[i], dst_list[i])
                         _printer(dst_list[i])
-    
+
     # add config files
         config_map = {
             'heroku.yaml': { 
@@ -322,7 +335,7 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
                         f.write(config_text)
                         f.close()
                     _printer(config_path)
-                            
+
     # add readme file
         readme_path = 'README.md'
         if not path.exists(readme_path):

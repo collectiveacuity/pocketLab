@@ -42,7 +42,7 @@ Register a service in the working directory::
 
 Initialize the lab framework in the working directory::
 
-    $ lab init --project
+    $ lab init
 
 For a list of all the commands, refer to the
 `Reference Documentation on GitHub
