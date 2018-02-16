@@ -115,7 +115,7 @@ def update(service_list, all=False, verbose=True):
             from pocketlab.methods.config import update_setup
             old_text = open(setup_path).read()
             old_hash = hashlib.sha1(old_text.encode('utf-8')).hexdigest()
-            new_text = update_setup(old_text)
+            new_text = update_setup(old_text, root_path)
             new_hash = hashlib.sha1(new_text.encode('utf-8')).hexdigest()
             if old_hash != new_hash:
                 with open(setup_path, 'wt', encoding='utf-8') as f:

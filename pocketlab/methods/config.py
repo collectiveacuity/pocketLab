@@ -232,12 +232,13 @@ def inject_init(init_path, readme_path, setup_kwargs):
 
     return setup_kwargs
 
-def update_setup(setup_text):
+def update_setup(setup_text, root_path='./'):
 
     '''
         a method to update an existing setup text with latest comments
         
     :param setup_text: string with text from setup.py source code
+    :param root_path: string with path to service root
     :return: string with updated comments
     '''
 
@@ -254,7 +255,7 @@ def update_setup(setup_text):
     init_regex = re.compile("init_path\s\=\s'(.*?)'")
     init_search = init_regex.findall(setup_text)
     if init_search:
-        init_path = init_search[0]
+        init_path = path.join(root_path, init_search[0])
         if path.exists(init_path):
             init_text = open(init_path).read()
             module_regex = re.compile("__module__\s\=\s'(.*?)'")
@@ -309,6 +310,14 @@ def construct_setup(module_name):
     init_text = "init_path = '%s/__init__.py'" % module_name
     file_text = init_regex.sub(init_text, file_text)
 
+# replace module and version
+    dist_regex = re.compile("pocketlab-0.1")
+    new_dist = '%s-0.1' % module_name
+    file_text = dist_regex.sub(new_dist, file_text)
+    repo_regex = re.compile('collectiveacuity/pocket[lL]ab')
+    new_repo = 'collectiveacuity/%s' % module_name
+    file_text = repo_regex.sub(new_repo, file_text)
+    
     return file_text
 
 def construct_init(module_name):

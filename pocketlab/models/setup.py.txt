@@ -15,7 +15,7 @@ setup_kwargs = {
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.5'
+        'Programming Language :: Python :: 3.6'
     ]
 }
 setup_kwargs = inject_init(init_path, readme_path, setup_kwargs)
@@ -26,7 +26,7 @@ References:
 https://docs.python.org/3.6/distutils/setupscript.html
 
 https://python-packaging-user-guide.readthedocs.org/en/latest/
-https://docs.python.org/3.5/distutils/index.html
+https://docs.python.org/3.6/distutils/index.html
 https://github.com/jgehrcke/python-cmdline-bootstrap
 http://www.pyinstaller.org/
 
@@ -54,7 +54,7 @@ pip install dist/pocketlab-0.1-py3-none-any.whl # when possessing wheel file
 Uninstall:
 pip uninstall [module]
 python setup.py develop --uninstall # for removing symbolic link
-# remove command line tool in ../Python/Python35-32/Scripts/
+# remove command line tool in ../Python/Python3.6/Scripts/
 
 CLI Installation:
 command = 'name of command'
