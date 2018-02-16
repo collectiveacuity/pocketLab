@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+0.7 (2018.02.15)
+----------------
+* [FEATURE ADDED] added start command to run services in local docker containers
+* [FEATURE ADDED] replaced lab.yaml with docker-compose.yaml
+* [FEATURE ADDED] added color to error, success and warning messages
+* [UPDATE] list command with instances option
+* [BUG FIX] handled running container excepts to docker image removal
+* [BUG FIX] updated registry search with upstream changes made to appdataClient
+
 0.6 (2018.02.05)
 ----------------
 * [COMMAND DEPRECATED] stop command removed in preference of native docker stop

@@ -55,7 +55,7 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
     from os import path
 
 # define printer submethod
-    def _printer(file_path):
+    def _printer(file_path, node_type='file'):
         if verbose:
             from os import path
             folder, file = path.split(file_path)
@@ -63,7 +63,7 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
                 folder = 'working directory'
             else:
                 folder = '%s folder' % folder
-            print('"%s" created in %s.' % (file, folder))
+            print('%s %s created in %s.' % (file, node_type, folder))
 
 # setup module architecture
     if module_name:
@@ -95,7 +95,7 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
         if not path.exists(module_name):
             from os import makedirs
             makedirs(module_name)
-            _printer(module_name)
+            _printer(module_name, 'folder')
 
     # create init file
         init_path = path.join(module_name, '__init__.py')
@@ -111,11 +111,11 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
         if not path.exists('docs'):
             from os import makedirs
             makedirs('docs')
-            _printer('docs')
+            _printer('docs', 'folder')
         if not path.exists('docs_dev'):
             from os import makedirs
             makedirs('docs_dev')
-            _printer('docs_dev')
+            _printer('docs_dev', 'folder')
 
     # create mkdocs markdown file
         mkdocs_path = path.join('docs', 'mkdocs.md')
@@ -268,20 +268,20 @@ def init(module_name='', vcs_service='', license_type='MIT', init_heroku=False, 
         lab_path = '.lab'
         if not path.exists(lab_path):
             makedirs(lab_path)
-            _printer(lab_path)
+            _printer(lab_path, 'folder')
 
     # add a data folder
         data_path = 'data'
         if not path.exists(data_path):
             makedirs(data_path)
-            _printer(data_path)
+            _printer(data_path, 'folder')
 
     # add a credential folder
         cred_path = 'cred'
         notes_path = 'notes'
         if not path.exists(cred_path):
             makedirs(cred_path)
-            _printer(cred_path)
+            _printer(cred_path, 'folder')
             if path.exists(notes_path):
                 if path.isdir(notes_path):
                     src_list = []

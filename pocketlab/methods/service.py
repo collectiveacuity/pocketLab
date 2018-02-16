@@ -78,7 +78,7 @@ def retrieve_services(service_list=None, all=False):
 # add named service to service list
     if service_list:
         from labpack.parsing.grammar import join_words
-        msg_insert = join_words(service_list)
+        word_list = []
         for service in service_list:
             service_root = retrieve_service_root(service)
             service_details = {
@@ -86,6 +86,8 @@ def retrieve_services(service_list=None, all=False):
                 'path': service_root
             }
             path_list.append(service_details)
+            word_list.append('"%s"' % service)
+        msg_insert = join_words(word_list)
 
 # add all services in registry to service list
     elif all:

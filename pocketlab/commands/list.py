@@ -96,7 +96,7 @@ def list(resource_type, platform_option, region_name='', paginate=False):
             platform_list = deepcopy(fields_model.components['.platform_name']['discrete_values'])
             if len(platform_list) > 2:
                 platform_list = platform_list[0:2]
-            platform_options = join_words(platform_list, operator='disjunctive')
+            platform_options = join_words(platform_list, operator='disjunction')
             raise ValueError('list instances requires a platform name (eg. %s)' % platform_options)
         platform_name = platform_option[0]
 

@@ -5,8 +5,8 @@ __license__ = 'MIT'
 '''
 update the .ignore file
 update the lab.yaml file
+update the setup.py file
 TODO: check dependencies and alert new versions
-TODO: update the setup.py file
 '''
 
 _update_details = {
@@ -46,13 +46,17 @@ def update(service_list, all=False, verbose=True):
     def _apply_update(root_path, service_name=''):
 
     # construct message
+        from os import path
         msg_insert = 'local service'
         if service_name:
             msg_insert = 'service "%s"' % service_name
-
+        setup_path = path.join(root_path, 'setup.py')
+        if path.exists(setup_path):
+            msg_insert = msg_insert.replace('service', 'module')
+        
     # update vcs ignore
         import hashlib
-        from os import path
+        
         from pocketlab.methods.vcs import merge_ignores
         vcs_files = {
             'git': {
@@ -81,29 +85,29 @@ def update(service_list, all=False, verbose=True):
                     if verbose:
                         print('%s file for %s updated.' % (value['name'], msg_insert))
 
-    # update lab yaml
-        from pocketlab import __module__
-        from jsonmodel.loader import jsonLoader
-        from jsonmodel.validators import jsonModel
-        from labpack.records.settings import save_settings, load_settings
-        config_schema = jsonLoader(__module__, 'models/lab-config.json')
-        config_model = jsonModel(config_schema)
-        template_config = config_model.ingest()
-        config_path = path.join(root_path, 'lab.yaml')
-        if path.exists(config_path):
-            try:
-                old_config = load_settings(config_path)
-                template_config.update(**old_config)
-                if old_config != template_config:
-                    from pocketlab.methods.config import compile_yaml
-                    config_text = compile_yaml(config_schema, config_path)
-                    with open(config_path, 'wt') as f:
-                        f.write(config_text)
-                        f.close()
-                    if verbose:
-                        print('lab.yaml file for %s updated.' % msg_insert)
-            except:
-                 print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
+    # # update lab yaml
+    #     from pocketlab import __module__
+    #     from jsonmodel.loader import jsonLoader
+    #     from jsonmodel.validators import jsonModel
+    #     from labpack.records.settings import save_settings, load_settings
+    #     config_schema = jsonLoader(__module__, 'models/lab-config.json')
+    #     config_model = jsonModel(config_schema)
+    #     template_config = config_model.ingest()
+    #     config_path = path.join(root_path, 'lab.yaml')
+    #     if path.exists(config_path):
+    #         try:
+    #             old_config = load_settings(config_path)
+    #             template_config.update(**old_config)
+    #             if old_config != template_config:
+    #                 from pocketlab.methods.config import compile_yaml
+    #                 config_text = compile_yaml(config_schema, config_path)
+    #                 with open(config_path, 'wt') as f:
+    #                     f.write(config_text)
+    #                     f.close()
+    #                 if verbose:
+    #                     print('lab.yaml file for %s updated.' % msg_insert)
+    #         except:
+    #              print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
 
     # update setup.py
         setup_path = path.join(root_path, 'setup.py')
@@ -132,6 +136,12 @@ def update(service_list, all=False, verbose=True):
         }
         _apply_update(**update_kwargs)
 
+# modify service to module
+    if msg_insert.find('local service') > -1:
+        from os import path
+        if path.exists('./setup.py'):
+            msg_insert = msg_insert.replace('local service', 'local module')
+            
 # construct exit message
     exit_msg = 'Configurations for %s have been updated.' % msg_insert
 
