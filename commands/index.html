@@ -174,7 +174,7 @@ optional arguments:
 <p><em>Edit settings on remote host manually.</em>  </p>
 <p><strong>Description:</strong><br />
 Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.</p>
-<p>PLEASE NOTE: connect uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key &ldquo;Containers&rdquo; and value &ldquo;<container_alias>&ldquo;.  </p>
+<p>PLEASE NOTE: connect uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key &ldquo;Containers&rdquo; and value &ldquo;<container_alias>&ldquo;.  </p>
 <p><strong>Usage:</strong></p>
 <pre><code class="bash">$ lab connect [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] PLATFORM [SERVICE]
 </code></pre>
@@ -183,9 +183,9 @@ Opens up a direct ssh connection to remote host. Connect is currently only avail
 <pre><code class="bash">Opens up a direct ssh connection to remote host. Connect is currently only
 available to the Amazon ec2 platform and only on systems running ssh natively.
 To connect to a remote host on Windows, try using Putty instead. PLEASE NOTE:
-connect uses the docker container alias value specified in the lab.yaml
-configuration file to determine which instance to connect to. A tag must be
-added manually to the instance with key &quot;Containers&quot; and value
+connect uses the docker container alias value specified in the docker-
+compose.yaml configuration file to determine which instance to connect to. A tag
+must be added manually to the instance with key &quot;Containers&quot; and value
 &quot;&lt;container_alias&gt;&quot;.
 
 positional arguments:
@@ -194,7 +194,7 @@ positional arguments:
 
 optional arguments:
   -h, --help       show this help message and exit
-  --env STRING     type of development environment
+  --env STRING     type of development environment (default: dev)
   --tag STRING     tag associated with resource
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
@@ -253,7 +253,7 @@ positional arguments:
 
 optional arguments:
   -h, --help       show this help message and exit
-  --env STRING     type of development environment
+  --env STRING     type of development environment (default: dev)
   --tag STRING     tag associated with resource
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
@@ -265,7 +265,7 @@ optional arguments:
 <p><strong>Description:</strong><br />
 Generates a list of the resources of a specific type. Only the service resource type is supported, but docker oriented and remote host kinds of resources are coming.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab list [-h] [--more] RESOURCE
+<pre><code class="bash">$ lab list [-h] [--region STRING] [--more] RESOURCE [PLATFORM]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
@@ -274,11 +274,13 @@ type is supported, but docker oriented and remote host kinds of resources are
 coming.
 
 positional arguments:
-  RESOURCE    type of lab resource. eg. services, images...
+  RESOURCE         type of lab resource. eg. services, images...
+  PLATFORM         (optional) name of remote platfrom
 
 optional arguments:
-  -h, --help  show this help message and exit
-  --more      paginate results longer than console height
+  -h, --help       show this help message and exit
+  --region STRING  name of platform region
+  --more           paginate results longer than console height
 </code></pre>
 
 <h2 id="put">Put</h2>
@@ -304,7 +306,7 @@ positional arguments:
 
 optional arguments:
   -h, --help       show this help message and exit
-  --env STRING     type of development environment
+  --env STRING     type of development environment (default: dev)
   --tag STRING     tag associated with resource
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
@@ -332,13 +334,15 @@ optional arguments:
 <h2 id="start">Start</h2>
 <p><em>Makes services available on localhost</em>  </p>
 <p><strong>Description:</strong><br />
-Initiates a container with the Docker image for one or more services.  </p>
+Initiates a container with the Docker image for one or more services. Unless overridden by flags, lab automatically adds the host machine variables SYSTEM_LOCALHOST=<code>hostname -i</code> and SYSTEM_ENVIRONMENT=&rdquo;dev&rdquo; to the container.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab start [-h] [-q] [--virtualbox STRING] [SERVICES [SERVICES ...]]
+<pre><code class="bash">$ lab start [-h] [-q] [--virtualbox STRING] [--env STRING] [--ip STRING] [SERVICES [SERVICES ...]]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
-<pre><code class="bash">Initiates a container with the Docker image for one or more services.
+<pre><code class="bash">Initiates a container with the Docker image for one or more services. Unless
+overridden by flags, lab automatically adds the host machine variables
+SYSTEM_LOCALHOST=`hostname -i` and SYSTEM_ENVIRONMENT=&quot;dev&quot; to the container.
 
 positional arguments:
   SERVICES             list of services in lab registry
@@ -347,6 +351,8 @@ optional arguments:
   -h, --help           show this help message and exit
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+  --env STRING         type of development environment (default: dev)
+  --ip STRING          ipv4 or ipv6 address
 </code></pre>
 
 <h2 id="update">Update</h2>
