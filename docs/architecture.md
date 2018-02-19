@@ -22,3 +22,60 @@ Pocket Lab is designed around a service-oriented architecture. A service can be 
 <tr><td>log        </td><td>file or service in which to log stdout of service               </td></tr>
 </tbody>
 </table>
+# Configurations
+
+## [Certbot](https://letsencrypt.org/getting-started/)
+_A Free SSL Certificate Authority_  
+  
+
+**Installation on EC2:**    
+```bash
+$ sudo yum install -y wget
+$ wget https://dl.eff.org/certbot-auto
+$ sudo chmod a+x certbot-auto
+$ sudo mv certbot-auto /usr/local/bin/certbot-auto
+$ sudo service nginx stop # optional
+$ sudo su -
+$ certbot-auto certonly --standalone -d collectiveacuity.com,www.collectiveacuity.com --debug
+> Is this ok [y/d/N]:
+> Enter email address: (used … cancel):
+> (A)gree/(C)ancel:
+> (Y)es/(N)o:
+$ sudo service nginx start # optional
+```
+
+**Renewal:**(certificate expires every 90 days)
+```bash
+$ sudo su -
+$ certbot-auto renew --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start"
+$ exit
+```
+
+**Modification:** 
+```bash
+$ sudo su -
+$ certbot-auto certonly --standalone --debug -n --cert-name collectiveacuity.com -d collectiveacuity.com,www.collectiveacuity.com,api.collectiveacuity.com --pre-hook "service nginx stop" --post-hook "service nginx start"  --debug
+$ exit
+
+```
+
+**Check Certificates:**  
+```bash
+$ sudo su -
+$ certbot-auto certificates --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start" 
+$ exit
+```
+
+**Troubleshooting:**  
+1. Due to updates to certbot, python modules may be missing from installation:
+```bash
+$ sudo su -
+$ pip install -U pip
+$ /root/.local/share/letsencrypt/bin/pip install {missing module}
+```
+2. Due to 32bit / 64 bit issues, python venv libs may need to be copied:
+```bash
+$ sudo su -
+$ \cp -r /opt/eff.org/certbot/venv/lib64/* /opt/eff.org/certbot/venv/lib/
+$ exit
+```

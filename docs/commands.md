@@ -32,24 +32,27 @@ optional arguments:
 _Init adds the config files for other lab commands._  
 
 **Description:**  
-Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```lab.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.
+Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.
 
 PLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.  
 
 **Usage:**
 ```bash
-$ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [--aws] [-q]
+$ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [--aws] [-q] [SERVICE]
 ```
 **Help:** 
 ```bash
 Init adds a number of files to the working directory which are required for
-other lab processes. If not present, it will create a 'lab.yaml' file and a
-'.lab' folder in the root directory to manage various configuration options. It
-will also create, if missing, 'cred/' and 'data/' folders to store sensitive
-project information outside version control along with a '.gitignore' (or
-'.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With the
-option '--module <module_name>', init creates instead a standard framework for
-publishing a python module.
+other lab processes. If not present, it will create a 'docker-compose.yaml' file
+and a '.lab' folder in the root directory to manage various configuration
+options. It will also create, if missing, 'cred/' and 'data/' folders to store
+sensitive project information outside version control along with a '.gitignore'
+(or '.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With
+the option '--module <module_name>', init creates instead a standard framework
+for publishing a python module.
+
+positional arguments:
+  SERVICE           (optional) service in lab registry
 
 optional arguments:
   -h, --help        show this help message and exit
@@ -158,7 +161,7 @@ _Copies remote files to your local machine._
 **Description:**  
 Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.
 
-PLEASE NOTE: get uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+PLEASE NOTE: get uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
 
 **Usage:**
 ```bash
@@ -168,9 +171,9 @@ $ lab get [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PL
 ```bash
 Copies a file or folder on remote host to working directory on localhost. Get is
 currently only available for the Amazon ec2 platform. PLEASE NOTE: get uses the
-docker container alias value specified in the lab.yaml configuration file to
-determine which instance to connect to. A tag must be added manually to the
-instance with key "Containers" and value "<container_alias>".
+docker container alias value specified in the docker-compose.yaml configuration
+file to determine which instance to connect to. A tag must be added manually to
+the instance with key "Containers" and value "<container_alias>".
 
 positional arguments:
   PATH             path to file or folder
@@ -220,7 +223,7 @@ _Copy files from your local machine._
 **Description:**  
 Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.
 
-PLEASE NOTE: put uses the docker container alias value specified in the lab.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+PLEASE NOTE: put uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
 
 **Usage:**
 ```bash
@@ -230,9 +233,9 @@ $ lab put [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PL
 ```bash
 Copies a local file or folder to user home on remote host. Put is currently only
 available for the Amazon ec2 platform. PLEASE NOTE: put uses the docker
-container alias value specified in the lab.yaml configuration file to determine
-which instance to connect to. A tag must be added manually to the instance with
-key "Containers" and value "<container_alias>".
+container alias value specified in the docker-compose.yaml configuration file to
+determine which instance to connect to. A tag must be added manually to the
+instance with key "Containers" and value "<container_alias>".
 
 positional arguments:
   PATH             path to file or folder
@@ -279,7 +282,7 @@ Initiates a container with the Docker image for one or more services. Unless ove
 
 **Usage:**
 ```bash
-$ lab start [-h] [-q] [--virtualbox STRING] [--env STRING] [--ip STRING] [SERVICES [SERVICES ...]]
+$ lab start [-h] [-q] [--virtualbox STRING] [--env STRING] [--ip STRING] [--print] [SERVICES [SERVICES ...]]
 ```
 **Help:** 
 ```bash
@@ -296,6 +299,7 @@ optional arguments:
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
   --env STRING         type of development environment (default: dev)
   --ip STRING          ipv4 or ipv6 address
+  --print              prints command without running
 ```
   
 

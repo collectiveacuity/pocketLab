@@ -32,6 +32,7 @@
     "init_heroku": true,
     "init_aws": true,
     "print_path": true,
+    "print_terminal": true,
     "paginate": true
   },
   "components": {
@@ -338,6 +339,14 @@
       "field_metadata": {
           "cli_flags": [ "--print" ],
           "cli_help": "prints path of service root"
+      }
+    },
+    ".print_terminal": {
+      "field_description": "Prints out command to terminal.",
+      "default_value": false,
+      "field_metadata": {
+          "cli_flags": [ "--print" ],
+          "cli_help": "prints command without running"
       }
     },
     ".paginate": {
