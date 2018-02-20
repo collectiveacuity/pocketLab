@@ -33,7 +33,8 @@
     "init_aws": true,
     "print_path": true,
     "print_terminal": true,
-    "paginate": true
+    "paginate": true,
+    "mount_volumes": true
   },
   "components": {
     ".service_name": {
@@ -355,6 +356,14 @@
       "field_metadata": {
         "cli_flags": [ "--more" ],
         "cli_help": "paginate results longer than console height"
+      }
+    },
+    ".mount_volumes": {
+      "field_description": "Mount volumes declared in docker-compose.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--mount" ],
+        "cli_help": "mount volumes onto container"
       }
     }
   }

@@ -156,6 +156,121 @@ def compile_compose(compose_schema, service_schema, service_name):
 
     return compose_text
 
+def compile_dockerfile(dockerfile_path, platform_path, compose_path, service_details, msg_insert, platform_name, system_envvar=None, verbose=False):
+    
+# import dependencies
+    from pocketlab import __module__
+    from jsonmodel.loader import jsonLoader
+    from jsonmodel.validators import jsonModel
+    compose_schema = jsonLoader(__module__, 'models/compose-config.json')
+    service_schema = jsonLoader(__module__, 'models/service-config.json')
+    compose_model = jsonModel(compose_schema)
+    service_model = jsonModel(service_schema)
+
+# compose variables
+    service_name = service_details['name']
+    service_config = service_details['config']
+    service_path = service_details['path']
+    service_insert = service_details['insert']
+
+# start validation
+    dockerfile_text = ''
+    if verbose:
+        print('Checking Dockerfile settings in %s ... ' % msg_insert, end='', flush=True)
+
+# retrieve dockerfile text from platform specific dockerfile
+    from os import path
+    if path.exists(platform_path):
+        try:
+            dockerfile_text = open(platform_path, 'rt').read()
+            if verbose:
+                print('done.')
+        except:
+            pass
+
+# fallback to docker compose file
+    if not dockerfile_text:
+        if path.exists(compose_path):
+
+            from pocketlab.methods.validation import validate_compose
+
+    # validate docker compose file
+            compose_details = validate_compose(compose_model, service_model, compose_path, service_name)
+
+            if service_name:
+                service_config.update(compose_details['services'][service_name])
+            else:
+                for key, value in compose_details['services'].items():
+                    service_config.update(value)
+                    service_name = key
+                    break
+
+    # retrieve dockerfile in docker compose
+            if 'build' in service_config.keys():
+                dockerfile_name = service_config['build'].get('dockerfile', 'Dockerfile')
+                relative_path = path.join(service_config['build']['context'], dockerfile_name)
+                if not path.isabs(relative_path):
+                    relative_path = path.join(service_path, relative_path)
+                try:
+                    dockerfile_text = open(relative_path, 'rt').read()
+                    if verbose:
+                        print('done.')
+                except:
+                    pass
+
+# fallback to Dockerfile in root
+    if not dockerfile_text:
+        if path.exists(dockerfile_path):
+            try:
+                dockerfile_text = open(dockerfile_path, 'rt').read()
+                if verbose:
+                    print('done.')
+            except:
+                pass
+
+# catch missing Dockerfile error
+    if not dockerfile_text:
+        raise ValueError('Deploying %s to %s using docker requires Dockerfile instructions.\nTry creating a Dockerfile.' % (service_insert, platform_name))
+
+# define regex patterns
+    import re
+    command_pattern = re.compile('\nCMD\s')
+    entry_pattern = re.compile('\nENTRYPOINT\s')
+    dockerfile_text = dockerfile_text.strip() + '\n'
+
+# insert variables into Dockerfile
+    if 'environment' in service_config.keys():
+        for key, value in service_config['environment'].items():
+            if key != 'PORT':
+                dockerfile_text += '\nENV %s=%s' % (key.upper(), str(value))
+
+# insert system envvar into Dockerfile
+    if system_envvar:
+        for key, value in system_envvar.items():
+            dockerfile_text = re.sub('\nENV %s=.*?\n' % key.upper(), '\n', dockerfile_text)
+            dockerfile_text += '\nENV %s=%s' % (key.upper(), str(value))
+
+# insert volumes into Dockerfile as ADD
+    if 'volumes' in service_config.keys():
+        for volume in service_config['volumes']:
+            if volume['type'] == 'bind':
+                volume_line = '\nADD %s %s' % (volume['source'], volume['target'])
+                if not re.findall(volume_line, dockerfile_text):
+                    dockerfile_text += volume_line
+
+# add command or entrypoint if none existent
+    if command_pattern.findall(dockerfile_text) or entry_pattern.findall(dockerfile_text):
+        pass
+    else:
+        if 'entrypoint' in service_config.keys():
+            dockerfile_text += '\nENTRYPOINT %s' % str(service_config['entrypoint'])
+        elif 'command' in service_config.keys():
+            dockerfile_text += '\nCMD %s' % str(service_config['command'])
+        else:
+            raise ValueError('Deploying %s to %s with docker requires a start command or entrypoint.' % (service_insert, platform_name))
+        
+    return dockerfile_text
+    
 def inject_init(init_path, readme_path, setup_kwargs):
 
     '''

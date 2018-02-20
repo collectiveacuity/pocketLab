@@ -18,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_option, verbose=True, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
+def deploy(platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -26,6 +26,8 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
     :param platform_name: string with name of remote platform to host service
     :param service_option: [optional] string with name of service in lab registry
     :param verbose: [optional] boolean to toggle process messages
+    :param overwrite: [optional] boolean to overwrite existing container
+    :param mount_volumes: [optional] boolean to mount volumes in docker-compose.yaml
     :param virtualbox: [optional] string with name of virtualbox image (win7/8)
     :param html_folder: [optional] string with path to static html site folder root
     :param php_folder: [optional] string with path to php app folder root
@@ -44,8 +46,10 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
             service_option = [service_option]
     input_fields = {
         'service_option': service_option,
-        'verbose': verbose,
         'platform_name': platform_name,
+        'environment_type': environment_type,
+        'resource_tag': resource_tag,
+        'region_name': region_name,
         'virtualbox': virtualbox,
         'html_folder': html_folder,
         'php_folder': php_folder,
@@ -79,14 +83,15 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
     }
 
 # construct service list
-    service_list = []   
-
+    service_list = []
+    exit_msg = ''
+    
 # deploy to heroku
     if platform_name == 'heroku':
 
     # import dependencies
         from os import path
-        from pocketlab.methods.validation import validate_platform, validate_compose
+        from pocketlab.methods.validation import validate_platform
         from pocketlab import __module__
         from jsonmodel.loader import jsonLoader
         from jsonmodel.validators import jsonModel
@@ -111,10 +116,9 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
         for service in service_list:
 
         # construct message inserts
+            service_insert = service['insert']
             msg_insert = 'working directory'
-            service_insert = 'in working directory'
             if service['name']:
-                service_insert = '"%s"' % service['name']
                 msg_insert = 'root directory for "%s"' % service['name']
 
         # initialize heroku client
@@ -152,129 +156,46 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
                 node_folder = _site_path(node_folder, service['path'], service_insert, 'node')
                 heroku_client.deploy_app(node_folder, 'node')
                 exit_msg = 'Node app of %s' % heroku_insert
-        
+
         # deploy app in docker container
             else:
-            
-            # import dependencies
-                compose_schema = jsonLoader(__module__, 'models/compose-config.json')
-                service_schema = jsonLoader(__module__, 'models/service-config.json')
-                compose_model = jsonModel(compose_schema)
-                service_model = jsonModel(service_schema)
-            
+
             # establish path of files
+                from os import path
                 from time import time
-                dockerfile_text = ''
                 dockerfile_path = path.join(service['path'], 'Dockerfile')
-                dockerfile_heroku_path = path.join(service['path'], 'DockerfileHeroku')
+                platform_path = path.join(service['path'], 'DockerfileHeroku')
                 compose_path = path.join(service['path'], 'docker-compose.yaml')
-                dockerfile_temp_path = path.join(service['path'], 'DockerfileTemp%s' % int(time()))
+                temp_path = path.join(service['path'], 'DockerfileTemp%s' % int(time()))
+    
+            # construct system envvar
+                system_envvar = {
+                    'system_environment': 'prod',
+                    'system_platform': 'heroku'
+                }
 
-                if verbose:
-                    print('Checking Dockerfile settings in %s ... ' % msg_insert, end='', flush=True)
-
-            # retrieve dockerfile text from DockerfileHeroku
-                if path.exists(dockerfile_heroku_path):
-                    try:
-                        dockerfile_text = open(dockerfile_heroku_path, 'rt').read()
-                        if verbose:
-                            print('done.')
-                    except:
-                        pass
-
-            # fallback to docker compose file
-                if not dockerfile_text:
-                    if path.exists(compose_path):
-
-                # validate docker compose file
-                        compose_details = validate_compose(compose_model, service_model, compose_path, service['name'])
-
-                        if service['name']:
-                            service['config'].update(compose_details['services'][service['name']])
-                        else:
-                            for key, value in compose_details['services'].items():
-                                service['config'].update(value)
-                                service['name'] = key
-                                break
-
-                # retrieve dockerfile in docker compose
-                        if 'build' in service['config'].keys():
-                            dockerfile_name = service['config']['build'].get('dockerfile', 'Dockerfile')
-                            relative_path = path.join(service['config']['build']['context'], dockerfile_name)
-                            if not path.isabs(relative_path):
-                                relative_path = path.join(service['path'], relative_path)
-                            try:
-                                dockerfile_text = open(relative_path, 'rt').read()
-                                if verbose:
-                                    print('done.')
-                            except:
-                                pass
-
-            # fallback to Dockerfile in root
-                if not dockerfile_text:
-                    if path.exists(dockerfile_path):
-                        try:
-                            dockerfile_text = open(dockerfile_path, 'rt').read()
-                            if verbose:
-                                print('done.')
-                        except:
-                            pass
-
-            # catch missing Dockerfile error
-                if not dockerfile_text:
-                    raise ValueError('Deploying %s to heroku using docker requires Dockerfile instructions.\nTry creating a Dockerfile.' % service_insert)
-
-            # import dependencies
-                import re
-                import os
-                from shutil import copyfile
-                system_space_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?\s')
-                system_newline_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?\n')
-                system_hash_pattern = re.compile('\nENV SYSTEM_ENVIRONMENT\=.*?#')
-                command_pattern = re.compile('\nCMD\s')
-                entry_pattern = re.compile('\nENTRYPOINT\s')
-
-            # insert variables into Dockerfile
-                dockerfile_text = dockerfile_text.strip() + '\n'
-                if system_newline_pattern.findall(dockerfile_text):
-                    dockerfile_text = system_newline_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku\n', dockerfile_text)
-                elif system_space_pattern.findall(dockerfile_text):
-                    dockerfile_text = system_space_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku ', dockerfile_text)
-                elif system_hash_pattern.findall(dockerfile_text):
-                    dockerfile_text = system_hash_pattern.sub('\nENV SYSTEM_ENVIRONMENT=heroku#', dockerfile_text)
-                else:
-                    dockerfile_text += '\nENV SYSTEM_ENVIRONMENT=heroku'
-                if 'environment' in service['config'].keys():
-                    for key, value in service['config']['environment'].items():
-                        if key != 'PORT':
-                            dockerfile_text += '\nENV %s=%s' % (key.upper(), str(value))
-
-            # insert copy volumes into Dockerfile
-                if 'volumes' in service['config'].keys():
-                    for volume in service['config']['volumes']:
-                        if volume['type'] == 'bind':
-                            volume_line = '\nADD %s %s' % (volume['source'], volume['target'])
-                            if not re.findall(volume_line, dockerfile_text):
-                                dockerfile_text += volume_line
-
-            # add command or entrypoint if none existent
-                if command_pattern.findall(dockerfile_text) or entry_pattern.findall(dockerfile_text):
-                    pass
-                else:
-                    if 'entrypoint' in service['config'].keys():
-                        dockerfile_text += '\nENTRYPOINT %s' % str(service['config']['entrypoint'])
-                    elif 'command' in service['config'].keys():
-                        dockerfile_text += '\nCMD %s' % str(service['config']['command'])
-                    else:
-                        raise ValueError('Deploying %s to heroku with docker requires a start command or entrypoint.' % service_insert)
+            # compile dockerfile text
+                from pocketlab.methods.config import compile_dockerfile
+                dockerfile_text = compile_dockerfile(
+                    dockerfile_path=dockerfile_path,
+                    platform_path=platform_path,
+                    compose_path=compose_path,
+                    service_details=service,
+                    msg_insert=msg_insert,
+                    platform_name='heroku',
+                    system_envvar=system_envvar,
+                    verbose=verbose
+                )
 
             # create temporary Dockerfile
+                from os import remove
+                from shutil import copyfile
                 if path.exists(dockerfile_path):
-                    copyfile(dockerfile_path, dockerfile_temp_path)
+                    copyfile(dockerfile_path, temp_path)
                 with open(dockerfile_path, 'wt') as f:
                     f.write(dockerfile_text)
                     f.close()
-            
+
             # construct deploy kwargs
                 docker_kwargs = {
                     'dockerfile_path': dockerfile_path,
@@ -287,16 +208,16 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
                 except:
 
                 # ROLLBACK Dockerfile
-                    if path.exists(dockerfile_temp_path):
-                        copyfile(dockerfile_temp_path, dockerfile_path)
-                        os.remove(dockerfile_temp_path)
+                    if path.exists(temp_path):
+                        copyfile(temp_path, dockerfile_path)
+                        remove(temp_path)
 
                     raise
 
             # restore Dockerfile
-                if path.exists(dockerfile_temp_path):
-                    copyfile(dockerfile_temp_path, dockerfile_path)
-                    os.remove(dockerfile_temp_path)
+                if path.exists(temp_path):
+                    copyfile(temp_path, dockerfile_path)
+                    remove(temp_path)
 
                 exit_msg = 'Docker image of %s' % heroku_insert
 
@@ -305,9 +226,7 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
 
 # placeholder aws
     elif platform_name == 'ec2':
-        
-        raise Exception('ec2 is coming. Only heroku deployment is currently available.')
-        
+
     # what is the state of the system that is trying to be achieved?
         # single instance vs. load balancer/auto-scaling group
         # create/replace instance vs. update existing instance
@@ -317,75 +236,174 @@ def deploy(platform_name, service_option, verbose=True, virtualbox='default', ht
         # ephemeral vs persistent data (service that backs-up data)
         # single container vs multiple containers
 
-    # TODO replace lab.yaml with docker-compose.yml
+    # check for library dependencies
+        from pocketlab.methods.dependencies import import_boto3
+        import_boto3('ec2 platform')
+
+    # retrieve aws config
+        from pocketlab import __module__
+        from jsonmodel.loader import jsonLoader
+        from jsonmodel.validators import jsonModel
+        from pocketlab.methods.validation import validate_platform
+        aws_schema = jsonLoader(__module__, 'models/aws-config.json')
+        aws_model = jsonModel(aws_schema)
+        aws_config = validate_platform(aws_model, service_root, service_name)
+        details['config'] = aws_config
+        service_list.append(details)
+
+    # iterate over each service
+        for service in service_list:
+
+        # construct message inserts
+            service_insert = service['insert']
+            msg_insert = 'working directory'
+            if service['name']:
+                msg_insert = 'root directory for "%s"' % service['name']
+            ec2_insert = 'service %s deployed to ec2.' % service_insert
+
+        # retrieve instance details from ec2
+            from pocketlab.init import logger
+            logger.disabled = True
+            ec2_config = {
+                'access_id': aws_config['aws_access_key_id'],
+                'secret_key': aws_config['aws_secret_access_key'],
+                'region_name': aws_config['aws_default_region'],
+                'owner_id': aws_config['aws_owner_id'],
+                'user_name': aws_config['aws_user_name'],
+                'verbose': verbose
+            }
+            from pocketlab.methods.aws import construct_client_ec2, retrieve_instance_details
+            ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+            instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
+
+        # verify pem file exists
+            from os import path
+            pem_name = instance_details['key_name']
+            pem_folder = path.join(service_root, '.lab')
+            pem_file = path.join(pem_folder, '%s.pem' % pem_name)
+            if not path.exists(pem_file):
+                raise Exception('SSH requires %s.pem file in the .lab folder of service %s.' % (pem_name, service_insert))
+
+        # construct ssh client
+            ssh_config = {
+                'instance_id': instance_details['instance_id'],
+                'pem_file': pem_file
+            }
+            ssh_config.update(ec2_config)
+            ssh_config['verbose'] = verbose
+            from labpack.platforms.aws.ssh import sshClient
+            try:
+                ssh_client = sshClient(**ssh_config)
+            except Exception as err:
+                error_msg = str(err)
+                if str(error_msg).find('private key files are NOT accessible by others'):
+                    error_msg += '\nTry: "chmod 600 %s.pem" in the .lab folder of service %s.' % (pem_name, service_insert)
+                    raise Exception(error_msg)
+                else:
+                    raise
+            logger.disabled = False
+
+        # retrieve compose configurations
+
+        # verify port available
+
+        # verify overwrite of existing files
+
+        # construct system envvar
+            system_envvar = {
+                'system_environment': environment_type,
+                'system_platform': 'ec2'
+            }
         
-        from pocketlab.methods.validation import validate_lab
-        lab_schema = jsonLoader(__module__, 'models/lab-config.json')
-        lab_model = jsonModel(lab_schema)
-        lab_path = path.join(service_name, 'lab.yaml')
-        lab_details = validate_lab(lab_model, lab_path, service_name)
-        details['config'].update(lab_details)
-        
-    # from awsDocker.awsCompose import awsCompose
-    # from awsDocker.awsSSH import awsSSH
-    # from pocketlab.platforms.docker import dockerClient
-        from labpack.platforms.aws.ec2 import ec2Client
-        from labpack.platforms.aws.ssh import sshClient
+        # establish path of files
+            from os import path
+            from time import time
+            dockerfile_path = path.join(service['path'], 'Dockerfile')
+            platform_path = path.join(service['path'], 'DockerfileEC2')
+            compose_path = path.join(service['path'], 'docker-compose.yaml')
+            temp_path = path.join(service['path'], 'DockerfileTemp%s' % int(time()))
+
+        # compile dockerfile text
+            from pocketlab.methods.config import compile_dockerfile
+            dockerfile_text = compile_dockerfile(
+                dockerfile_path=dockerfile_path,
+                platform_path=platform_path,
+                compose_path=compose_path,
+                service_details=service,
+                msg_insert=msg_insert,
+                platform_name='ec2',
+                system_envvar=system_envvar,
+                verbose=verbose
+            )
+            from pprint import pprint
+            pprint(dockerfile_text)
+
+        # compose exit message
+            exit_msg = 'Docker image of %s' % ec2_insert
+
+            if len(service_list) > 1:
+                print(exit_msg)
+
+    # create instance
         ec2_client = None
         ssh_client = None
         docker_client = None
         tempdata_client = None
+        if ec2_client:
+            from os import path
+            ecs_optimized_ami = 'ami-62745007'
+            ec2_client.create_instance(ecs_optimized_ami)
+            dependency_cmds = [
+                'sudo yum update -y',
+                'sudo yum install -y nginx',
+                'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
+            ]
+            ssh_client.script(dependency_cmds, verbose=verbose)
+        
+        # add docker image to instance
+            container_alias = 'web'
+            image_name = 'webserver'
+            temp_name = '%s-ec2.tar' % image_name
+            local_path = path.join(tempdata_client.collection_folder, temp_name)
+            remote_path = '~/%s' % temp_name
+            docker_client.save('web', local_path)
+            ssh_client.transfer(local_path, remote_path, verbose=verbose)
+            docker_cmds = [
+                'sudo docker load -i %s' % temp_name,
+                'sudo chmod 777 /etc/rc3.d/S99local; echo "docker restart %s" >> /etc/rc3.d/S99local' % container_alias
+            ]
+            ssh_client.script(docker_cmds, verbose=verbose)
+        
+        # start image
+            run_command = docker_client._generate_run('lab.yaml')
+            run_command = 'docker run --name %s -it -d -e PORT=5000 -p 5000:5000 %s' % (container_alias, image_name)
+            docker_cmds = [
+                'sudo %s' % run_command
+            ]
+            ssh_client.script(docker_cmds, verbose=verbose)
+        
+        # update nginx conf
+            from pocketlab.methods.nginx import compile_nginx
+            container_list = [{'domain': 'collectiveacuity.com', 'port': 5000}]
+            nginx_text = compile_nginx(container_list, 'collectiveacuity')
+            nginx_name = 'nginx.conf'
+            local_path = path.join(tempdata_client.collection_folder, nginx_name)
+            with open(local_path, 'wt') as f:
+                f.write(nginx_text)
+                f.close()
+            remote_path = '/etc/nginx/%s' % nginx_name
+            ssh_client.transfer(local_path, remote_path, verbose=verbose)
     
-    # create instance
-        from os import path
-        ecs_optimized_ami = 'ami-62745007'
-        ec2_client.create_instance(ecs_optimized_ami)
-        dependency_cmds = [
-            'sudo yum update -y',
-            'sudo yum install -y nginx',
-            'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
-        ]
-        ssh_client.script(dependency_cmds, verbose=verbose)
-    
-    # add docker image to instance
-        container_alias = 'web'
-        image_name = 'webserver'
-        temp_name = '%s-ec2.tar' % image_name
-        local_path = path.join(tempdata_client.collection_folder, temp_name)
-        remote_path = '~/%s' % temp_name
-        docker_client.save('web', local_path)
-        ssh_client.transfer(local_path, remote_path, verbose=verbose)
-        docker_cmds = [
-            'sudo docker load -i %s' % temp_name,
-            'sudo chmod 777 /etc/rc3.d/S99local; echo "docker restart %s" >> /etc/rc3.d/S99local' % container_alias
-        ]
-        ssh_client.script(docker_cmds, verbose=verbose)
-    
-    # start image
-        run_command = docker_client._generate_run('lab.yaml')
-        run_command = 'docker run --name %s -it -d -e PORT=5000 -p 5000:5000 %s' % (container_alias, image_name)
-        docker_cmds = [
-            'sudo %s' % run_command
-        ]
-        ssh_client.script(docker_cmds, verbose=verbose)
-    
-    # update nginx conf
-        from pocketlab.methods.nginx import compile_nginx
-        container_list = [{'domain': 'collectiveacuity.com', 'port': 5000}]
-        nginx_text = compile_nginx(container_list, 'collectiveacuity')
-        nginx_name = 'nginx.conf'
-        local_path = path.join(tempdata_client.collection_folder, nginx_name)
-        with open(local_path, 'wt') as f:
-            f.write(nginx_text)
-            f.close()
-        remote_path = '/etc/nginx/%s' % nginx_name
-        ssh_client.transfer(local_path, remote_path, verbose=verbose)
-
-# TODO consider rollback options   
-# TODO consider build versioning/storage
+    # TODO consider rollback options   
+    # TODO consider build versioning/storage
 
 # report composite outcome
     if len(service_list) > 1:
-        exit_msg = 'Finished deploying %s to %s.' % (msg_insert, platform_name)
-        
+        service_names = []
+        for service in service_list:
+            service_names.append('"%s"' % service['name'])
+        from labpack.parsing.grammar import join_words
+        exit_insert = join_words(service_names)
+        exit_msg = 'Finished deploying %s to %s.' % (exit_insert, platform_name)
+
     return exit_msg
