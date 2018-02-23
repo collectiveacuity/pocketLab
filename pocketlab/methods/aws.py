@@ -52,7 +52,7 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
     
     return instance_details
 
-def compile_instances(region_name=''):
+def compile_instances(region_name='', service_list=None):
 
     instance_list = []
 
@@ -62,10 +62,16 @@ def compile_instances(region_name=''):
 
 # TODO support compilation of accounts and regions
 
-# retrieve aws config
-    service_root = './'
+# define service fields
     service_name = ''
-    service_insert = 'in working directory'
+    service_root = './'
+    service_insert = ' in working directory'
+    if service_list and isinstance(service_list, list):
+        service_name = service_list[0]['name']
+        service_root = service_list[0]['path']
+        service_insert = service_list[0]['insert']
+
+# retrieve aws config
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
     from jsonmodel.validators import jsonModel

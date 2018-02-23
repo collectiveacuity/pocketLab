@@ -3,9 +3,9 @@ __created__ = '2018.02'
 __license__ = 'MIT'
 
 def compile_run_kwargs(service_config, service_repo, service_alias, service_tag, service_path, system_envvar):
-    
+
     from os import path
-    
+
     run_kwargs = {
         'image_name': service_repo, 
         'container_alias': service_alias, 

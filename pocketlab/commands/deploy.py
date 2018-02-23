@@ -99,7 +99,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
     # validate heroku file
         heroku_schema = jsonLoader(__module__, 'models/heroku-config.json')
         heroku_model = jsonModel(heroku_schema)
-        heroku_details = validate_platform(heroku_model, service_root, service_name)
+        heroku_details = validate_platform(heroku_model, details['path'], service_name)
         details['config'] = heroku_details
         service_list.append(details)
 
@@ -249,7 +249,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         from pocketlab.methods.validation import validate_platform
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
-        aws_config = validate_platform(aws_model, service_root, service_name)
+        aws_config = validate_platform(aws_model, details['path'], service_name)
         details['config'] = aws_config
         service_list.append(details)
 
@@ -258,7 +258,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         docker_client = dockerClient()
 
         from pprint import pprint
-            
+
     # iterate over each service
         for service in service_list:
 
@@ -303,7 +303,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
 
         # disable normal ssh client printing
             ssh_client.ec2.iam.verbose = False
-        
+
         # verify docker installed on ec2
             sys_command = 'docker --help'
             sys_message = 'Verifying docker installed on ec2 image ... '
@@ -405,7 +405,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             # validate image exists in local docker repository
                 from pocketlab.methods.validation import validate_image
                 docker_images = docker_client.images()
-                image_repo, image_tag = validate_image(details['config'], docker_images, service_name)
+                service_repo, service_tag = validate_image(details['config'], docker_images, service_name)
 
         # or build new image
             else:
@@ -441,8 +441,8 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             # start image build
                 try:
                     docker_client.build(service_name, dockerfile_path=dockerfile_path)
-                    image_repo = service_name
-                    image_tag = ''
+                    service_repo = service_name
+                    service_tag = ''
                 except:
 
                 # ROLLBACK Dockerfile
@@ -507,7 +507,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                                     print('.', end='', flush=True)
 
                         volumes_mounted = True
-                    
+
                     # verbosity
                         if verbose:
                             print(' done.')
@@ -518,7 +518,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             if verbose:
                 print('Saving docker image %s as %s ... ' % (service_name, file_name), end='', flush=True)
             try:
-                docker_client.save(image_repo, file_path, image_tag)
+                docker_client.save(service_repo, file_path, service_tag)
                 if verbose:
                     print('done.')
             except:
@@ -542,9 +542,33 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                 raise
 
         # load file into docker on ec2 image
-            sys_command = 'docker load -i %s' % file_name
+            sys_commands = [ 
+                'docker load -i %s' % file_name,
+                'rm %s' % file_name
+            ]
             sys_message = 'Loading %s into docker on ec2 image ... ' % file_name
+            print_script(sys_commands, sys_message)
+
+        # update docker restart command
+            sys_command = 'sudo chmod 777 /etc/rc3.d/S99local; echo "docker restart %s" >> /etc/rc3.d/S99local' % service_name
+            sys_message = 'Updating S99local to restart service on system restart ... '
             print_script(sys_command, sys_message)
+
+        # compile run command
+            from pocketlab.methods.docker import compile_run_kwargs, compile_run_command
+            run_kwargs = compile_run_kwargs(
+                service_config=service_config,
+                service_repo=service_repo,
+                service_alias=service_name,
+                service_tag=service_tag,
+                service_path=service_root,
+                system_envvar=system_envvar
+            )
+            if not volumes_mounted:
+                run_kwargs['environmental_variables'] = {}
+                run_kwargs['mounted_volumes'] = None 
+                run_kwargs['start_command'] = '' 
+            run_command = compile_run_command(run_kwargs, root_path='~/%s' % service_name) 
 
         # remove existing container
             if existing_container:
@@ -552,15 +576,10 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                 sys_message = 'Removing existing container "%s" on ec2 image ... ' % existing_container['container_alias']
                 print_script(sys_command, sys_message)
 
-        # start new container
-            if volumes_mounted:
-                run_command = docker_client.run(
-                    image_name=image_repo, 
-                    container_alias=service_name, 
-                    image_tag=image_tag,
-                    
-                )
-                
+        # start container
+            sys_message = 'Starting container "%s" on ec2 image ... ' % service_name
+            print_script(run_command, sys_message)
+
         # add reverse proxies
             if 'proxies' in service_config.keys():
                 if service_config['proxies']:
@@ -576,8 +595,26 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                             'sudo yum install -y nginx',
                             'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
                         ]
-                        sys_message = 'Install nginx on ec2 image ... '
+                        sys_message = 'Installing nginx on ec2 image ... '
                         print_script(install_commands, sys_message)
+
+                # retrieve nginx information
+                    nginx_path = '/etc/nginx/nginx.conf'
+                    sys_command = 'sudo cat %s' % nginx_path
+                    sys_message = 'Reading existing nginx configuration ... '
+                    nginx_text = print_script(sys_command, sys_message)
+
+                # update nginx information
+
+                # verify installation of certbot
+
+                # retrieve certbot information
+
+                # update certbot information
+
+        # cleanup images on ec2
+        
+        # update container tag with service name
 
         # compose exit message
             ssh_client.ec2.iam.verbose = True
