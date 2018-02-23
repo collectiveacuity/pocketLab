@@ -241,6 +241,8 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         import_boto3('ec2 platform')
 
     # retrieve aws config
+        from os import path, remove
+        from time import time
         from pocketlab import __module__
         from jsonmodel.loader import jsonLoader
         from jsonmodel.validators import jsonModel
@@ -251,94 +253,334 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         details['config'] = aws_config
         service_list.append(details)
 
+    # construct docker client
+        from labpack.platforms.docker import dockerClient
+        docker_client = dockerClient()
+
+        from pprint import pprint
+            
     # iterate over each service
         for service in service_list:
 
-        # construct message inserts
+        # construct variables
+            service_name = service['name']
+            service_root = service['path']
             service_insert = service['insert']
             msg_insert = 'working directory'
-            if service['name']:
-                msg_insert = 'root directory for "%s"' % service['name']
+            if service_name:
+                msg_insert = 'root directory for "%s"' % service_name
             ec2_insert = 'service %s deployed to ec2.' % service_insert
 
         # retrieve instance details from ec2
-            from pocketlab.init import logger
-            logger.disabled = True
-            ec2_config = {
-                'access_id': aws_config['aws_access_key_id'],
-                'secret_key': aws_config['aws_secret_access_key'],
-                'region_name': aws_config['aws_default_region'],
-                'owner_id': aws_config['aws_owner_id'],
-                'user_name': aws_config['aws_user_name'],
-                'verbose': verbose
-            }
-            from pocketlab.methods.aws import construct_client_ec2, retrieve_instance_details
-            ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
-            instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
+            from pocketlab.methods.aws import establish_connection
+            ec2_client, ssh_client, instance_details = establish_connection(
+                aws_config=aws_config,
+                service_name=service_name, 
+                service_insert=service_insert, 
+                service_root=service_root, 
+                region_name=region_name, 
+                environment_type=environment_type, 
+                resource_tag=resource_tag, 
+                verbose=verbose
+            )
 
-        # verify pem file exists
-            from os import path
-            pem_name = instance_details['key_name']
-            pem_folder = path.join(service_root, '.lab')
-            pem_file = path.join(pem_folder, '%s.pem' % pem_name)
-            if not path.exists(pem_file):
-                raise Exception('SSH requires %s.pem file in the .lab folder of service %s.' % (pem_name, service_insert))
+        # define ssh script printer
+            def print_script(command, message, error=''):
+                if verbose:
+                    print(message, end='', flush=True)
+                try:
+                    response = ssh_client.script(command)
+                    if verbose:
+                        print('done.')
+                except:
+                    if verbose:
+                        print('ERROR.')
+                    if error:
+                        raise Exception(error)
+                    else:
+                        raise
+                return response
 
-        # construct ssh client
-            ssh_config = {
-                'instance_id': instance_details['instance_id'],
-                'pem_file': pem_file
-            }
-            ssh_config.update(ec2_config)
-            ssh_config['verbose'] = verbose
-            from labpack.platforms.aws.ssh import sshClient
-            try:
-                ssh_client = sshClient(**ssh_config)
-            except Exception as err:
-                error_msg = str(err)
-                if str(error_msg).find('private key files are NOT accessible by others'):
-                    error_msg += '\nTry: "chmod 600 %s.pem" in the .lab folder of service %s.' % (pem_name, service_insert)
-                    raise Exception(error_msg)
-                else:
-                    raise
-            logger.disabled = False
+        # disable normal ssh client printing
+            ssh_client.ec2.iam.verbose = False
+        
+        # verify docker installed on ec2
+            sys_command = 'docker --help'
+            sys_message = 'Verifying docker installed on ec2 image ... '
+            sys_error = '"docker" not installed.\nTry using an ECS-Optimized AMI or install docker (https://www.docker.com).'
+            print_script(sys_command, sys_message, sys_error)
 
-        # retrieve compose configurations
+        # retrieve docker images
+            sys_command = 'docker images'
+            sys_message = 'Retrieving list of images on ec2 image ... '
+            sys_output = print_script(sys_command, sys_message)
+            image_list = docker_client._images(sys_output)
 
-        # verify port available
+        # retrieve docker containers
+            sys_command = 'docker ps -a'
+            sys_message = 'Retrieving list of containers on ec2 image ... '
+            sys_output = print_script(sys_command, sys_message)
+            container_list = docker_client._ps(sys_output)
 
-        # verify overwrite of existing files
+        # retrieve list of ports
+            sys_command = 'netstat -lntu'
+            sys_message = 'Retrieving list of open ports on ec2 image ... '
+            sys_output = print_script(sys_command, sys_message)
+            from labpack.parsing.shell import convert_table
+            output_lines = sys_output.splitlines()
+            sys_output = '\n'.join(output_lines[1:])
+            delimiter = '\s(?!A)\s*'
+            connection_list = convert_table(sys_output, delimiter)
+            port_list = []
+            import re
+            for connection in connection_list:
+                if connection['State'] == 'LISTEN':
+                    port_search = re.findall('.*:(\d+)$', connection['Local Address'])
+                    port_list.append(int(port_search[0]))
+
+        # retrieve service configurations
+            from pocketlab.methods.service import retrieve_service_config
+            service_title = '%s %s' % (title, platform_name)
+            service_config, service_name = retrieve_service_config(
+                service_root=service_root,
+                service_name=service_name,
+                command_title=service_title
+            )
+
+        # verify overwrite of existing container
+            existing_container = None
+            for container in container_list:
+                if service_name == container['NAMES']:
+                    import json
+                    ssh_client.ec2.iam.verbose = False
+                    sys_command = 'docker inspect %s' % service_name
+                    response = ssh_client.script(sys_command)
+                    settings = json.loads(response)
+                    try:
+                        sys_command = 'docker logs --tail 1 %s' % service_name
+                        ssh_client.script(sys_command)
+                        status = 'stopped'
+                    except:
+                        status = 'exited'
+                    synopsis = docker_client._synopsis(settings[0], status)
+                    ssh_client.ec2.iam.verbose = True
+                    if not overwrite:
+                        raise Exception('"%s" is %s on ec2 image. To replace, add "-f"' % (service_name, synopsis['container_status']))
+                    else:
+                        existing_container = synopsis
+
+        # verify port availability
+            from pocketlab.methods.service import compile_ports
+            service_ports = compile_ports(service_config)
+            if service_ports:
+                container_ports = set()
+                if existing_container:
+                    for key in existing_container['mapped_ports'].keys():
+                        container_ports.add(int(key))
+                used_ports = set(port_list) - container_ports
+                conflict_ports = used_ports.intersection(service_ports)
+                if conflict_ports:
+                    from labpack.parsing.grammar import join_words
+                    port_names = join_words(list(conflict_ports))
+                    port_plural = ''
+                    if len(conflict_ports) > 1:
+                        port_plural = 's'
+                    raise Exception('Port%s %s are already in use by other processes on ec2 image.' % (port_plural, port_names))
 
         # construct system envvar
             system_envvar = {
                 'system_environment': environment_type,
-                'system_platform': 'ec2'
+                'system_platform': 'ec2',
+                'system_ip': '',
+                'public_ip': ''
             }
-        
-        # establish path of files
-            from os import path
-            from time import time
-            dockerfile_path = path.join(service['path'], 'Dockerfile')
-            platform_path = path.join(service['path'], 'DockerfileEC2')
-            compose_path = path.join(service['path'], 'docker-compose.yaml')
-            temp_path = path.join(service['path'], 'DockerfileTemp%s' % int(time()))
+            if 'public_ip_address' in instance_details.keys():
+                system_envvar['public_ip'] = instance_details['public_ip_address']
+            if 'private_ip_address' in instance_details.keys():
+                system_envvar['system_ip'] = instance_details['private_ip_address']
 
-        # compile dockerfile text
-            from pocketlab.methods.config import compile_dockerfile
-            dockerfile_text = compile_dockerfile(
-                dockerfile_path=dockerfile_path,
-                platform_path=platform_path,
-                compose_path=compose_path,
-                service_details=service,
-                msg_insert=msg_insert,
-                platform_name='ec2',
-                system_envvar=system_envvar,
-                verbose=verbose
-            )
-            from pprint import pprint
-            pprint(dockerfile_text)
+        # verify image exists
+            if mount_volumes:
+
+            # validate image exists in local docker repository
+                from pocketlab.methods.validation import validate_image
+                docker_images = docker_client.images()
+                image_repo, image_tag = validate_image(details['config'], docker_images, service_name)
+
+        # or build new image
+            else:
+
+            # establish path of files
+                dockerfile_path = path.join(service_root, 'Dockerfile')
+                platform_path = path.join(service_root, 'DockerfileEC2')
+                compose_path = path.join(service_root, 'docker-compose.yaml')
+                temp_path = path.join(service_root, 'DockerfileTemp%s' % int(time()))
+    
+            # compile dockerfile text
+                from pocketlab.methods.config import compile_dockerfile
+                dockerfile_text = compile_dockerfile(
+                    dockerfile_path=dockerfile_path,
+                    platform_path=platform_path,
+                    compose_path=compose_path,
+                    service_details=service,
+                    msg_insert=msg_insert,
+                    platform_name='ec2',
+                    system_envvar=system_envvar,
+                    verbose=verbose
+                )
+
+            # create temporary Dockerfile
+                from os import remove
+                from shutil import copyfile
+                if path.exists(dockerfile_path):
+                    copyfile(dockerfile_path, temp_path)
+                with open(dockerfile_path, 'wt') as f:
+                    f.write(dockerfile_text)
+                    f.close()
+
+            # start image build
+                try:
+                    docker_client.build(service_name, dockerfile_path=dockerfile_path)
+                    image_repo = service_name
+                    image_tag = ''
+                except:
+
+                # ROLLBACK Dockerfile
+                    if path.exists(temp_path):
+                        copyfile(temp_path, dockerfile_path)
+                        remove(temp_path)
+
+                    raise
+
+            # restore Dockerfile
+                if path.exists(temp_path):
+                    copyfile(temp_path, dockerfile_path)
+                    remove(temp_path)
+
+        # copy volumes to ec2 image
+            volumes_mounted = False
+            if mount_volumes:
+
+                if 'volumes' in service_config.keys():
+
+                # create directory for service
+                    if service_config['volumes']:
+
+                    # verbosity
+                        if verbose:
+                            print('Copying volumes to ec2 image', end='', flush=True)
+
+                    # determine if service folder exists
+                        sys_command = 'ls %s' % service_name
+                        try:
+                            ssh_client.script(sys_command)
+                            if not overwrite:
+                                if verbose:
+                                    print('ERROR.')
+                                raise Exception('Files for "%s" already exist on ec2 image. To replace, add "-f"' % (service_name))
+                    # determine if service node is a folder
+                            try:
+                                sys_command = 'cd %s' % service_name
+                                ssh_client.script(sys_command)
+                            except:
+                                sys_commands = [
+                                    'sudo rm %s' % service_name,
+                                    'mkdir %s' % service_name
+                                ]
+                                ssh_client.script(sys_commands)
+                        except:
+                            ssh_client.script('mkdir %s' % service_name)
+
+                    # copy volumes to image
+                        from os import path
+                        for volume in service_config['volumes']:
+                            if volume['type'] == 'bind':
+                                remote_path = path.join(service_name, volume['source'])
+                                local_path = path.join(service_root, volume['source'])
+                                try:
+                                    ssh_client.put(local_path, remote_path, overwrite=True)
+                                except:
+                                    if verbose:
+                                        print(' ERROR.')
+                                    raise
+                                if verbose:
+                                    print('.', end='', flush=True)
+
+                        volumes_mounted = True
+                    
+                    # verbosity
+                        if verbose:
+                            print(' done.')
+
+        # save docker image to local file
+            file_name = '%s%s.tar' % (service_name, int(time()))
+            file_path = path.relpath(path.join(service_root, file_name))
+            if verbose:
+                print('Saving docker image %s as %s ... ' % (service_name, file_name), end='', flush=True)
+            try:
+                docker_client.save(image_repo, file_path, image_tag)
+                if verbose:
+                    print('done.')
+            except:
+                if verbose:
+                    print('ERROR.')
+            # ROLLBACK Dockerfile
+                if path.exists(file_path):
+                    remove(file_path)
+                raise
+
+        # copy local file to ec2 image
+            if verbose:
+                print('Copy %s to ec2 image ... ' % file_name, end='', flush=True)
+            try:
+                ssh_client.put(file_path, file_name)
+                if verbose:
+                    print('done.')
+            except:
+                if verbose:
+                    print('ERROR.')
+                raise
+
+        # load file into docker on ec2 image
+            sys_command = 'docker load -i %s' % file_name
+            sys_message = 'Loading %s into docker on ec2 image ... ' % file_name
+            print_script(sys_command, sys_message)
+
+        # remove existing container
+            if existing_container:
+                sys_command = 'docker rm -f %s' % existing_container['container_alias']
+                sys_message = 'Removing existing container "%s" on ec2 image ... ' % existing_container['container_alias']
+                print_script(sys_command, sys_message)
+
+        # start new container
+            if volumes_mounted:
+                run_command = docker_client.run(
+                    image_name=image_repo, 
+                    container_alias=service_name, 
+                    image_tag=image_tag,
+                    
+                )
+                
+        # add reverse proxies
+            if 'proxies' in service_config.keys():
+                if service_config['proxies']:
+
+                # verify installation of nginx
+                    sys_command = 'nginx -v'
+                    sys_message = 'Verifying nginx installed on ec2 image ... '
+                    try:
+                        print_script(sys_command, sys_message)
+                    except:
+                        install_commands = [
+                            'sudo yum update -y',
+                            'sudo yum install -y nginx',
+                            'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
+                        ]
+                        sys_message = 'Install nginx on ec2 image ... '
+                        print_script(install_commands, sys_message)
 
         # compose exit message
+            ssh_client.ec2.iam.verbose = True
             exit_msg = 'Docker image of %s' % ec2_insert
 
             if len(service_list) > 1:

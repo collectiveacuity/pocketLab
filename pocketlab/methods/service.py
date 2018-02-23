@@ -184,7 +184,30 @@ def compile_services(registry_only=False):
                 pass
 
     return service_list
-    
+
+def compile_ports(service_config):
+
+    service_ports = []
+
+# validate ports are available
+    if 'ports' in service_config.keys():
+        for i in range(len(service_config['ports'])):
+            port_string = service_config['ports'][i]
+            port_split = port_string.split(':')
+            sys_port = port_split[0]
+            range_split = sys_port.split('-')
+            port_start = range_split[0]
+            port_end = ''
+            if len(range_split) > 1:
+                port_end = range_split[1]
+            if not port_end:
+                service_ports.append(int(port_start))
+            else:
+                for j in range(int(port_start),int(port_end) + 1):
+                    service_ports.append(j)
+
+    return service_ports
+
 if __name__ == '__main__':
 
     lab_root = retrieve_service_root('lab')

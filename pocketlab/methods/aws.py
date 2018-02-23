@@ -133,3 +133,64 @@ def compile_instances(region_name=''):
     logger.disabled = False
     
     return instance_list
+
+def establish_connection(aws_config, service_name, service_insert, service_root, region_name, environment_type, resource_tag, verbose):
+    
+# retrieve instance details from ec2
+    from pocketlab.init import logger
+    logger.disabled = True
+    if verbose:
+        print('Retrieving ec2 instance details ... ', end='', flush=True)
+    try:
+        ec2_config = {
+            'access_id': aws_config['aws_access_key_id'],
+            'secret_key': aws_config['aws_secret_access_key'],
+            'region_name': aws_config['aws_default_region'],
+            'owner_id': aws_config['aws_owner_id'],
+            'user_name': aws_config['aws_user_name'],
+            'verbose': False
+        }
+        ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+        instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
+        if verbose:
+            print('done.')
+    except Exception:
+        if verbose:
+            print('ERROR.')
+        raise
+
+# verify pem file exists
+    from os import path
+    pem_name = instance_details['key_name']
+    pem_folder = path.join(service_root, '.lab')
+    pem_file = path.join(pem_folder, '%s.pem' % pem_name)
+    if not path.exists(pem_file):
+        raise Exception('SSH requires %s.pem file in the .lab folder of service %s.' % (pem_name, service_insert))
+
+# construct ssh client and open terminal
+    ssh_config = {
+        'instance_id': instance_details['instance_id'],
+        'pem_file': pem_file
+    }
+    ssh_config.update(ec2_config)
+    ssh_config['verbose'] = False
+    from labpack.platforms.aws.ssh import sshClient
+    if verbose:
+        print('Establishing ssh connection ... ', end='', flush=True)
+    try:
+        ssh_client = sshClient(**ssh_config)
+        if verbose:
+            print('done.')
+    except Exception as err:
+        if verbose:
+            print('ERROR.')
+        error_msg = str(err)
+        if str(error_msg).find('private key files are NOT accessible by others'):
+            error_msg += '\nTry: "chmod 600 %s.pem" in the .lab folder of service %s.' % (pem_name, service_insert)
+            raise Exception(error_msg)
+        else:
+            raise
+    logger.disabled = False
+    ssh_client.ec2.iam.verbose = verbose
+
+    return ec2_client, ssh_client, instance_details

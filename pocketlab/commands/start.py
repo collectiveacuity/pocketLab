@@ -8,14 +8,14 @@ starts services in docker containers
 
 _start_details = {
     'title': 'Start',
-    'description': 'Initiates a container with the Docker image for one or more services. Unless overridden by flags, lab automatically adds the host machine variables SYSTEM_LOCALHOST=`hostname -i` and SYSTEM_ENVIRONMENT="dev" to the container.',
+    'description': 'Initiates a container with the Docker image for one or more services. Unless overridden by flags, lab automatically adds the environmental variables SYSTEM_IP, SYSTEM_ENVIRONMENT, SYSTEM_PLATFORM and PUBLIC_IP of the host machine to the container.',
     'help': 'initiates Docker containers for services',
     'benefit': 'Makes services available on localhost'
 }
 
 from pocketlab.init import fields_model
 
-def start(service_list, verbose=True, virtualbox='default', environment_type='dev', ip_address='', print_terminal=''):
+def start(service_list, verbose=True, virtualbox='default', environment_type='dev', print_terminal=''):
 
     title = 'start'
 
@@ -28,7 +28,6 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
         'verbose': verbose,
         'virtualbox': virtualbox,
         'environment_type': environment_type,
-        'ip_address': ip_address,
         'print_terminal': print_terminal
     }
     for key, value in input_fields.items():
@@ -54,63 +53,26 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
 # construct lab list
     lab_list = []
     port_list = []
-
-# retrieve docker-compose schemas
-    from copy import deepcopy
-    from os import path
-    from labpack.parsing.grammar import join_words
-    from pocketlab.methods.validation import validate_compose
-    from pocketlab import __module__
-    from jsonmodel.loader import jsonLoader
-    from jsonmodel.validators import jsonModel
-    compose_model = jsonModel(jsonLoader(__module__, 'models/compose-config.json'))
-    service_model = jsonModel(jsonLoader(__module__, 'models/service-config.json'))
-
-# validate docker-compose files
+    
+# validate each service
     for details in start_list:
-        file_path = path.join(details['path'], 'docker-compose.yaml')
-        service_name = deepcopy(details['name'])
-        compose_details = validate_compose(compose_model, service_model, file_path, service_name)
-        if service_name:
-            details['config'] = compose_details['services'][service_name]
-        else:
-            for key, value in compose_details['services'].items():
-                details['config'] = value
-                details['name'] = key
-                break
-        
+    
+    # validate docker-compose files
+        from pocketlab.methods.service import retrieve_service_config
+        service_config, service_name = retrieve_service_config(details['path'], details['name'], 'start')
+        details['config'] = service_config
+        details['name'] = service_name
+
     # construct message insert
         msg_insert = 'working directory'
         if service_name:
             msg_insert = 'root directory for "%s"' % service_name
         compose_insert = 'docker-compose.yaml file in %s' % msg_insert
-        
-    # validate image field in docker compose file 
-        if not 'image' in details['config'].keys():
-            raise ValueError('%s is missing the image field for services.%s' % (compose_insert, details['name']))
-        elif not details['config']['image']:
-            raise ValueError('%s is missing a value for field service.%s.image' % (compose_insert, details['name']))
-        
+
     # validate image exists in local docker repository
-        image_exists = False
-        image_name = details['config']['image']
-        image_segments = image_name.split(':')
-        image_repo = image_segments[0]
-        image_tag = ''
-        if len(image_segments) > 1:
-            image_tag = image_segments[1]
-        for image in docker_images:
-            if image_repo == image['REPOSITORY']:
-                if image_tag:
-                    if image_tag == image['TAG']:
-                        image_exists = True
-                else:
-                    image_exists = True
-        if not image_exists:
-            raise ValueError('Image "%s" listed in %s not found on local device.\nTry either: "docker pull %s" or "docker build -t %s ."' % (image_name, compose_insert, image_name, image_name))
-        details['image'] = image_repo
-        details['tag'] = image_tag
-        
+        from pocketlab.methods.validation import validate_image
+        details['repo'], details['tag'] = validate_image(details['config'], docker_images, service_name)
+
     # retrieve list of docker containers
         docker_containers = docker_client.ps()
 
@@ -127,45 +89,21 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
             if not print_terminal:
                 raise ValueError('A container already exists for alias "%s".\nTry first: "docker rm -f %s"' % (container_alias, container_alias))
         details['alias'] = container_alias
-        
-    # validate mount paths exist
-        if 'volumes' in details['config'].keys():
-            for i in range(len(details['config']['volumes'])):
-                volume = details['config']['volumes'][i]
-                if volume['type'] == 'bind':
-                    volume_path = path.join(details['path'], volume['source'])
-                    if not path.exists(volume_path):
-                        raise ValueError('Value "%s" for field volume[%s].source in %s is not a valid path.\nVolume "%s" will not be mounted.' % (volume['source'], str(i), compose_insert, volume['source']))
 
     # validate ports are available
-        if 'ports' in details['config'].keys():
-            for i in range(len(details['config']['ports'])):
-                test_ports = []
-                port_string = details['config']['ports'][i]
-                port_split = port_string.split(':')
-                sys_port = port_split[0]
-                range_split = sys_port.split('-')
-                port_start = range_split[0]
-                port_end = ''
-                if len(range_split) > 1:
-                    port_end = range_split[1]
-                if not port_end:
-                    test_ports.append(int(port_start))
-                else:
-                    if port_end <= port_start:
-                        raise ValueError('Value "%s" for field ports[%s] in %s is invalid port mapping.' % (port_string, str(i), compose_insert))
-                    for j in range(int(port_start),int(port_end) + 1):
-                        test_ports.append(j)
-                for port in test_ports:
-                    if port in port_list:
-                        raise ValueError('Value "%s" for field ports[%s] in %s is already mapped to another container.' % (str(port), str(i), compose_insert))
-                    else:
-                        try:
-                            docker_client.command('lsof -Pi :%s -sTCP:LISTEN -t' % port)
-                            raise ValueError('Value "%s" for field ports[%s] in %s is already mapped to a local process.' % (str(port), str(i), compose_insert))
-                        except:
-                            pass
-                        port_list.append(port)
+        from pocketlab.methods.service import compile_ports
+        service_ports = compile_ports(details['config'])
+        for i in range(len(service_ports)):
+            port = service_ports[i]
+            if port in port_list:
+                raise ValueError('Value "%s" for field ports[%s] in %s is already mapped to another container.' % (str(port), str(i), compose_insert))
+            else:
+                try:
+                    docker_client.command('lsof -Pi :%s -sTCP:LISTEN -t' % port)
+                    raise ValueError('Value "%s" for field ports[%s] in %s is already mapped to a local process.' % (str(port), str(i), compose_insert))
+                except:
+                    pass
+                port_list.append(port)
 
     # print progress for each service
         lab_list.append(details)
@@ -176,105 +114,64 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
     if verbose:
         print(' done.')
 
-# retrieve system ip
-    if not ip_address:
-        system_ip = docker_client.ip()
-    else:
-        system_ip = ip_address
-        
+# construct system environmental variables
+    from os import environ
+    system_ip = docker_client.ip()
+    system_envvar = {
+        'SYSTEM_IP': environ.get('SYSTEM_IP', system_ip),
+        'SYSTEM_ENVIRONMENT': environ.get('SYSTEM_ENVIRONMENT', environment_type),
+        'SYSTEM_PLATFORM': environ.get('SYSTEM_PLATFORM', 'localhost'),
+        'PUBLIC_IP': environ.get('PUBLIC_IP', '')
+    }
+    if system_envvar['SYSTEM_PLATFORM'] == 'localhost':
+        if docker_client.vbox_running:
+            system_envvar['SYSTEM_PLATFORM'] = 'virtualbox'
+
 # instantiate containers
     exit_msg = ''
     container_list = []
     for service in lab_list:
-        service_config = service['config']
-        service_alias = service['alias']
-        service_image = service['image']
-        service_tag = service['tag']
-        service_name = service['name']
-        service_path = service['path']
-        container_list.append(service_alias)
+        container_list.append(service['alias'])
 
-    # construct default docker run kwargs
-        run_kwargs = {
-            'image_name': service_image, 
-            'container_alias': service_alias, 
-            'image_tag': service_tag, 
-            'environmental_variables': {
-                'SYSTEM_LOCALHOST': system_ip,
-                'SYSTEM_ENVIRONMENT': environment_type
-            }, 
-            'mapped_ports': None, 
-            'mounted_volumes': None, 
-            'start_command': '', 
-            'network_name': 'host'
-        }
+    # compile run command kwargs
+        from pocketlab.methods.docker import compile_run_kwargs
+        run_kwargs = compile_run_kwargs(
+            service_config=service['config'],
+            service_repo=service['repo'],
+            service_alias=service['alias'],
+            service_tag=service['tag'],
+            service_path=service['path'],
+            system_envvar=system_envvar
+        )
 
-    # add optional compose variables
-        if 'environment' in service_config.keys():
-            for key, value in service_config['environment'].items():
-                if key.upper() not in run_kwargs['environmental_variables'].keys():
-                    run_kwargs['environmental_variables'][key] = value
-        if 'ports' in service_config.keys():
-            run_kwargs['mapped_ports'] = {}
-            for port in service_config['ports']:
-                port_split = port.split(':')
-                sys_port = port_split[0]
-                con_port = port_split[1]
-                run_kwargs['mapped_ports'][sys_port] = con_port
-        if 'volumes' in service_config.keys():
-            run_kwargs['mounted_volumes'] = {}
-            for volume in service_config['volumes']:
-                if volume['type'] == 'bind':
-                    volume_path = path.join(service_path, volume['source'])
-                    run_kwargs['mounted_volumes'][volume_path] = volume['target']
-        if 'command' in service_config.keys():
-            run_kwargs['start_command'] = service_config['command']
-        if 'networks' in service_config.keys():
-            if service_config['networks']:
-                run_kwargs['network_name'] = service_config['networks'][0]
-
-    # run docker run
+    # print run command relative to workdir
         if print_terminal:
 
-        # compose run command
-            windows_path = ''
+        # print run command
             from platform import uname
             local_os = uname()
-            if local_os.system in ('Windows'):
-                windows_path = '/'
-            sys_cmd = 'docker run --name %s' % run_kwargs['container_alias']
-            for key, value in run_kwargs['environmental_variables'].items():
-                sys_cmd += ' -e %s=%s' % (key.upper(), value)
-            for key, value in run_kwargs['mapped_ports'].items():
-                sys_cmd += ' -p %s:%s' % (key, value)
-            for key, value in run_kwargs['mounted_volumes'].items():
-                sys_cmd += ' -v %s"${pwd}/%s":%s' % (windows_path, path.relpath(key), value)
-            if run_kwargs['network_name']:
-                sys_cmd += ' --network %s' % run_kwargs['network_name']
-            sys_cmd += ' -d %s' % run_kwargs['image_name']
-            if run_kwargs['image_tag']:
-                sys_cmd += ':%s' % run_kwargs['image_tag']
-            if run_kwargs['start_command']:
-                sys_cmd += ' %s' % run_kwargs['start_command'].strip()
-            print(sys_cmd)
+            from pocketlab.methods.docker import compile_run_command
+            run_command = compile_run_command(run_kwargs, os=local_os.system)
+            print(run_command)
             return exit_msg
-        
+
+    # run docker run command
         else:
             docker_client.run(**run_kwargs)
 
     # report outcome
         port_msg = ''
-        if 'ports' in service_config.keys():
-            if service_config['ports']:
+        if 'ports' in service['config'].keys():
+            if service['config']['ports']:
                 port_string = ''
-                for port in service_config['ports']:
+                for port in service['config']['ports']:
                     if port_string:
                         port_string += ','
                     port_split = port.split(':')
                     sys_port = port_split[0]
                     port_string += sys_port
                 port_msg = ' at %s:%s' % (system_ip, port_string)
-        service_msg = 'Container "%s" started%s' % (service_alias, port_msg)
+        service_msg = 'Container "%s" started%s' % (service['alias'], port_msg)
         if len(lab_list) > 1:
             if verbose:
                 print(service_msg)
@@ -284,6 +181,7 @@ def start(service_list, verbose=True, virtualbox='default', environment_type='de
     # TODO consider ROLLBACK options for failure to start
 
     if len(lab_list) > 1:
+        from labpack.parsing.grammar import join_words
         containers_string = join_words(container_list)
         exit_msg = 'Finished starting containers %s' % containers_string
 

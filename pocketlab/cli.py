@@ -44,8 +44,9 @@ def cli(error=False, command=''):
         from colorama import Fore, Style
         import re
         def try_sub(x):
-            return '%s%s%s' % (Style.RESET_ALL, Fore.CYAN, x.group())
-        err_sub = re.sub('[\n\s]Try.*$', try_sub, str(err))
+            return '%s%s%s%s' % (Style.RESET_ALL, Fore.CYAN, x.group(1), x.group(2))
+        try_pattern = re.compile('(\\n|\s)(Try.*)$', re.S)
+        err_sub = re.sub(try_pattern, try_sub, str(err))
         print('%sErrr! %s%s' % (Fore.RED, err_sub, Style.RESET_ALL))
     if exit_data:
         if isinstance(exit_data, str):
