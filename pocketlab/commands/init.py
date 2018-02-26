@@ -17,37 +17,34 @@ TODO: add --heroku as a flag to create heroku.yaml
 
 _init_details = {
     'title': 'Init',
-    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.',
+    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--module```, init creates instead a standard framework for publishing a python module.',
     'help': 'creates a lab framework in workdir',
     'benefit': 'Init adds the config files for other lab commands.'
 }
 
 from pocketlab.init import fields_model
 
-def init(service_option, module_name='', vcs_service='', license_type='MIT', init_heroku=False, init_aws=False, verbose=True):
+def init(service_name, vcs_service='', license_type='MIT', init_module=False, init_heroku=False, init_aws=False, verbose=True, overwrite=False):
 
     '''
         a method to add lab framework files to the current directory
     
-    :param service_option: [optional] string with name of service in lab registry
-    :param module_name: [optional] string with name of module to create
+    :param service_name: string with name of service to add to registry
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
+    :param init_module: [optional] boolean to initialize a python module framework
     :param init_heroku: [optional] boolean to add heroku.yaml to .lab folder
     :param init_aws: [optional] boolean to add aws.yaml to .lab folder
     :param verbose: [optional] boolean to toggle process messages
+    :param overwrite: [optional] boolean to overwrite existing service registration
     :return: string with success exit message
     '''
 
     title = 'init'
 
 # validate inputs
-    if isinstance(service_option, str):
-        if service_option:
-            service_option = [service_option]
     input_fields = {
-        'service_option': service_option,
-        'module_name': module_name,
+        'service_name': service_name,
         'vcs_service': vcs_service,
         'license_type': license_type
     }
@@ -70,8 +67,27 @@ def init(service_option, module_name='', vcs_service='', license_type='MIT', ini
                 folder = '%s folder' % folder
             print('%s %s created in %s.' % (file, node_type, folder))
 
+# construct registry client
+    from pocketlab import __module__
+    from labpack.storage.appdata import appdataClient
+    registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
+
+# validate service name is not already in registry
+    file_name = '%s.yaml' % service_name
+    filter_function = registry_client.conditional_filter([{0:{'discrete_values':[file_name]}}])
+    service_list = registry_client.list(filter_function=filter_function)
+    if not file_name in service_list:
+        from pocketlab.commands.home import home
+        home(service_name)
+    else:
+        from labpack.compilers.encoding import decode_data
+        service_details = decode_data(file_name, registry_client.load(file_name))
+        if service_details['service_root'] != path.abspath('./'):
+            from pocketlab.commands.home import home
+            home(service_name, overwrite=overwrite)
+        
 # setup module architecture
-    if module_name:
+    if init_module:
 
     # create vcs ignore files
         import re
@@ -97,16 +113,16 @@ def init(service_option, module_name='', vcs_service='', license_type='MIT', ini
             _printer(hg_path)
 
     # create module folder
-        if not path.exists(module_name):
+        if not path.exists(service_name):
             from os import makedirs
-            makedirs(module_name)
-            _printer(module_name, 'folder')
+            makedirs(service_name)
+            _printer(service_name, 'folder')
 
     # create init file
-        init_path = path.join(module_name, '__init__.py')
+        init_path = path.join(service_name, '__init__.py')
         if not path.exists(init_path):
             from pocketlab.methods.config import construct_init
-            init_text = construct_init(module_name)
+            init_text = construct_init(service_name)
             with open(init_path, 'wt', encoding='utf-8') as f:
                 f.write(init_text)
                 f.close()
@@ -169,7 +185,7 @@ def init(service_option, module_name='', vcs_service='', license_type='MIT', ini
         index_path = path.join('docs', 'index.md')
         if not path.exists(index_path):
             from pocketlab.methods.config import construct_index
-            index_text = construct_index(module_name)
+            index_text = construct_index(service_name)
             with open(index_path, 'wt') as f:
                 f.write(index_text)
                 f.close()
@@ -181,10 +197,10 @@ def init(service_option, module_name='', vcs_service='', license_type='MIT', ini
         module_files = {
             'CHANGES.rst': construct_changes(),
             'LICENSE.txt': construct_license(license_type),
-            'MANIFEST.in': construct_manifest(module_name),
-            'README.rst': construct_readme(module_name=module_name),
-            'mkdocs.yml': construct_mkdocs(module_name),
-            'setup.py': construct_setup(module_name)
+            'MANIFEST.in': construct_manifest(service_name),
+            'README.rst': construct_readme(module_name=service_name),
+            'mkdocs.yml': construct_mkdocs(service_name),
+            'setup.py': construct_setup(service_name)
         }
         for key, value in module_files.items():
             if not path.exists(key):
@@ -193,15 +209,10 @@ def init(service_option, module_name='', vcs_service='', license_type='MIT', ini
                     f.close()
                 _printer(key)
 
-        exit_msg = 'Framework for "%s" setup in current directory.' % module_name
+        exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
 
 # setup service architecture
     else:
-
-    # determine service name
-        service_name = ''
-        if service_option:
-            service_name = service_option[0]
 
     # determine version control service
         if not vcs_service:
@@ -346,7 +357,7 @@ def init(service_option, module_name='', vcs_service='', license_type='MIT', ini
                 f.close()
             _printer(readme_path)
 
-        exit_msg = 'Lab framework setup in current directory.'
+        exit_msg = 'Framework for "%s" service setup in current directory.' % service_name
 
     return exit_msg
 

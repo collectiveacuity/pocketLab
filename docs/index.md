@@ -45,15 +45,15 @@ From GitHub
 ## Getting Started
 All commands for Pocket Lab use the 'lab' keyword. So, at any time, you can type ```lab --help``` from the terminal to see the help menu for the module. In order to use the module for building and deployment with docker, you will first need to setup the service framework around your project with a couple of commands. 
 
-Register a service in the working directory::
-
-    $ lab home <service>
-
 Initialize the lab framework in the working directory::
 
-    $ lab init
+    $ lab init <service>
 
-You can run these commands in a fresh directory at the start of a new project, but they are especially useful for preparing your localhost environment after you have cloned a repo from the remote repository. ```lab init``` will create a couple of local folders for managing credentials and any local data volumes. It will also add placeholder files in those folders from the notes directory and ensure that your version control system ignores these sensitive folders. When you need to update your credentials or edit your configuration, you can simply change the values in these files.
+Return to service root from any directory::
+
+    $ home <service>
+    
+You can run these commands in a fresh directory at the start of a new project, but they are especially useful for preparing your localhost environment after you have cloned a repo from the remote repository. ```lab init <service>``` will create a couple of local folders for managing credentials and any local data volumes. It will also add placeholder files in those folders from the notes directory and ensure that your version control system ignores these sensitive folders. When you need to update your credentials or edit your configuration, you can simply change the values in these files.
 
 ## Further Reading
 Once you have setup the lab framework for your project, you can use other commands to build images, run them locally or deploy them to a variety of cloud providers. Descriptions for how to use the other commands can be found on the [Commands page](commands.md).
