@@ -152,7 +152,8 @@ def compile_compose(compose_schema, service_schema, service_name):
     compose_text = re.sub('(\nversion: )(\d\.?\d?)', replace_version, compose_text)
 
 # replace proxies
-    compose_text = compose_text.replace("server: '5000'", "%s: '5000'" % service_name)
+    if service_name != 'server':
+        compose_text = compose_text.replace("collectiveacuity.com: '5000'", "%s.collectiveacuity.com: '5000'" % service_name)
 
     return compose_text
 

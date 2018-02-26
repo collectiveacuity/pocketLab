@@ -3,19 +3,18 @@ __author__ = 'rcj1492'
 __created__ = '2017.06'
 __license__ = 'MIT'
 
-def compile_nginx(container_list, domain_name, http_port=80, ssl_port=None, ssl_gateway=''):
+def compile_nginx(server_list, http_port=80, ssl_port=None, ssl_gateway=''):
     
     '''
         a method to compile nginx configurations for forwarding to containers
         
-    :param container_list: list of dictionaries with domain and port keys 
-    :param domain_name: string with name of main domain
+    :param server_list: list of dictionaries with domain, port and default keys 
     :param http_port: integer with port of incoming http requests
     :param ssl_port: integer with port of incoming ssl requests
     :param ssl_gateway: string with name of ssl gateway connecting nginx to internet
     :return: string with nginx config text
     '''
-    
+
     # http://nginx.org/en/docs/http/server_names.html
     # https://www.linode.com/docs/websites/nginx/how-to-configure-nginx/
 
@@ -30,67 +29,98 @@ def compile_nginx(container_list, domain_name, http_port=80, ssl_port=None, ssl_
         from labpack.parsing.grammar import join_words
         gateway_text = join_words(supported_gateways, operator='disjunction')
         raise ValueError('compile_nginx(ssl_gateway=%s) must be either %s.' % (ssl_gateway, gateway_text))
-        
-# determine http port destination
-    web_port = 80
-    for container in container_list:
-        if container['domain'] == domain_name:
-            web_port = container['port']
+
+# determine http port destinations
+    import re
+    domain_pattern = re.compile('^[^\.]*?\.[^\.]*?$')
+    domain_list = []
+    default_server = {}
+    for server in server_list:
+        if domain_pattern.match(server['domain']):
+            domain_list.append(server)
+        if 'default' in server.keys():
+            default_server = server
+
+# determine localhost port
+    default_port = ''
+    default_domain = ''
+    if default_server:
+        default_port = default_server['port']
+        default_domain = default_server['domain']
+    else:
+        for server in domain_list:
+            default_port = server['port']
+            default_domain = server['domain']
+            break
 
 # construct default nginx insert
     nginx_insert = ''
     proxy_headers = ''
-    ssl_headers = ''
-    
-
-# determine proxy headers
+    ssl_map = {}
+            
+# determine proxy headers and health check localhost address for elb gateway
     if ssl_gateway == 'elb':
         proxy_headers = 'proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header Host $http_host; '
-        nginx_insert += 'server { listen %s; server_name localhost; location / { proxy_pass http://localhost:%s; } } ' % (http_port, web_port)
-    elif ssl_gateway == 'certbot':
-        ssl_headers = 'ssl_certificate "/etc/letsencrypt/live/%s/fullchain.pem";' % domain_name
-        ssl_headers += ' ssl_certificate_key "/etc/letsencrypt/live/%s/privkey.pem";' % domain_name
-        ssl_headers += ' ssl_session_cache shared:SSL:1m;'
-        ssl_headers += ' ssl_session_timeout 10m;'
-        ssl_headers += ' ssl_protocols TLSv1 TLSv1.1 TLSv1.2;'
-        ssl_headers += ' ssl_ciphers HIGH:SEED:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!RSAPSK:!aDH:!aECDH:!EDH-DSS-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!SRP;'
-        ssl_headers += ' ssl_prefer_server_ciphers on;'
+        if default_port:
+            nginx_insert += 'server { listen %s; server_name localhost; location / { proxy_pass http://localhost:%s; } } ' % (http_port, default_port)
 
-# TODO: find nginx syntax for adding ssl reference to request mapping
+# determine ssl fields for certbot gateway
+    elif ssl_gateway == 'certbot':
+        for server in domain_list:
+            ssl_insert = 'ssl_certificate "/etc/letsencrypt/live/%s/fullchain.pem";' % server['domain']
+            ssl_insert += ' ssl_certificate_key "/etc/letsencrypt/live/%s/privkey.pem";' % server['domain']
+            ssl_insert += ' ssl_session_cache shared:SSL:1m;'
+            ssl_insert += ' ssl_session_timeout 10m;'
+            ssl_insert += ' ssl_protocols TLSv1 TLSv1.1 TLSv1.2;'
+            ssl_insert += ' ssl_ciphers HIGH:SEED:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!RSAPSK:!aDH:!aECDH:!EDH-DSS-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!SRP;'
+            ssl_insert += ' ssl_prefer_server_ciphers on;'
+            ssl_map[server['domain']] = ssl_insert
 
 # construct ssl only properties
     if ssl_port and ssl_gateway:
-        nginx_insert += 'server { listen %s; server_name %s; rewrite ^ https://$server_name$request_uri? permanent; } ' % (http_port, domain_name)
-        nginx_insert += 'server { listen %s default_server; location / { proxy_pass http://localhost:%s; %s} } ' % (http_port, web_port, proxy_headers)
-        ssl_listener = ''
+        for server in domain_list:
+            nginx_insert += 'server { listen %s; server_name %s; rewrite ^ https://$server_name$request_uri? permanent; } ' % (http_port, server['domain'])
+        if default_port:
+            nginx_insert += 'server { listen %s default_server; location / { proxy_pass http://localhost:%s; %s} } ' % (http_port, default_port, proxy_headers)
 
-    # add ssl for each container subdomain
-        for container in container_list:
+    # add ssl for each server subdomain
+        ssl_listener = ''
+        for server in server_list:
             server_details = ''
             if ssl_gateway == 'elb':
-                server_details = 'server { listen %s; server_name %s; location / { proxy_pass http://localhost:%s; %s} }' % (ssl_port, container['domain'], container['port'], proxy_headers)
+                server_details = 'server { listen %s; server_name %s; location / { proxy_pass http://localhost:%s; %s} }' % (ssl_port, server['domain'], server['port'], proxy_headers)
             elif ssl_gateway == 'certbot':
-                server_details = 'server { listen %s ssl; server_name %s; %s location / { proxy_pass http://localhost:%s; } }' % (ssl_port, container['domain'], ssl_headers, container['port'])
+                for key, value in ssl_map.items():
+                    domain_index = server['domain'].rfind(key)
+                    if domain_index > 0:
+                        if server['domain'][:domain_index] + key == server['domain']:
+                            server_details = 'server { listen %s ssl; server_name %s; %s location / { proxy_pass http://localhost:%s; } }' % (ssl_port, server['domain'], value, server['port'])
+                    elif domain_index == 0:
+                        server_details = 'server { listen %s ssl; server_name %s; %s location / { proxy_pass http://localhost:%s; } }' % (ssl_port, server['domain'], value, server['port'])
             if ssl_listener:
                 ssl_listener += ' '
             ssl_listener += server_details
     
     # add redirection for all other subdomains
-        ssl_listener += ' server { listen %s; server_name www.%s; return 301 https://%s; }' % (ssl_port, domain_name, domain_name)
-        ssl_listener += ' server { listen %s default_server; rewrite ^ https://%s permanent; }' % (ssl_port, domain_name)
+        for server in domain_list:
+            ssl_listener += ' server { listen %s; server_name www.%s; return 301 https://%s; }' % (ssl_port, server['domain'], server['domain'])
+        if default_domain:
+            ssl_listener += ' server { listen %s default_server; rewrite ^ https://%s permanent; }' % (ssl_port, default_domain)
         nginx_insert += ssl_listener
 
 # construct http properties
     else:
         open_listener = ''
-        for container in container_list:
-            server_details = 'server { listen %s; server_name %s; location / { proxy_pass http://localhost:%s; %s} }' % (http_port, container['domain'], container['port'], proxy_headers)
+        for server in server_list:
+            server_details = 'server { listen %s; server_name %s; location / { proxy_pass http://localhost:%s; %s} }' % (http_port, server['domain'], server['port'], proxy_headers)
             if open_listener:
                 open_listener += ' '
             open_listener += server_details
-        open_listener += ' server { listen %s; server_name www.%s; return 301 http://%s; }' % (http_port, domain_name, domain_name)
-        open_listener += ' server { listen %s; server_name *.%s; rewrite ^ http://%s permanent; }' % (http_port, domain_name, domain_name)
-        open_listener += ' server { listen %s default_server; location / { proxy_pass http://localhost:%s; %s} }' % (http_port, web_port, proxy_headers)
+        for server in domain_list:
+            open_listener += ' server { listen %s; server_name www.%s; return 301 http://%s; }' % (http_port, server['domain'], server['domain'])
+            open_listener += ' server { listen %s; server_name *.%s; rewrite ^ http://%s permanent; }' % (http_port, server['domain'], server['domain'])
+        if default_port:
+            open_listener += ' server { listen %s default_server; location / { proxy_pass http://localhost:%s; %s} }' % (http_port, default_port, proxy_headers)
         nginx_insert += open_listener
 
 # construct nginx properties
@@ -98,17 +128,21 @@ def compile_nginx(container_list, domain_name, http_port=80, ssl_port=None, ssl_
     
     return nginx_text
 
-def extract_containers(nginx_text, domain_name):
+def extract_servers(nginx_text):
     
-    container_list = []
+    server_list = []
 
 # define regex
     import re
-    server_regex = re.compile('server\s\{.*?(?=server\s\{)', re.S)
-    domain_regex = re.compile('server_name\s([\w\.\-]*%s);.*?\slocation\s/\s\{\sproxy_pass\shttp://localhost:(\d+);' % domain_name, re.S)
+    server_regex = re.compile('server\s\{.*?(?=server\s\{|$)', re.S)
+    domain_regex = re.compile('server_name\s(.*?);.*?\slocation\s/\s\{\sproxy_pass\shttp://localhost:(\d+);', re.S)
+    default_open = re.compile('default_server;\slocation\s/\s\{\sproxy_pass\shttp://localhost:(\d+);', re.S)
+    default_ssl = re.compile('default_server;\srewrite\s\^\shttps://(.*?)\spermanent;', re.S)
 
 # search for matches
     server_search = server_regex.findall(nginx_text)
+    default_port = 0
+    default_domain = ''
     if server_search:
         for server_text in server_search:
             domain_search = domain_regex.findall(server_text)
@@ -116,38 +150,52 @@ def extract_containers(nginx_text, domain_name):
                 for match in domain_search:
                     name = match[0]
                     port = int(match[1])
-                    container_list.append({'domain': name, 'port': port})
-    
-    return container_list
+                    if name != 'localhost':
+                        server_list.append({'domain': name, 'port': port})
+            open_search = default_open.findall(server_text)
+            if open_search:
+                default_port = int(open_search[0])
+            ssl_search = default_ssl.findall(server_text)
+            if ssl_search:
+                default_domain = ssl_search[0]
+
+    for server in server_list:
+        if server['port'] == default_port:
+            server['default'] = True
+        elif server['domain'] == default_domain:
+            server['default'] = True
+            
+    return server_list
 
 if __name__ == '__main__':
 
 # test open domains
     container_list = [ { 'domain': 'collectiveacuity.com', 'port': 5000 } ]
-    domain_name = 'collectiveacuity.com'
-    nginx_text = compile_nginx(container_list, domain_name)
+    nginx_text = compile_nginx(container_list)
     assert nginx_text.find('listen 80; server_name collectiveacuity.com;') > -1
-    new_list = extract_containers(nginx_text, domain_name)
-    for i in range(len(container_list)):
-        assert container_list[i] == new_list[i]
+    new_list = extract_servers(nginx_text)
+    assert len(new_list) == len(container_list)
+    assert new_list[0]['default']
 
 # test ssl with elb
-    nginx_text = compile_nginx(container_list, domain_name, ssl_port=443, ssl_gateway='elb')
+    nginx_text = compile_nginx(container_list, ssl_port=443, ssl_gateway='elb')
     assert nginx_text.find('rewrite ^ https://$server_name$request_uri?') > -1   
 
 # test multiple domains on elb
     container_list.append({'domain': 'api.collectiveacuity.com', 'port': 5001})
-    nginx_text = compile_nginx(container_list, domain_name, ssl_port=443, ssl_gateway='elb')
+    nginx_text = compile_nginx(container_list, ssl_port=443, ssl_gateway='elb')
     nginx_readable = nginx_text.replace(';', ';\n').replace('}', '}\n').replace('{', '{\n')
-    new_list = extract_containers(nginx_text, domain_name)
-    for i in range(len(container_list)):
-        assert container_list[i] == new_list[i]
+    new_list = extract_servers(nginx_text)
+    assert len(new_list) == len(container_list)
+    assert new_list[0]['default']
 
 # test multiple domains on certbot
     nginx_text = open('../../../cred/conf/nginx.conf').read()
-    nginx_text = compile_nginx(container_list, domain_name, ssl_port=443, ssl_gateway='certbot')
+    nginx_text = compile_nginx(container_list, ssl_port=443, ssl_gateway='certbot')
     nginx_readable = nginx_text.replace(';', ';\n').replace('}', '}\n').replace('{', '{\n')
-    new_list = extract_containers(nginx_text, domain_name)
-    for i in range(len(container_list)):
-        assert container_list[i] == new_list[i]
+    new_list = extract_servers(nginx_text)
+    assert len(new_list) == len(container_list)
+    assert new_list[0]['default']
+    print(nginx_text)
+    print(new_list)
 

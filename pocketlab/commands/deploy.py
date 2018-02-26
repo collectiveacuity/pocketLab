@@ -584,6 +584,12 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             if 'proxies' in service_config.keys():
                 if service_config['proxies']:
 
+                # verify installation of certbot
+
+                # retrieve certbot information
+
+                # update certbot information
+
                 # verify installation of nginx
                     sys_command = 'nginx -v'
                     sys_message = 'Verifying nginx installed on ec2 image ... '
@@ -605,16 +611,45 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                     nginx_text = print_script(sys_command, sys_message)
 
                 # update nginx information
+                    from pocketlab.methods.nginx import compile_nginx, extract_servers
+                    nginx_servers = extract_servers(nginx_text)
+                    server_map = {}
+                    for server in nginx_servers:
+                        server_map[server['domain']] = server
+                    for key, value in service_config['proxies'].items():
+                        server_map[key] = {
+                            'domain': key,
+                            'port': int(value)
+                        }
+                    server_list = []
+                    for key, value in server_map.items():
+                        server_list.append(value)
+                    nginx_updated = compile_nginx(
+                        server_list=server_list, 
+                        ssl_port=443,
+                        ssl_gateway='certbot'
+                    )
 
-                # verify installation of certbot
+                # replace nginx conf and restart nginx on ec2 image
+                    nginx_name = 'nginx%s.conf' % int(time())
+                    nginx_temp = path.relpath(path.join(service_root, nginx_name))
+                    with open(nginx_temp, 'wt') as f:
+                        f.write(nginx_updated)
+                        f.close()
+                    if verbose:
+                        print('Updating nginx configurations on ec2 image ... ', end='', flush=True)
+                    try:
+                        ssh_client.put(nginx_temp, nginx_path)
+                        ssh_client.script('sudo service nginx restart')
+                        if verbose:
+                            print('done.')
+                    except:
+                        if verbose:
+                            print('ERROR.')
+                        remove(nginx_temp)
+                        raise
 
-                # retrieve certbot information
-
-                # update certbot information
-
-        # cleanup images on ec2
-        
-        # update container tag with service name
+        # TODO cleanup images on ec2
 
         # compose exit message
             ssh_client.ec2.iam.verbose = True
