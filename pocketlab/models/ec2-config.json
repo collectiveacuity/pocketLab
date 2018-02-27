@@ -1,0 +1,10 @@
+{
+  "schema": {
+    "ami_id": ""
+  },
+  "components": {
+    ".ami_id": {
+      "default_value": "ami-62745007"
+    }
+  }
+}

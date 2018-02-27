@@ -32,6 +32,7 @@
     "init_module": true,
     "init_heroku": true,
     "init_aws": true,
+    "init_ec2": true,
     "print_path": true,
     "print_terminal": true,
     "paginate": true,
@@ -328,7 +329,7 @@
       }
     },
     ".init_heroku": {
-      "field_description": "Include heroku config file in credentials.",
+      "field_description": "Add a heroku config file to .lab folder.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--heroku" ],
@@ -336,11 +337,19 @@
       }
     },
     ".init_aws": {
-      "field_description": "Include aws config file in credentials.",
+      "field_description": "Add an aws config file to .lab folder.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--aws" ],
         "cli_help": "add aws config to .lab folder"
+      }
+    },
+    ".init_ec2": {
+      "field_description": "Add an ec2 config file to working directory.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--ec2" ],
+        "cli_help": "add ec2 config to workdir"
       }
     },
     ".print_path": {

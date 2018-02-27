@@ -11,7 +11,7 @@ TODO: deploy to other platforms (azure, gcp, bluemix, rackspace)
 
 _deploy_details = {
     'title': 'Deploy',
-    'description': 'Deploys a service to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)',
+    'description': 'Deploys a service to a remote platform. Deploy is currently only available for the heroku and ec2 platforms. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)',
     'help': 'deploys service to a remote platform',
     'benefit': 'Makes a service available online.'
 }
