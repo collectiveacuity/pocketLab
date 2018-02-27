@@ -5,8 +5,8 @@ from pocketlab.init import fields_model
 
 _home_details = {
     'title': 'home',
-    'description': 'Home adds the service name and working directory to the lab registry. On its first run, it also adds the alias \'home\' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <service>``` will change the working directory to the folder registered under the service name.',
-    'help': 'creates a home for service in workdir',
+    'description': 'Home adds the service name and working directory to the lab registry. On its first run, it also adds the alias \'home\' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <service>``` will change the working directory to the folder registered under the service name. A quicklink to the workdir is also added by ```lab init <service>```',
+    'help': 'creates a quicklink to workdir',
     'benefit': 'Home makes it easy to locate your services.',
     'epilog': ''
 }

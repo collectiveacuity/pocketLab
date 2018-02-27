@@ -1,4 +1,9 @@
 {
+  "title": "ec2.yaml",
+  "metadata": {
+    "comments": "ec2 instance configurations\nhttp://console.aws.amazon.com/",
+    "flag": "--ec2"
+  },
   "schema": {
     "ami_id": ""
   },

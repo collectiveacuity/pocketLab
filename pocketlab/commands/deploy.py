@@ -40,10 +40,12 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
     
     title = 'deploy'
 
-# validate inputs
+# ingest service option
     if isinstance(service_option, str):
         if service_option:
             service_option = [service_option]
+            
+# validate inputs
     input_fields = {
         'service_option': service_option,
         'platform_name': platform_name,
@@ -99,7 +101,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
     # validate heroku file
         heroku_schema = jsonLoader(__module__, 'models/heroku-config.json')
         heroku_model = jsonModel(heroku_schema)
-        heroku_details = validate_platform(heroku_model, details['path'], service_name)
+        heroku_details = validate_platform(heroku_model, details['path'], service_name, '.lab')
         details['config'] = heroku_details
         service_list.append(details)
 
@@ -227,15 +229,6 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
 # placeholder aws
     elif platform_name == 'ec2':
 
-    # what is the state of the system that is trying to be achieved?
-        # single instance vs. load balancer/auto-scaling group
-        # create/replace instance vs. update existing instance
-        # web routing vs closed ip
-        # fresh account vs. account configuration exists
-        # add/subtract services vs update services
-        # ephemeral vs persistent data (service that backs-up data)
-        # single container vs multiple containers
-
     # check for library dependencies
         from pocketlab.methods.dependencies import import_boto3
         import_boto3('ec2 platform')
@@ -249,7 +242,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         from pocketlab.methods.validation import validate_platform
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
-        aws_config = validate_platform(aws_model, details['path'], service_name)
+        aws_config = validate_platform(aws_model, details['path'], service_name, '.lab')
         details['config'] = aws_config
         service_list.append(details)
 
@@ -274,7 +267,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         # retrieve instance details from ec2
             from pocketlab.methods.aws import establish_connection
             ec2_client, ssh_client, instance_details = establish_connection(
-                aws_config=aws_config,
+                aws_cred=aws_config,
                 service_name=service_name, 
                 service_insert=service_insert, 
                 service_root=service_root, 

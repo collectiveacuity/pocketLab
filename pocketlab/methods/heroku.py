@@ -19,7 +19,7 @@ def compile_instances(service_list):
     for service in service_list:
         try:
         # retrieve services with heroku credentials
-            heroku_details = validate_platform(heroku_model, service['path'], service['name'])
+            heroku_details = validate_platform(heroku_model, service['path'], service['name'], '.lab')
             instance_details = {
                 'id': '',
                 'updated': '',

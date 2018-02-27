@@ -70,12 +70,12 @@ def get(file_path, platform_name, service_option, environment_type='', resource_
         from pocketlab.methods.validation import validate_platform
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
-        aws_config = validate_platform(aws_model, service_root, service_name)
+        aws_config = validate_platform(aws_model, service_root, service_name, '.lab')
 
     # retrieve instance details from ec2
         from pocketlab.methods.aws import establish_connection
         ec2_client, ssh_client, instance_details = establish_connection(
-            aws_config=aws_config,
+            aws_cred=aws_config,
             service_name=service_name, 
             service_insert=service_insert, 
             service_root=service_root, 

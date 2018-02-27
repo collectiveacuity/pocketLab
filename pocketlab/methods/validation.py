@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2017.05'
 __license__ = 'MIT'
 
-def validate_platform(platform_model, service_root, service_name=''):
+def validate_platform(platform_model, service_root, service_name='', relative_path=''):
     
     '''
         a method to validate a yaml configuration file in .lab folder
@@ -10,6 +10,7 @@ def validate_platform(platform_model, service_root, service_name=''):
     :param platform_model: jsonModel object with config schema
     :param service_root: string with path to root of service
     :param service_name: [optional] string with name of service
+    :param relative_path: [optional] string with relative path of folder for file
     :return: dictionary with file configurations
     '''
 
@@ -17,13 +18,18 @@ def validate_platform(platform_model, service_root, service_name=''):
     msg_insert = 'working directory'
     if service_name:
         msg_insert = 'root directory for "%s"' % service_name
-    msg_insert_2 = '.lab sub-folder of %s' % msg_insert
+    msg_insert_2 = msg_insert
+    if relative_path:
+        msg_insert_2 = '%s sub-folder of %s' % (relative_path, msg_insert)
 
 # validate config file exists
     from os import path
     file_flag = platform_model.metadata['flag']
     file_name = platform_model.title
-    file_path = path.join(service_root, '.lab/%s' % file_name)
+    if relative_path:
+        file_path = path.join(service_root, relative_path, file_name)
+    else:
+        file_path = path.join(service_root, file_name)
     file_init = 'lab init %s' % file_flag
     if not path.exists(file_path):
         raise ValueError('%s does not exist in %s.\nTry: "%s" in %s.' % (file_name, msg_insert_2, file_init, msg_insert))

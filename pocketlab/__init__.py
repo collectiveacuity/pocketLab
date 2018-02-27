@@ -9,5 +9,5 @@ __license__ = 'MIT'
 __team__ = 'Collective Acuity'
 __email__ = 'support@collectiveacuity.com'
 __url__ = 'https://github.com/collectiveacuity/pocketLab'
-__order__ = [ 'home', 'init' ]
+__order__ = [ 'init' ]
 __description__ = 'A Command Line Tool for Managing Laboratory Projects'

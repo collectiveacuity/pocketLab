@@ -3,19 +3,19 @@ __author__ = 'rcj1492'
 __created__ = '2017.06'
 __licence__ = 'MIT'
 
-def construct_client_ec2(ec2_config, region_name, service_insert):
+def construct_client_ec2(ec2_cred, region_name=''):
     
     if region_name:
-        ec2_config['region_name'] = region_name
+        ec2_cred['region_name'] = region_name
     from labpack.authentication.aws.iam import AWSConnectionError
     from labpack.platforms.aws.ec2 import ec2Client
     try:
-        ec2_client = ec2Client(**ec2_config)
+        ec2_client = ec2Client(**ec2_cred)
     except AWSConnectionError as err:
         error_lines = str(err).splitlines()
         raise Exception('AWS configuration has the following problem:\n%s' % error_lines[-1])
     ec2_client.list_keypairs()
-    
+
     return ec2_client
 
 def retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag):
@@ -78,12 +78,12 @@ def compile_instances(region_name='', service_list=None):
     from pocketlab.methods.validation import validate_platform
     aws_schema = jsonLoader(__module__, 'models/aws-config.json')
     aws_model = jsonModel(aws_schema)
-    aws_config = validate_platform(aws_model, service_root, service_name)
+    aws_config = validate_platform(aws_model, service_root, service_name, '.lab')
 
 # retrieve instance details from ec2
     from pocketlab.init import logger
     logger.disabled = True
-    ec2_config = {
+    ec2_cred = {
         'access_id': aws_config['aws_access_key_id'],
         'secret_key': aws_config['aws_secret_access_key'],
         'region_name': aws_config['aws_default_region'],
@@ -91,7 +91,7 @@ def compile_instances(region_name='', service_list=None):
         'user_name': aws_config['aws_user_name'],
         'verbose': False
     }
-    ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+    ec2_client = construct_client_ec2(ec2_cred, region_name)
     ec2_list = ec2_client.list_instances()
 
 # construct instance details
@@ -140,7 +140,7 @@ def compile_instances(region_name='', service_list=None):
     
     return instance_list
 
-def establish_connection(aws_config, service_name, service_insert, service_root, region_name, environment_type, resource_tag, verbose):
+def establish_connection(aws_cred, service_name, service_insert, service_root, region_name, environment_type, resource_tag, verbose):
     
 # retrieve instance details from ec2
     from pocketlab.init import logger
@@ -148,15 +148,15 @@ def establish_connection(aws_config, service_name, service_insert, service_root,
     if verbose:
         print('Retrieving ec2 instance details ... ', end='', flush=True)
     try:
-        ec2_config = {
-            'access_id': aws_config['aws_access_key_id'],
-            'secret_key': aws_config['aws_secret_access_key'],
-            'region_name': aws_config['aws_default_region'],
-            'owner_id': aws_config['aws_owner_id'],
-            'user_name': aws_config['aws_user_name'],
+        ec2_cred = {
+            'access_id': aws_cred['aws_access_key_id'],
+            'secret_key': aws_cred['aws_secret_access_key'],
+            'region_name': aws_cred['aws_default_region'],
+            'owner_id': aws_cred['aws_owner_id'],
+            'user_name': aws_cred['aws_user_name'],
             'verbose': False
         }
-        ec2_client = construct_client_ec2(ec2_config, region_name, service_insert)
+        ec2_client = construct_client_ec2(ec2_cred, region_name)
         instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
         if verbose:
             print('done.')
@@ -178,7 +178,7 @@ def establish_connection(aws_config, service_name, service_insert, service_root,
         'instance_id': instance_details['instance_id'],
         'pem_file': pem_file
     }
-    ssh_config.update(ec2_config)
+    ssh_config.update(ec2_cred)
     ssh_config['verbose'] = False
     from labpack.platforms.aws.ssh import sshClient
     if verbose:
