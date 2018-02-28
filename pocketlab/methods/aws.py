@@ -21,7 +21,7 @@ def construct_client_ec2(ec2_cred, region_name=''):
 def retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag):
 
     valid_instances = []
-    filter_insert = 'for container "%s" in AWS region %s' % (container_alias, ec2_client.iam.region_name)
+    filter_insert = 'for service "%s" in AWS region %s' % (container_alias, ec2_client.iam.region_name)
     tag_values = []
     if environment_type:
         filter_insert += ' in the "%s" env' % environment_type
@@ -37,7 +37,7 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
         instance_details = ec2_client.read_instance(instance_id)
         if instance_details['tags']:
             for tag in instance_details['tags']:
-                if tag['key'] == 'Containers':
+                if tag['key'] == 'Services':
                     if tag['value'].find(container_alias) > -1:
                         valid_instances.append(instance_details)
                         break
@@ -113,7 +113,7 @@ def compile_instances(region_name='', service_list=None):
         ec2_details = ec2_client.read_instance(instance_id)
         if ec2_details['tags']:
             for tag in ec2_details['tags']:
-                if tag['key'] == 'Containers':
+                if tag['key'] == 'Services':
                     instance_details['services'] = tag['value'].strip()
                 if tag['key'] == 'Env':
                     instance_details['environment'] = tag['value'].strip()

@@ -185,58 +185,6 @@ def validate_compose(compose_model, service_model, file_path, service_name=''):
             
     return compose_details
 
-def validate_lab(lab_model, file_path, service_name=''):
-    
-    '''
-        a method to validate lab.yaml configuration for service
-        
-    :param lab_model: jsonModel object with lab config schema 
-    :param file_path: string with path to lab.yaml file for service
-    :param service_name: [optional] string with name of service
-    :return: dictionary with lab configurations
-    '''
-
-# construct message insert
-    msg_insert = 'working directory'
-    if service_name:
-        msg_insert = 'root directory for "%s"' % service_name
-
-# validate lab yaml exists
-    from os import path
-    if not path.exists(file_path):
-        raise ValueError('lab.yaml does not exist in %s.\nTry: "lab init" in %s.' % (msg_insert, msg_insert))
-    
-# validate lab yaml is valid
-    from labpack.records.settings import load_settings
-    try:
-        lab_details = load_settings(file_path)
-    except:
-        raise ValueError('lab.yaml file in %s corrupted.\nTry deleting and running again: "lab init"' % (msg_insert))
-
-# validate lab yaml keys
-    from jsonmodel.exceptions import InputValidationError
-    from copy import deepcopy
-    test_details = deepcopy(lab_details)
-    for key, value in lab_model.schema.items():
-        object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
-        if key in test_details.keys():
-            try:
-                object_title = 'Field %s in lab.yaml in %s' % (key, msg_insert)
-                lab_model.validate(test_details[key], '.%s' % key, object_title)
-            except InputValidationError as err:
-                error_msg = "Value None for field .%s failed test 'value_datatype': map" % key
-                if err.message.find(error_msg) > -1:
-                    pass
-                else:
-                    raise
-            except:
-                raise
-        elif value:
-            missing_msg = '%s is missing' % object_title
-            raise ValueError(missing_msg)
-    
-    return lab_details
-
 def validate_image(service_config, docker_images, service_name=''):
 
 # construct message insert

@@ -11,7 +11,7 @@ TODO: deploy to other platforms (azure, gcp, bluemix, rackspace)
 
 _deploy_details = {
     'title': 'Deploy',
-    'description': 'Deploys a service to a remote platform. Deploy is currently only available for the heroku and ec2 platforms. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)',
+    'description': 'Deploys a service to a remote platform. Deploy is currently only available for the heroku and ec2 platforms. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)\n\nPLEASE NOTE: deploy uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".',
     'help': 'deploys service to a remote platform',
     'benefit': 'Makes a service available online.'
 }

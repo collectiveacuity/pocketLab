@@ -5,11 +5,31 @@
     "flag": "--ec2"
   },
   "schema": {
-    "ami_id": ""
+    "image_id": "ami-13af8476",
+    "key_name": "lab-keypair-useast2-dev-20170620",
+    "security_group_ids": [ "sg-8912adf2" ],
+    "instance_type": "t2.micro",
+    "volume_type": "gp2",
+    "ebs_optimized": false,
+    "instance_monitoring": false,
+    "region_name": "us-east-2",
+    "availability_zone": "us-east-2c",
+    "elastic_ip": "",
+    "auction_bid": 0.0,
+    "iam_profile": "ec2ServerRole",
+    "tags": [ { "key": "Services", "value": "server" } ]
   },
   "components": {
-    ".ami_id": {
-      "default_value": "ami-62745007"
+    ".image_id": {
+      "default_value": "ami-13af8476"
+    },
+    ".tags": {
+      "default_value": [
+        { "key": "Services", "value": "server,cass" },
+        { "key": "Env", "value": "dev" },
+        { "key": "UserName", "value": "ec2-user" },
+        { "key": "Name", "value": "lab-server-20170620" }
+      ]
     }
   }
 }
