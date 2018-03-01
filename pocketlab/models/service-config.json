@@ -82,6 +82,23 @@
     },
     ".volumes": {
       "required_field": false,
+      "default_value": [
+        {
+          "type": "bind",
+          "source": "./cred",
+          "target": "/opt/cred"
+        },
+        {
+          "type": "bind",
+          "source": "./data",
+          "target": "/opt/data"
+        },
+        {
+          "type": "bind",
+          "source": "./server",
+          "target": "/opt/server"
+        }
+      ],
       "field_metadata": {
         "position": 5,
         "comments": "replace with volumes required by service"
@@ -91,26 +108,13 @@
       "extra_fields": true
     },
     ".volumes[0].type": {
-      "default_value": "bind",
-      "discrete_values": [ "bind", "volume" ],
-      "field_metadata": {
-        "position": 0,
-        "comments": "use 'volume' for declared shared volumes"
-      }
+      "discrete_values": [ "bind", "volume" ]
     },
     ".volumes[0].source": {
-      "default_value": "./server",
-      "must_not_contain": [ ":" ],
-      "field_metadata": {
-        "position": 1
-      }
+      "must_not_contain": [ ":" ]
     },
     ".volumes[0].target": {
-      "default_value": "/opt/server",
-      "must_not_contain": [ "^:" ],
-      "field_metadata": {
-        "position": 2
-      }
+      "must_not_contain": [ "^:" ]
     },
     ".command": {
       "required_field": false,

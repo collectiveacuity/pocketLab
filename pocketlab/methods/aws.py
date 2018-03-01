@@ -140,7 +140,27 @@ def compile_instances(region_name='', service_list=None):
     
     return instance_list
 
-def establish_connection(aws_cred, service_name, service_insert, service_root, region_name, environment_type, resource_tag, verbose):
+def compile_schema(file_path='models/ec2-config.json'):
+
+    from pocketlab import __module__
+    from jsonmodel.loader import jsonLoader
+    config_schema = jsonLoader(__module__, file_path)
+    iam_schema = jsonLoader('labpack', 'authentication/aws/iam-rules.json')
+    ec2_schema = jsonLoader('labpack', 'platforms/aws/ec2-rules.json')
+    for key, value in iam_schema['components'].items():
+        if key in config_schema['components'].keys():
+            for k, v in value.items():
+                if k not in config_schema['components'][key].keys():
+                    config_schema['components'][key][k] = v
+    for key, value in ec2_schema['components'].items():
+        if key in config_schema['components'].keys():
+            for k, v in value.items():
+                if k not in config_schema['components'][key].keys():
+                    config_schema['components'][key][k] = v
+
+    return config_schema
+
+def initialize_clients(aws_cred, service_name, service_insert, service_root, region_name, environment_type, resource_tag, verbose):
     
 # retrieve instance details from ec2
     from pocketlab.init import logger
@@ -156,7 +176,9 @@ def establish_connection(aws_cred, service_name, service_insert, service_root, r
             'user_name': aws_cred['aws_user_name'],
             'verbose': False
         }
-        ec2_client = construct_client_ec2(ec2_cred, region_name)
+        if region_name:
+            ec2_cred['region_name'] = region_name
+        ec2_client = construct_client_ec2(ec2_cred)
         instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
         if verbose:
             print('done.')
@@ -174,8 +196,34 @@ def establish_connection(aws_cred, service_name, service_insert, service_root, r
         raise Exception('SSH requires %s.pem file in the .lab folder of service %s.' % (pem_name, service_insert))
 
 # construct ssh client and open terminal
+    ssh_client = establish_connection(
+        aws_cred=aws_cred, 
+        instance_id=instance_details['instance_id'],
+        pem_file=pem_file,
+        service_insert=service_insert,
+        region_name=region_name,
+        verbose=verbose
+    )
+
+    return ec2_client, ssh_client, instance_details
+
+def establish_connection(aws_cred, instance_id, pem_file, service_insert, region_name, verbose):
+    
+    from pocketlab.init import logger
+    logger.disabled = True
+
+    ec2_cred = {
+        'access_id': aws_cred['aws_access_key_id'],
+        'secret_key': aws_cred['aws_secret_access_key'],
+        'region_name': aws_cred['aws_default_region'],
+        'owner_id': aws_cred['aws_owner_id'],
+        'user_name': aws_cred['aws_user_name'],
+        'verbose': False
+    }
+    if region_name:
+        ec2_cred['region_name'] = region_name
     ssh_config = {
-        'instance_id': instance_details['instance_id'],
+        'instance_id': instance_id,
         'pem_file': pem_file
     }
     ssh_config.update(ec2_cred)
@@ -192,11 +240,17 @@ def establish_connection(aws_cred, service_name, service_insert, service_root, r
             print('ERROR.')
         error_msg = str(err)
         if str(error_msg).find('private key files are NOT accessible by others'):
+            from os import path
+            pem_root, pem_node = path.split(pem_file)
+            if pem_node:
+                pem_name, pem_ext = path.splitext(pem_node)
+            else:
+                pem_name, pem_ext = path.splitext(pem_root)
             error_msg += '\nTry: "chmod 600 %s.pem" in the .lab folder of service %s.' % (pem_name, service_insert)
             raise Exception(error_msg)
         else:
             raise
     logger.disabled = False
     ssh_client.ec2.iam.verbose = verbose
-
-    return ec2_client, ssh_client, instance_details
+    
+    return ssh_client

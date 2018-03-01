@@ -43,10 +43,12 @@ def cli(error=False, command=''):
     except Exception as err:
         from colorama import Fore, Style
         import re
-        def try_sub(x):
+        def color_sub(x):
             return '%s%s%s%s' % (Style.RESET_ALL, Fore.CYAN, x.group(1), x.group(2))
         try_pattern = re.compile('(\\n|\s)(Try.*)$', re.S)
-        err_sub = re.sub(try_pattern, try_sub, str(err))
+        replace_pattern = re.compile('(\\n|\s)(To replace.*)$', re.S)
+        err_sub = re.sub(try_pattern, color_sub, str(err))
+        err_sub = re.sub(replace_pattern, color_sub, err_sub)
         print('%sErrr! %s%s' % (Fore.RED, err_sub, Style.RESET_ALL))
     if exit_data:
         if isinstance(exit_data, str):

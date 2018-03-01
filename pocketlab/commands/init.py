@@ -280,7 +280,7 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
                 compose_schema = jsonLoader(__module__, 'models/compose-config.json')
                 service_schema = jsonLoader(__module__, 'models/service-config.json')
         
-            # add default values to schemas
+            # # add default values to schemas
                 default_volume_1 = {'type': 'bind', 'source': './cred', 'target': '/opt/cred'}
                 default_volume_2 = {'type': 'bind', 'source': './data', 'target': '/opt/data'}
                 service_schema['schema']['volumes'].insert(0, default_volume_2)
@@ -388,9 +388,22 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
 
         config_path = 'ec2.yaml'
         if not path.exists(config_path):
+
+        # compile schema
+            from pocketlab.methods.aws import compile_schema
+            config_schema = compile_schema('models/ec2-config.json')
+        
+        # compile yaml and save
             from pocketlab.methods.config import compile_yaml
-            config_schema = jsonLoader(__module__, 'models/ec2-config.json')
             config_text = compile_yaml(config_schema)
+            from labpack.records.time import labDT
+            new_dt = labDT.new()
+            dt_string = str(new_dt.date()).replace('-','')
+            config_text = config_text.replace('generate-date', dt_string)
+            for key_name in ('region_name', 'iam_profile', 'elastic_ip'):
+                key_pattern = '\n%s:' % key_name
+                if config_text.find(key_pattern) > -1:
+                    config_text = config_text.replace(key_pattern, "\n# %s:" % key_name)
             with open(config_path, 'wt') as f:
                 f.write(config_text)
                 f.close()

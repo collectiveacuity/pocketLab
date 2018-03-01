@@ -27,12 +27,14 @@
     "ruby_folder": "server/",
     "node_folder": "app/",
     "verbose": true,
-    "all": true,
     "overwrite": true,
+    "all_services": true,
+    "all_info": true,
     "init_module": true,
     "init_heroku": true,
     "init_aws": true,
     "init_ec2": true,
+    "install_deploy": true,
     "print_path": true,
     "print_terminal": true,
     "paginate": true,
@@ -304,12 +306,20 @@
           "cli_help": "turn off lab process messages"
       }
     },
-    ".all": {
+    ".all_services": {
       "field_description": "Apply action to all services in registry.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "-a", "--all" ],
         "cli_help": "apply to all services in registry"
+      }
+    },
+    ".all_info": {
+      "field_description": "Include all details in print out results.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "-a", "--all" ],
+        "cli_help": "include all details in results"
       }
     },
     ".overwrite": {
@@ -350,6 +360,14 @@
       "field_metadata": {
         "cli_flags": [ "--ec2" ],
         "cli_help": "add ec2 config to workdir"
+      }
+    },
+    ".install_deploy": {
+      "field_description": "Install libraries required for deployment on remote platform.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "-i", "--install" ],
+        "cli_help": "install deployment libraries on platform"
       }
     },
     ".print_path": {

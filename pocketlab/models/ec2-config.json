@@ -1,35 +1,95 @@
 {
   "title": "ec2.yaml",
   "metadata": {
-    "comments": "ec2 instance configurations\nhttp://console.aws.amazon.com/",
+    "comments": "ec2 instance configurations\nhttps://console.aws.amazon.com/",
     "flag": "--ec2"
   },
   "schema": {
     "image_id": "ami-13af8476",
-    "key_name": "lab-keypair-useast2-dev-20170620",
-    "security_group_ids": [ "sg-8912adf2" ],
+    "pem_file": ".lab/lab-keypair-useast2-test-generate-date.pem",
+    "group_ids": [ "sg-8912adf2" ],
     "instance_type": "t2.micro",
     "volume_type": "gp2",
     "ebs_optimized": false,
     "instance_monitoring": false,
-    "region_name": "us-east-2",
-    "availability_zone": "us-east-2c",
-    "elastic_ip": "",
     "auction_bid": 0.0,
-    "iam_profile": "ec2ServerRole",
-    "tags": [ { "key": "Services", "value": "server" } ]
+    "region_name": "",
+    "elastic_ip": "",
+    "iam_profile": "",
+    "tag_list": [ { "key": "Services", "value": "server,db" } ]
   },
   "components": {
     ".image_id": {
-      "default_value": "ami-13af8476"
+      "default_value": "ami-13af8476",
+      "field_metadata": {
+        "comments": "current ec2-optimized-ami with docker installed"
+      }
     },
-    ".tags": {
+    ".pem_file": {
+      "default_value": ".lab/lab-keypair-useast2-test-generate-date.pem",
+      "field_metadata": {
+        "comments": "replace with path to pem file to access instance"
+      }
+    },
+    ".group_ids": {
+      "default_value": [ "sg-abcd1234" ],
+      "field_metadata": {
+        "comments": "replace with desired ec2 security groups in region"
+      }
+    },
+    ".instance_type": {
+      "default_value": "t2.micro",
+      "field_metadata": {
+        "comments": "https://aws.amazon.com/ec2/instance-types/"
+      }
+    },
+    ".volume_type": {
+      "default_value": "gp2",
+      "field_metadata": {
+        "comments": "I/O is included in the price of gp2 volumes"
+      }
+    },
+    ".region_name": {
+      "required_field": false,
+      "default_value": "us-east-1",
+      "field_metadata": {
+        "comments": "optional aws region, defaults to region in aws.yaml credentials"
+      }
+    },
+    ".iam_profile": {
+      "required_field": false,
+      "default_value": "ec2ServerRole",
+      "field_metadata": {
+        "comments": "optional iam profile role to connect to other aws services"
+      }
+    },
+    ".elastic_ip": {
+      "required_field": false,
+      "default_value": "123.456.789.0",
+      "contains_either": [ 
+        "\\d+\\.\\d+\\.\\d+\\.\\d+", 
+        "[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F:]*:[0-9a-fA-F]+$" 
+      ],
+      "field_metadata": {
+        "comments": "optional reserved elastic ip address on ec2"
+      }
+    },
+    ".auction_bid": {
+      "min_value": 0.0,
+      "field_metadata": {
+        "comments": "zero value launches an instance with on-demand price"
+      }
+    },
+    ".tag_list": {
       "default_value": [
-        { "key": "Services", "value": "server,cass" },
+        { "key": "Services", "value": "server,db" },
         { "key": "Env", "value": "dev" },
         { "key": "UserName", "value": "ec2-user" },
-        { "key": "Name", "value": "lab-server-20170620" }
-      ]
+        { "key": "Name", "value": "lab-server-generate-date" }
+      ],
+      "field_metadata": {
+        "comments": "ec2 supports up to 5 additional tags"
+      }
     }
   }
 }

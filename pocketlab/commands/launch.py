@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2018.02'
 __license__ = 'MIT'
 
-_init_details = {
+_launch_details = {
     'title': 'Launch',
     'description': 'Launches an instance or an auto-scaling group on a remote platform. Launch is currently only available for the ec2 platform. To create an configuration file to launch an ec2 instance, run ```lab init --ec2``` and adjust the settings appropriately.',
     'help': 'starts instances on remote platform',
@@ -11,7 +11,7 @@ _init_details = {
 
 from pocketlab.init import fields_model
 
-def launch(platform_name, service_option, region_name='', verbose=True, overwrite=False):
+def launch(platform_name, service_option, region_name='', install_deploy=False, verbose=True, overwrite=False):
 
     title = 'launch'
 
@@ -71,13 +71,14 @@ def launch(platform_name, service_option, region_name='', verbose=True, overwrit
         from jsonmodel.loader import jsonLoader
         from jsonmodel.validators import jsonModel
         from pocketlab.methods.validation import validate_platform
+        from pocketlab.methods.aws import compile_schema, compile_instances
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
         aws_model = jsonModel(aws_schema)
         aws_cred = validate_platform(aws_model, service_root, service_name, '.lab')
-        ec2_schema = jsonLoader(__module__, 'models/ec2-config.json')
+        ec2_schema = compile_schema('models/ec2-config.json')
         ec2_model = jsonModel(ec2_schema)
         ec2_config = validate_platform(ec2_model, service_root, service_name)
-
+    
     # construct variables
         msg_insert = 'working directory'
         if service_name:
@@ -94,17 +95,76 @@ def launch(platform_name, service_option, region_name='', verbose=True, overwrit
             'verbose': verbose
         }
         from pocketlab.methods.aws import construct_client_ec2
+        if not region_name:
+            if 'region_name' in ec2_config.keys():
+                region_name = ec2_config['region_name']
         ec2_client = construct_client_ec2(ec2_cred, region_name)
 
-        print(ec2_config)
+    # verify instance name collision
+        old_instance = ''
+        tag_list = []
+        for tag in ec2_config['tag_list']:
+            if tag['key'] == 'Name':
+                tag_list.append(tag['value'])
+        if tag_list:
+            name_tag = tag_list[0]
+            instance_list = ec2_client.list_instances(tag_values=tag_list)
+            for instance_id in instance_list:
+                break_off = False
+                ec2_details = ec2_client.read_instance(instance_id)
+                if ec2_details['tags']:
+                    for tag in ec2_details['tags']:
+                        if tag['key'] == 'Name':
+                            if tag['value'] == name_tag:
+                                if not overwrite:
+                                    raise Exception('Instance with name "%s" already exists.\nTo replace, add "-f"' % name_tag)
+                                else:
+                                    old_instance = instance_id
+                                    break_off = True
+                                    break
+                if break_off:
+                    break
+
+    # TODO verify elastic ip and possible assignment collision
+
+    # create new instance
+        instance_kwargs = {}
+        for key, value in ec2_config.items():
+            if key not in ('region_name', 'elastic_ip'):
+                instance_kwargs[key] = value
+        new_instance = ec2_client.create_instance(**instance_kwargs)
+        exit_msg = 'Instance %s launched on ec2.' % new_instance
     
-        # ecs_optimized_ami = 'ami-62745007'
-        # ec2_client.create_instance(ecs_optimized_ami)
-        # dependency_cmds = [
-        #     'sudo yum update -y',
-        #     'sudo yum install -y nginx',
-        #     'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
-        # ]
-        # ssh_client.script(dependency_cmds, verbose=verbose)
+    # TODO reassign elastic ip
+    # https://boto3.readthedocs.io/en/latest/reference/services/ec2.html#EC2.Client.associate_address
     
+    # TODO remove existing image
+    
+    # install libraries
+        if install_deploy:
+        
+        # wait for instance to be available
+            ec2_client.check_instance_status(new_instance)
+    
+        # initialize ssh client
+            from pocketlab.methods.aws import establish_connection
+            ssh_client = establish_connection(
+                aws_cred=aws_cred,
+                instance_id=new_instance,
+                pem_file=ec2_config['pem_file'],
+                service_insert=service_insert,
+                region_name=region_name,
+                verbose=verbose
+            )
+
+        # install libaries
+            dependency_cmds = [
+                'sudo yum update -y',
+                'sudo yum install -y nginx',
+                'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
+            ]
+            ssh_client.script(dependency_cmds, verbose=verbose)
+
+            exit_msg = 'Instance %s ready to deploy services on ec2.'
+
     return exit_msg

@@ -19,7 +19,7 @@ _list_details = {
 
 from pocketlab.init import fields_model
 
-def list(resource_type, platform_option, region_name='', paginate=False):
+def list(resource_type, platform_option, region_name='', paginate=False, all_info=False):
 
     title = 'list'
 
@@ -132,6 +132,13 @@ def list(resource_type, platform_option, region_name='', paginate=False):
     # format list of instances
         table_headers = [ 'Machine', 'Services', 'Env', 'Region', 'IP Address', 'State' ]
         instance_keys = [ 'machine', 'services', 'environment', 'region', 'ip_address', 'state' ]
+        if all_info:
+            table_headers.pop()
+            instance_keys.pop()
+            table_headers.insert(0, 'Name')
+            instance_keys.insert(0, 'name')
+            table_headers.extend(['Login', 'Instance Id', 'Image Id', 'State'])
+            instance_keys.extend(['login', 'id', 'image', 'state'])
         for instance in instance_list:
             instance_row = []
             for key in instance_keys:

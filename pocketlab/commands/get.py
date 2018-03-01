@@ -73,8 +73,8 @@ def get(file_path, platform_name, service_option, environment_type='', resource_
         aws_config = validate_platform(aws_model, service_root, service_name, '.lab')
 
     # retrieve instance details from ec2
-        from pocketlab.methods.aws import establish_connection
-        ec2_client, ssh_client, instance_details = establish_connection(
+        from pocketlab.methods.aws import initialize_clients
+        ec2_client, ssh_client, instance_details = initialize_clients(
             aws_cred=aws_config,
             service_name=service_name, 
             service_insert=service_insert, 

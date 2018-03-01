@@ -18,7 +18,7 @@ _update_details = {
 
 from pocketlab.init import fields_model
 
-def update(service_list, all=False, verbose=True):
+def update(service_list, all_services=False, verbose=True):
 
     title = 'update'
 
@@ -126,7 +126,7 @@ def update(service_list, all=False, verbose=True):
 
 # construct update list
     from pocketlab.methods.service import retrieve_services
-    update_list, msg_insert = retrieve_services(service_list, all)
+    update_list, msg_insert = retrieve_services(service_list, all_services)
 
 # apply updates
     for service in update_list:
