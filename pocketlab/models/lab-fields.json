@@ -18,6 +18,7 @@
     "license_type": "MIT",
     "environment_type": "prod",
     "ip_address": "127.0.0.1",
+    "url_address": "https://collectiveacuity.com",
     "resource_tag": "20170615",
     "region_name": "us-east-1",
     "html_folder": "site/",
@@ -234,6 +235,14 @@
       "field_metadata": {
         "cli_flags": [ "--ip" ],
         "cli_help": "ipv4 or ipv6 address"
+      }
+    },
+    ".url_address": {
+      "must_contain": [ "((([A-Za-z]{3,9}:(?://)?)(?:[\\-;:&=\\+\\$,\\w]+@)?[A-Za-z0-9.\\-]+(:[0-9]+)?|(?:www.|[\\-;:&=\\+\\$,\\w]+@)[A-Za-z0-9.\\-]+)((?:/[\\+~%/.\\w\\-_]*)?\\??(?:[\\-\\+,=&;%@.\\w_]*)#?(?:[\\w]*))?)" ],
+      "field_description": "URL address",
+      "field_metadata": {
+        "cli_flags": [ "--url" ],
+        "cli_help": "url address"
       }
     },
     ".resource_tag": {
