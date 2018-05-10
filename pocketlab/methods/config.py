@@ -191,13 +191,17 @@ def compile_dockerfile(dockerfile_path, platform_path, compose_path, service_det
 
 # fallback to docker compose file
     if not dockerfile_text:
-        if path.exists(compose_path):
+    
+    # handle yml and yaml variation
+        compose_alt = compose_path.replace('.yaml','.yml')
+        if path.exists(compose_path) or path.exists(compose_alt):
 
             from pocketlab.methods.validation import validate_compose
 
     # validate docker compose file
             compose_details = validate_compose(compose_model, service_model, compose_path, service_name)
-
+            print(compose_details)
+            
             if service_name:
                 service_config.update(compose_details['services'][service_name])
             else:

@@ -274,7 +274,8 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
     
         # add docker compose file
             config_path = 'docker-compose.yaml'
-            if not path.exists(config_path):
+            config_alt = 'docker-compose.yml'
+            if not path.exists(config_path) and not path.exists(config_alt):
     
             # retrieve config schemas
                 compose_schema = jsonLoader(__module__, 'models/compose-config.json')

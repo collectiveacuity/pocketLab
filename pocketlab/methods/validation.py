@@ -80,12 +80,15 @@ def validate_compose(compose_model, service_model, file_path, service_name=''):
         msg_insert = 'root directory for "%s"' % service_name
     compose_insert = 'docker-compose.yaml file in %s' % msg_insert
 
-# validate lab yaml exists
+# validate docker compose yaml exists
     from os import path
     if not path.exists(file_path):
-        raise ValueError('docker-compose.yaml does not exist in %s.\nTry: "lab init" in %s.' % (msg_insert, msg_insert))
+        if path.exists(file_path.replace('.yaml','.yml')):
+            file_path = file_path.replace('.yaml','.yml')
+        else:
+            raise ValueError('docker-compose.yaml does not exist in %s.\nTry: "lab init" in %s.' % (msg_insert, msg_insert))
     
-# validate lab yaml is valid
+# validate docker compose yaml is valid
     from labpack.records.settings import load_settings
     try:
         compose_details = load_settings(file_path)

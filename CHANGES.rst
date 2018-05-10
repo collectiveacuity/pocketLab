@@ -1,9 +1,15 @@
 ChangeLog
 =========
 
+0.8 (2018.05.??)
+----------------
+* [COMMAND ADDED] added launch command to start a remote instance (ec2 only)
+* [FEATURE ADDED] --ec2 flat for init command to setup ec2 config file for launch
+* [BUG FIX] added support for docker-compose.yml extension as well as .yaml
+
 0.7 (2018.02.15)
 ----------------
-* [FEATURE ADDED] added start command to run services in local docker containers
+* [COMMAND ADDED] added start command to run services in local docker containers
 * [FEATURE ADDED] replaced lab.yaml with docker-compose.yaml
 * [FEATURE ADDED] added color to error, success and warning messages
 * [UPDATE] list command with instances option
