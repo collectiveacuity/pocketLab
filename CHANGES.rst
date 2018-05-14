@@ -6,6 +6,8 @@ ChangeLog
 * [COMMAND ADDED] added launch command to start a remote instance (ec2 only)
 * [FEATURE ADDED] --ec2 flat for init command to setup ec2 config file for launch
 * [BUG FIX] added support for docker-compose.yml extension as well as .yaml
+* [BUG FIX] removed auto-generation of "network" field from docker-compose.yaml
+* [BUG FIX] migrated proxies field functionality to "labels" in docker-compose.yaml
 
 0.7 (2018.02.15)
 ----------------

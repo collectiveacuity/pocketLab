@@ -3,7 +3,7 @@
     "comments": "docker compose configuration file\nhttps://docs.docker.com/compose/compose-file/"
   },
   "schema": {
-    "version": "3.2",
+    "version": "3.3",
     "services": {}
   },
   "components": {

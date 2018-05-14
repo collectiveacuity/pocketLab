@@ -14,10 +14,9 @@
       "source": "./server",
       "target": "/opt/server"
     }],
-    "command": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:5000",
-    "networks": [ "bridge" ],
-    "proxies": {
-      "collectiveacuity.com": "5000"
+    "command": "gunicorn -k gevent -w 1 --chdir /opt/server launch:app -b 0.0.0.0:5000",
+    "labels": {
+      "com.collectiveacuity": "5000"
     }
   },
   "components": {
@@ -118,31 +117,21 @@
     },
     ".command": {
       "required_field": false,
-      "default_value": "gunicorn -k gevent -w 1 --chdir /opt/server launch:flask_app -b 0.0.0.0:5000",
+      "default_value": "gunicorn -k gevent -w 1 --chdir /opt/server launch:app -b 0.0.0.0:5000",
       "field_metadata": {
         "position": 6,
         "comments": "eg."
       }
     },
-    ".networks": {
-      "required_field": false,
-      "field_metadata": {
-        "position": 7,
-        "comments": "select from 'none', 'host', 'bridge' and '<custom network>'"
-      }
-    },
-    ".networks[0]": {
-      "default_value": "bridge"
-    },
-    ".proxies": {
+    ".labels": {
       "required_field": false,
       "extra_fields": true,
       "field_metadata": {
         "position": 8,
-        "comments": "optional map of subdomains to ports for deployment to reverse proxy/load balancer"
+        "comments": "optional map of domains in reverse-DNS notation to ports for deployment to nginx"
       }
     },
-    ".proxies.collectiveacuity.com": {
+    ".labels.com.collectiveacuity": {
       "required_field": false,
       "default_value": "5000",
       "field_metadata": {

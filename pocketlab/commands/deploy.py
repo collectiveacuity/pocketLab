@@ -574,8 +574,8 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             print_script(run_command, sys_message)
 
         # add reverse proxies
-            if 'proxies' in service_config.keys():
-                if service_config['proxies']:
+            if 'labels' in service_config.keys():
+                if service_config['labels']:
 
                 # verify installation of certbot
 
@@ -609,11 +609,19 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                     server_map = {}
                     for server in nginx_servers:
                         server_map[server['domain']] = server
-                    for key, value in service_config['proxies'].items():
-                        server_map[key] = {
-                            'domain': key,
-                            'port': int(value)
-                        }
+                    import re
+                    for key, value in service_config['labels'].items():
+                        if not re.findall('[^\d]+', value):
+                            domain_name = ''
+                            domain_segments = key.split('.')
+                            while domain_segments:
+                                if domain_name:
+                                    domain_name += '.'
+                                domain_name += domain_segments.pop()
+                            server_map[key] = {
+                                'domain': domain_name,
+                                'port': int(value)
+                            }
                     server_list = []
                     for key, value in server_map.items():
                         server_list.append(value)

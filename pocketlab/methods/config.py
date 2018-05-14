@@ -151,9 +151,9 @@ def compile_compose(compose_schema, service_schema, service_name):
         return "%s'%s'" % (x.group(1), x.group(2))
     compose_text = re.sub('(\nversion: )(\d\.?\d?)', replace_version, compose_text)
 
-# replace proxies
+# replace labels
     if service_name != 'server':
-        compose_text = compose_text.replace("collectiveacuity.com: '5000'", "%s.collectiveacuity.com: '5000'" % service_name)
+        compose_text = compose_text.replace("com.collectiveacuity: '5000'", "com.collectiveacuity.%s: '5000'" % service_name)
 
     return compose_text
 
@@ -200,7 +200,6 @@ def compile_dockerfile(dockerfile_path, platform_path, compose_path, service_det
 
     # validate docker compose file
             compose_details = validate_compose(compose_model, service_model, compose_path, service_name)
-            print(compose_details)
             
             if service_name:
                 service_config.update(compose_details['services'][service_name])
