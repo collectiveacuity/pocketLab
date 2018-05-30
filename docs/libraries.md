@@ -6,7 +6,8 @@ _A Reverse Proxy Server_
   
 **Installation on EC2:**    
 ```bash
-
+sudo yum install -y nginx
+sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local
 ```
 
 **Modification:** 
@@ -27,6 +28,7 @@ $ sudo yum install -y wget
 $ wget https://dl.eff.org/certbot-auto
 $ sudo chmod a+x certbot-auto
 $ sudo mv certbot-auto /usr/local/bin/certbot-auto
+$ certbot-auto --debug -y --version
 $ sudo service nginx stop # optional
 $ sudo su -
 $ certbot-auto certonly --standalone -d collectiveacuity.com,www.collectiveacuity.com --debug

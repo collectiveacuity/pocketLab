@@ -16,7 +16,8 @@
     "platform_name": "heroku",
     "platform_option": [ "heroku" ],
     "license_type": "MIT",
-    "environment_type": "prod",
+    "environment_type": "dev",
+    "environ_type": "test",
     "ip_address": "127.0.0.1",
     "url_address": "https://collectiveacuity.com",
     "resource_tag": "20170615",
@@ -220,6 +221,14 @@
     },
     ".environment_type":{
       "default_value": "dev",
+      "field_description": "Type of development environment.",
+      "field_metadata": {
+        "cli_flags": [ "--env" ],
+        "cli_help": "type of development environment (default: %(default)s)"
+      }
+    },
+    ".environ_type":{
+      "default_value": "test",
       "field_description": "Type of development environment.",
       "field_metadata": {
         "cli_flags": [ "--env" ],

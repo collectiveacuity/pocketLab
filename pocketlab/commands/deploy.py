@@ -18,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
+def deploy(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -49,7 +49,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
     input_fields = {
         'service_option': service_option,
         'platform_name': platform_name,
-        'environment_type': environment_type,
+        'environ_type': environ_type,
         'resource_tag': resource_tag,
         'region_name': region_name,
         'virtualbox': virtualbox,
@@ -272,7 +272,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                 service_insert=service_insert, 
                 service_root=service_root, 
                 region_name=region_name, 
-                environment_type=environment_type, 
+                environment_type=environ_type, 
                 resource_tag=resource_tag, 
                 verbose=verbose
             )
@@ -297,6 +297,16 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
         # disable normal ssh client printing
             ssh_client.ec2.iam.verbose = False
 
+        # test
+            sys_command = 'sudo cat /etc/rc3.d/S99local'
+            sys_message = 'Checking S99local for service restart command ... '
+            s99local_text = print_script(sys_command, sys_message)
+            print(s99local_text)
+            restart_command = 'docker restart %s' % service_name
+            print(s99local_text.find(restart_command))
+            
+            import sys
+            sys.exit(0)
         # verify docker installed on ec2
             sys_command = 'docker --help'
             sys_message = 'Verifying docker installed on ec2 image ... '
@@ -382,7 +392,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
 
         # construct system envvar
             system_envvar = {
-                'system_environment': environment_type,
+                'system_environment': environ_type,
                 'system_platform': 'ec2',
                 'system_ip': '',
                 'public_ip': ''
@@ -398,7 +408,7 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             # validate image exists in local docker repository
                 from pocketlab.methods.validation import validate_image
                 docker_images = docker_client.images()
-                service_repo, service_tag = validate_image(details['config'], docker_images, service_name)
+                service_repo, service_tag = validate_image(service_config, docker_images, service_name)
 
         # or build new image
             else:
@@ -542,10 +552,17 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
             sys_message = 'Loading %s into docker on ec2 image ... ' % file_name
             print_script(sys_commands, sys_message)
 
+        # check for docker restart command
+            sys_command = 'sudo cat /etc/rc3.d/S99local'
+            sys_message = 'Checking S99local for service restart command ... '
+            s99local_text = print_script(sys_command, sys_message)
+        
         # update docker restart command
-            sys_command = 'sudo chmod 777 /etc/rc3.d/S99local; echo "docker restart %s" >> /etc/rc3.d/S99local' % service_name
-            sys_message = 'Updating S99local to restart service on system restart ... '
-            print_script(sys_command, sys_message)
+            restart_command = 'docker restart %s' % service_name
+            if s99local_text.find(restart_command) == -1:
+                sys_command = 'sudo chmod 777 /etc/rc3.d/S99local; echo "%s" >> /etc/rc3.d/S99local' % restart_command
+                sys_message = 'Updating S99local to restart service on system restart ... '
+                print_script(sys_command, sys_message)
 
         # compile run command
             from pocketlab.methods.docker import compile_run_kwargs, compile_run_command
@@ -578,6 +595,21 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
                 if service_config['labels']:
 
                 # verify installation of certbot
+                    sys_command = 'certbot-auto --version --debug'
+                    sys_message = 'Verifying certbot installed on ec2 image ... '
+                    try:
+                        print_script(sys_command, sys_message)
+                    except:
+                        install_commands = [
+                            'sudo yum update -y',
+                            'sudo yum install -y wget',
+                            'wget https://dl.eff.org/certbot-auto',
+                            'sudo chmod a+x certbot-auto',
+                            'sudo mv certbot-auto /usr/local/bin/certbot-auto',
+                            'certbot-auto --version --debug -y'
+                        ]
+                        sys_message = 'Installing certbot on ec2 image ... '
+                        print_script(install_commands, sys_message)
 
                 # retrieve certbot information
 
@@ -658,56 +690,6 @@ def deploy(platform_name, service_option, environment_type='', resource_tag='', 
 
             if len(service_list) > 1:
                 print(exit_msg)
-
-    # create instance
-        ec2_client = None
-        ssh_client = None
-        docker_client = None
-        tempdata_client = None
-        if ec2_client:
-            from os import path
-            ecs_optimized_ami = 'ami-62745007'
-            ec2_client.create_instance(ecs_optimized_ami)
-            dependency_cmds = [
-                'sudo yum update -y',
-                'sudo yum install -y nginx',
-                'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
-            ]
-            ssh_client.script(dependency_cmds, verbose=verbose)
-        
-        # add docker image to instance
-            container_alias = 'web'
-            image_name = 'webserver'
-            temp_name = '%s-ec2.tar' % image_name
-            local_path = path.join(tempdata_client.collection_folder, temp_name)
-            remote_path = '~/%s' % temp_name
-            docker_client.save('web', local_path)
-            ssh_client.transfer(local_path, remote_path, verbose=verbose)
-            docker_cmds = [
-                'sudo docker load -i %s' % temp_name,
-                'sudo chmod 777 /etc/rc3.d/S99local; echo "docker restart %s" >> /etc/rc3.d/S99local' % container_alias
-            ]
-            ssh_client.script(docker_cmds, verbose=verbose)
-        
-        # start image
-            run_command = docker_client._generate_run('lab.yaml')
-            run_command = 'docker run --name %s -it -d -e PORT=5000 -p 5000:5000 %s' % (container_alias, image_name)
-            docker_cmds = [
-                'sudo %s' % run_command
-            ]
-            ssh_client.script(docker_cmds, verbose=verbose)
-        
-        # update nginx conf
-            from pocketlab.methods.nginx import compile_nginx
-            container_list = [{'domain': 'collectiveacuity.com', 'port': 5000}]
-            nginx_text = compile_nginx(container_list, 'collectiveacuity')
-            nginx_name = 'nginx.conf'
-            local_path = path.join(tempdata_client.collection_folder, nginx_name)
-            with open(local_path, 'wt') as f:
-                f.write(nginx_text)
-                f.close()
-            remote_path = '/etc/nginx/%s' % nginx_name
-            ssh_client.transfer(local_path, remote_path, verbose=verbose)
     
     # TODO consider rollback options   
     # TODO consider build versioning/storage

@@ -16,7 +16,7 @@ _put_details = {
 
 from pocketlab.init import fields_model
 
-def put(file_path, platform_name, service_option, environment_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
+def put(file_path, platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False):
 
     title = 'put'
 
@@ -29,7 +29,7 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
         'service_option': service_option,
         'verbose': verbose,
         'platform_name': platform_name,
-        'environment_type': environment_type,
+        'environ_type': environ_type,
         'resource_tag': resource_tag
     }
     for key, value in input_fields.items():
@@ -85,7 +85,7 @@ def put(file_path, platform_name, service_option, environment_type='', resource_
             service_insert=service_insert, 
             service_root=service_root, 
             region_name=region_name, 
-            environment_type=environment_type, 
+            environment_type=environ_type, 
             resource_tag=resource_tag, 
             verbose=verbose
         )

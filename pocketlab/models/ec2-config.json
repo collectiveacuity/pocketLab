@@ -5,8 +5,8 @@
     "flag": "--ec2"
   },
   "schema": {
-    "image_id": "ami-13af8476",
-    "pem_file": ".lab/lab-keypair-useast2-test-generate-date.pem",
+    "image_id": "ami-5253c32d",
+    "pem_file": ".lab/lab-keypair-useast1-test-generate-date.pem",
     "group_ids": [ "sg-8912adf2" ],
     "instance_type": "t2.micro",
     "volume_type": "gp2",
@@ -20,19 +20,19 @@
   },
   "components": {
     ".image_id": {
-      "default_value": "ami-13af8476",
+      "default_value": "ami-5253c32d",
       "field_metadata": {
-        "comments": "current ec2-optimized-ami with docker installed"
+        "comments": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html"
       }
     },
     ".pem_file": {
-      "default_value": ".lab/lab-keypair-useast2-test-generate-date.pem",
+      "default_value": ".lab/lab-keypair-useast1-test-generate-date.pem",
       "field_metadata": {
         "comments": "replace with path to pem file to access instance"
       }
     },
     ".group_ids": {
-      "default_value": [ "sg-abcd1234" ],
+      "default_value": [ "sg-abcd1234ef567890a" ],
       "field_metadata": {
         "comments": "replace with desired ec2 security groups in region"
       }
@@ -58,7 +58,7 @@
     },
     ".iam_profile": {
       "required_field": false,
-      "default_value": "ec2ServerRole",
+      "default_value": "serverInstanceRole",
       "field_metadata": {
         "comments": "optional iam profile role to connect to other aws services"
       }
@@ -83,7 +83,7 @@
     ".tag_list": {
       "default_value": [
         { "key": "Services", "value": "server,db" },
-        { "key": "Env", "value": "dev" },
+        { "key": "Env", "value": "test" },
         { "key": "UserName", "value": "ec2-user" },
         { "key": "Name", "value": "lab-server-generate-date" }
       ],
