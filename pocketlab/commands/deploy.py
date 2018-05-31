@@ -18,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
+def deploy(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False, ssl=True, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -27,6 +27,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
     :param service_option: [optional] string with name of service in lab registry
     :param verbose: [optional] boolean to toggle process messages
     :param overwrite: [optional] boolean to overwrite existing container
+    :param ssl: [optional] boolean to enable ssl certification
     :param mount_volumes: [optional] boolean to mount volumes in docker-compose.yaml
     :param virtualbox: [optional] string with name of virtualbox image (win7/8)
     :param html_folder: [optional] string with path to static html site folder root
@@ -226,7 +227,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             if len(service_list) > 1:
                 print(exit_msg)
 
-# placeholder aws
+# deploy to ec2
     elif platform_name == 'ec2':
 
     # check for library dependencies
@@ -297,16 +298,6 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
         # disable normal ssh client printing
             ssh_client.ec2.iam.verbose = False
 
-        # test
-            sys_command = 'sudo cat /etc/rc3.d/S99local'
-            sys_message = 'Checking S99local for service restart command ... '
-            s99local_text = print_script(sys_command, sys_message)
-            print(s99local_text)
-            restart_command = 'docker restart %s' % service_name
-            print(s99local_text.find(restart_command))
-            
-            import sys
-            sys.exit(0)
         # verify docker installed on ec2
             sys_command = 'docker --help'
             sys_message = 'Verifying docker installed on ec2 image ... '
@@ -355,7 +346,6 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             for container in container_list:
                 if service_name == container['NAMES']:
                     import json
-                    ssh_client.ec2.iam.verbose = False
                     sys_command = 'docker inspect %s' % service_name
                     response = ssh_client.script(sys_command)
                     settings = json.loads(response)
@@ -366,7 +356,6 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                     except:
                         status = 'exited'
                     synopsis = docker_client._synopsis(settings[0], status)
-                    ssh_client.ec2.iam.verbose = True
                     if not overwrite:
                         raise Exception('"%s" is %s on ec2 image. To replace, add "-f"' % (service_name, synopsis['container_status']))
                     else:
@@ -443,10 +432,15 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
 
             # start image build
                 try:
+                    if verbose:
+                        print('Building docker image ... ')
+                        docker_client.verbose = True
                     docker_client.build(service_name, dockerfile_path=dockerfile_path)
+                    if verbose:
+                        docker_client.verbose = False
                     service_repo = service_name
                     service_tag = ''
-                except:
+                except Exception as err:
 
                 # ROLLBACK Dockerfile
                     if path.exists(temp_path):
@@ -527,14 +521,14 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             except:
                 if verbose:
                     print('ERROR.')
-            # ROLLBACK Dockerfile
+            # ROLLBACK local tar file
                 if path.exists(file_path):
                     remove(file_path)
                 raise
 
         # copy local file to ec2 image
             if verbose:
-                print('Copy %s to ec2 image ... ' % file_name, end='', flush=True)
+                print('Copying %s to ec2 image ... ' % file_name, end='', flush=True)
             try:
                 ssh_client.put(file_path, file_name)
                 if verbose:
@@ -542,7 +536,14 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             except:
                 if verbose:
                     print('ERROR.')
+            # ROLLBACK local tar file
+                if path.exists(file_path):
+                    remove(file_path)
                 raise
+
+        # remove local tar file
+            if path.exists(file_path):
+                remove(file_path)
 
         # load file into docker on ec2 image
             sys_commands = [ 
@@ -556,7 +557,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             sys_command = 'sudo cat /etc/rc3.d/S99local'
             sys_message = 'Checking S99local for service restart command ... '
             s99local_text = print_script(sys_command, sys_message)
-        
+
         # update docker restart command
             restart_command = 'docker restart %s' % service_name
             if s99local_text.find(restart_command) == -1:
@@ -576,8 +577,8 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             )
             if not volumes_mounted:
                 run_kwargs['environmental_variables'] = {}
-                run_kwargs['mounted_volumes'] = None 
-                run_kwargs['start_command'] = '' 
+                run_kwargs['mounted_volumes'] = {}
+                run_kwargs['start_command'] = ''
             run_command = compile_run_command(run_kwargs, root_path='~/%s' % service_name) 
 
         # remove existing container
@@ -594,33 +595,93 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
             if 'labels' in service_config.keys():
                 if service_config['labels']:
 
+                # determine domains port mapping
+                    domain_map = {}
+                    import re
+                    for key, value in service_config['labels'].items():
+                        if not re.findall('[^\d]+', value):
+                            domain_name = ''
+                            cert_name = ''
+                            domain_segments = key.split('.')
+                            segment_count = 0
+                            while domain_segments:
+                                if domain_name:
+                                    domain_name += '.'
+                                    cert_name += '.'
+                                segment_name = domain_segments.pop()
+                                domain_name += segment_name
+                                if segment_count < 2:
+                                    cert_name += segment_name
+                                segment_count += 1
+                            domain_map[domain_name] = {
+                                'domain': domain_name,
+                                'port': int(value),
+                                'cert': cert_name
+                            }
+
                 # verify installation of certbot
-                    sys_command = 'certbot-auto --version --debug'
-                    sys_message = 'Verifying certbot installed on ec2 image ... '
-                    try:
-                        print_script(sys_command, sys_message)
-                    except:
-                        install_commands = [
-                            'sudo yum update -y',
-                            'sudo yum install -y wget',
-                            'wget https://dl.eff.org/certbot-auto',
-                            'sudo chmod a+x certbot-auto',
-                            'sudo mv certbot-auto /usr/local/bin/certbot-auto',
-                            'certbot-auto --version --debug -y'
-                        ]
-                        sys_message = 'Installing certbot on ec2 image ... '
-                        print_script(install_commands, sys_message)
-
-                # retrieve certbot information
-
-                # update certbot information
+                    if ssl:
+                        sys_command = 'certbot-auto --version --debug'
+                        sys_message = 'Verifying certbot installed on ec2 image ... '
+                        try:
+                            print_script(sys_command, sys_message)
+                        except:
+                            install_commands = [
+                                'sudo yum update -y',
+                                'sudo yum install -y wget',
+                                'wget https://dl.eff.org/certbot-auto',
+                                'sudo chmod a+x certbot-auto',
+                                'sudo mv certbot-auto /usr/local/bin/certbot-auto',
+                                'certbot-auto --version --debug -y'
+                            ]
+                            sys_message = 'Installing certbot on ec2 image ... '
+                            print_script(install_commands, sys_message)
+    
+                    # retrieve certbot information
+                        sys_command = 'certbot-auto certificates --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start"'
+                        sys_message = 'Retrieving certificate information ... '
+                        certbot_text = print_script(sys_command, sys_message)
+    
+                    # TODO parse renewal domains in certbot information
+                        from pocketlab.methods.certbot import extract_domains
+                        certbot_domains = extract_domains(certbot_text)
+                        certbot_map = {}
+                        for domain in certbot_domains:
+                            if not domain['cert'] in certbot_map.keys():
+                                certbot_map[domain['cert']] = []
+                            certbot_map[domain['cert']].append(domain['domain'])
+    
+                    # add new domains to certbot map
+                        initial_certs = {}
+                        for key, value in domain_map.items():
+                            if not key in certbot_map.keys():
+                                initial_certs[key] = []
+                                initial_certs[key].append(key)
+                                initial_certs[key].append('www.%s' % key)
+                            elif key in initial_certs.keys():
+                                pass
+                            elif not value['domain'] in certbot_map[key]:
+                                certbot_map[key].append(value['domain'])
+    
+                    # register certbot information
+                        initial_commands = []
+                        for key, value in initial_certs.items():
+                            initial_command = 'certbot-auto certonly --standalone -d %s --debug' % ','.join(value)
+                            initial_commands.append(initial_command)
+                        if initial_commands:
+                            raise Exception('Registration of a new certificate using CertBot must be done manually.\nTry: lab connect ec2\n%s' % '\n'.join(initial_commands))
+    
+                    # update certbot information
+                        certbot_commands = []
+                        for key, value in certbot_map.items():
+                            certbot_command = 'certbot-auto certonly --standalone --debug -n --cert-name %s -d %s --pre-hook "service nginx stop" --post-hook "service nginx start"  --debug' % (key, ','.join(value))
+                            certbot_commands.append(certbot_command)
+                        if certbot_commands:
+                            sys_message = 'Updating certificate information ... '
+                            print_script(certbot_commands, sys_message)
 
                 # verify installation of nginx
-                    sys_command = 'nginx -v'
-                    sys_message = 'Verifying nginx installed on ec2 image ... '
-                    try:
-                        print_script(sys_command, sys_message)
-                    except:
+                    if s99local_text.find('service nginx restart') == -1:
                         install_commands = [
                             'sudo yum update -y',
                             'sudo yum install -y nginx',
@@ -641,27 +702,18 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                     server_map = {}
                     for server in nginx_servers:
                         server_map[server['domain']] = server
-                    import re
-                    for key, value in service_config['labels'].items():
-                        if not re.findall('[^\d]+', value):
-                            domain_name = ''
-                            domain_segments = key.split('.')
-                            while domain_segments:
-                                if domain_name:
-                                    domain_name += '.'
-                                domain_name += domain_segments.pop()
-                            server_map[key] = {
-                                'domain': domain_name,
-                                'port': int(value)
-                            }
+                    for key, value in domain_map.items():
+                        server_map[key] = value
                     server_list = []
                     for key, value in server_map.items():
                         server_list.append(value)
-                    nginx_updated = compile_nginx(
-                        server_list=server_list, 
-                        ssl_port=443,
-                        ssl_gateway='certbot'
-                    )
+                    nginx_updated = compile_nginx(server_list)
+                    if ssl:
+                        nginx_updated = compile_nginx(
+                            server_list=server_list, 
+                            ssl_port=443,
+                            ssl_gateway='certbot'
+                        )
 
                 # replace nginx conf and restart nginx on ec2 image
                     nginx_name = 'nginx%s.conf' % int(time())
@@ -672,7 +724,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                     if verbose:
                         print('Updating nginx configurations on ec2 image ... ', end='', flush=True)
                     try:
-                        ssh_client.put(nginx_temp, nginx_path)
+                        ssh_client.put(nginx_temp, nginx_path, overwrite=True)
                         ssh_client.script('sudo service nginx restart')
                         if verbose:
                             print('done.')
@@ -682,7 +734,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                         remove(nginx_temp)
                         raise
 
-        # TODO cleanup images on ec2
+        # TODO cleanup orphaned files and images on ec2
 
         # compose exit message
             ssh_client.ec2.iam.verbose = True

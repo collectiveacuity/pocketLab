@@ -30,12 +30,14 @@
     "node_folder": "app/",
     "verbose": true,
     "overwrite": true,
+    "ssl": true,
     "all_services": true,
     "all_info": true,
     "init_module": true,
     "init_heroku": true,
     "init_aws": true,
     "init_ec2": true,
+    "init_asg": true,
     "install_deploy": true,
     "print_path": true,
     "print_terminal": true,
@@ -348,6 +350,14 @@
         "cli_help": "overwrite the existing resource"
       }
     },
+    ".ssl": {
+      "field_description": "Disables SSL certificate on domains.",
+      "default_value": true,
+      "field_metadata": {
+        "cli_flags": [ "--ssl" ],
+        "cli_help": "turn off ssl everywhere"
+      }
+    },
     ".init_module": {
       "field_description": "Initialize python module framework.",
       "default_value": false,
@@ -378,6 +388,14 @@
       "field_metadata": {
         "cli_flags": [ "--ec2" ],
         "cli_help": "add ec2 config to workdir"
+      }
+    },
+    ".init_asg": {
+      "field_description": "Add an asg config file to working directory.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--asg" ],
+        "cli_help": "add asg config to workdir"
       }
     },
     ".install_deploy": {

@@ -11,10 +11,10 @@ def compile_run_kwargs(service_config, service_repo, service_alias, service_tag,
         'container_alias': service_alias, 
         'image_tag': service_tag, 
         'environmental_variables': system_envvar,
-        'mapped_ports': None, 
-        'mounted_volumes': None, 
+        'mapped_ports': {}, 
+        'mounted_volumes': {}, 
         'start_command': '', 
-        'network_name': 'host'
+        'network_name': ''
     }
 
 # add optional compose variables
@@ -22,15 +22,13 @@ def compile_run_kwargs(service_config, service_repo, service_alias, service_tag,
         for key, value in service_config['environment'].items():
             if key.upper() not in run_kwargs['environmental_variables'].keys():
                 run_kwargs['environmental_variables'][key] = value
-    if 'ports' in service_config.keys():
-        run_kwargs['mapped_ports'] = {}
+    if 'ports' in service_config.keys():   
         for port in service_config['ports']:
             port_split = port.split(':')
             sys_port = port_split[0]
             con_port = port_split[1]
             run_kwargs['mapped_ports'][sys_port] = con_port
     if 'volumes' in service_config.keys():
-        run_kwargs['mounted_volumes'] = {}
         for volume in service_config['volumes']:
             if volume['type'] == 'bind':
                 volume_path = path.join(service_path, volume['source'])
@@ -56,7 +54,7 @@ def compile_run_command(run_kwargs, root_path='./', os='Linux'):
     for key, value in run_kwargs['mapped_ports'].items():
         sys_cmd += ' -p %s:%s' % (key, value)
     for key, value in run_kwargs['mounted_volumes'].items():
-        sys_cmd += ' -v %s"${pwd}/%s":%s' % (windows_path, path.relpath(key, start=root_path), value)
+        sys_cmd += ' -v %s"${pwd}/%s":%s' % (windows_path, path.join(path.relpath(root_path), key), value)
     if run_kwargs['network_name']:
         sys_cmd += ' --network %s' % run_kwargs['network_name']
     sys_cmd += ' -d %s' % run_kwargs['image_name']

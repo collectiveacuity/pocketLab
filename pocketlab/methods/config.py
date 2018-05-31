@@ -60,7 +60,7 @@ def compile_yaml(config_schema, yaml_path='', ingest_kwargs=None):
                         details['comments'] = metadata['comments']
         config_list.append(details)
     config_list.sort(key=lambda k: k['position'])
-
+   
 # construct config text
     config_text = ''
     if 'comments' in config_model.metadata.keys():
@@ -133,7 +133,7 @@ def compile_yaml(config_schema, yaml_path='', ingest_kwargs=None):
         config_text = ruamel.yaml.dump(user_code, Dumper=ruamel.yaml.RoundTripDumper)
 
     return config_text
-
+    
 def compile_compose(compose_schema, service_schema, service_name):
 
 # add service name to appropriate locations

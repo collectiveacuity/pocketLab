@@ -26,7 +26,7 @@ _init_details = {
 
 from pocketlab.init import fields_model
 
-def init(service_option, vcs_service='', license_type='MIT', init_module=False, init_heroku=False, init_aws=False, init_ec2=False, verbose=True, overwrite=False):
+def init(service_option, vcs_service='', license_type='MIT', init_module=False, init_heroku=False, init_aws=False, init_ec2=False, init_asg=False, verbose=True, overwrite=False):
 
     '''
         a method to add lab framework files to the current directory
@@ -38,6 +38,7 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
     :param init_heroku: [optional] boolean to add heroku.yaml to .lab folder
     :param init_aws: [optional] boolean to add aws.yaml to .lab folder
     :param init_ec2: [optional] boolean to add ec2.yaml to working directory
+    :param init_asg: [optional] boolean to add asg.yaml to working directory
     :param verbose: [optional] boolean to toggle process messages
     :param overwrite: [optional] boolean to overwrite existing service registration
     :return: string with success exit message
@@ -384,32 +385,75 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
                     _printer(config_path)
                     platform_names.append(value['name'])
 
-# handle platform config files
+# define ec2 yaml constructor
+    def _generate_ec2():
+        
+    # compile schema
+        from pocketlab.methods.aws import compile_schema
+        config_schema = compile_schema('models/ec2-config.json')
+    
+    # compile yaml and save
+        from pocketlab.methods.config import compile_yaml
+        config_text = compile_yaml(config_schema)
+        from labpack.records.time import labDT
+        new_dt = labDT.new()
+        dt_string = str(new_dt.date()).replace('-','')
+        config_text = config_text.replace('generate-date', dt_string)
+        for key_name in ('region_name', 'iam_profile', 'elastic_ip'):
+            key_pattern = '\n%s:' % key_name
+            if config_text.find(key_pattern) > -1:
+                config_text = config_text.replace(key_pattern, "\n# %s:" % key_name)
+
+        return config_text
+
+# handle ec2 config file
     if init_ec2:
 
         config_path = 'ec2.yaml'
         if not path.exists(config_path):
 
-        # compile schema
-            from pocketlab.methods.aws import compile_schema
-            config_schema = compile_schema('models/ec2-config.json')
-        
-        # compile yaml and save
-            from pocketlab.methods.config import compile_yaml
-            config_text = compile_yaml(config_schema)
-            from labpack.records.time import labDT
-            new_dt = labDT.new()
-            dt_string = str(new_dt.date()).replace('-','')
-            config_text = config_text.replace('generate-date', dt_string)
-            for key_name in ('region_name', 'iam_profile', 'elastic_ip'):
-                key_pattern = '\n%s:' % key_name
-                if config_text.find(key_pattern) > -1:
-                    config_text = config_text.replace(key_pattern, "\n# %s:" % key_name)
+        # compile ec2 config text and save
+            config_text = _generate_ec2()
             with open(config_path, 'wt') as f:
                 f.write(config_text)
                 f.close()
             _printer(config_path)
             platform_names.append('ec2')
+
+# handle asg config file
+    if init_asg:
+        
+        config_path = 'asg.yaml'
+        if not path.exists(config_path):
+
+        # compile schema
+            from pocketlab.methods.aws import compile_schema
+            asg_schema = compile_schema('models/asg-config.json')
+
+        # compile asg text
+            from pocketlab.methods.config import compile_yaml
+            asg_text = compile_yaml(asg_schema)
+            from labpack.records.time import labDT
+            new_dt = labDT.new()
+            dt_string = str(new_dt.date()).replace('-','')
+            asg_text = asg_text.replace('generate-date', dt_string)
+
+        # compile ec2 text
+            ec2_text = _generate_ec2()
+            ec2_lines = ec2_text.splitlines(keepends=True)
+            ec2_splice = []
+            for i in range(len(ec2_lines)):
+                if i != 1:
+                    ec2_splice.append(ec2_lines[i])
+            ec2_text = ''.join(ec2_splice)
+
+        # merge yaml
+            config_text = asg_text.replace("ec2:\n", 'ec2: ' + ec2_text.replace('\n', '\n  '))
+            with open(config_path, 'wt') as f:
+                f.write(config_text)
+                f.close()
+            _printer(config_path)
+            platform_names.append('asg')
 
 # generate message for non service creation
     if not exit_msg:

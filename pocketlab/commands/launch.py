@@ -50,6 +50,10 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
     if platform_name == 'heroku':
         raise ValueError('It is not possible to launch an instance on heroku.\nTry: lab deploy heroku')
 
+# TODO deploy to auto-scaling group / elb (requires construction of ec2 image)
+    elif platform_name == 'asg':
+        pass
+    
 # process ec2 instance
     elif platform_name == 'ec2':
     

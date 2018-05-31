@@ -1,0 +1,22 @@
+{
+  "title": "asg.yaml",
+  "metadata": {
+    "comments": "AWS auto-scaling group configurations\nhttps://console.aws.amazon.com/",
+    "flag": "--asg"
+  },
+  "schema": {
+    "min_instances": 1,
+    "max_instances": 1,
+    "ec2": {}
+  },
+  "components": {
+    "min_instances": {
+      "default_value": 1,
+      "min_value": 1
+    },
+    "max_instances": {
+      "default_value": 1,
+      "min_value": 1
+    }
+  }
+}
