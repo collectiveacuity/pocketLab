@@ -79,7 +79,7 @@ def compile_nginx(server_list, http_port=80, ssl_port=None, ssl_gateway=''):
 # construct ssl only properties
     if ssl_port and ssl_gateway:
         for server in domain_list:
-            nginx_insert += 'server { listen %s; server_name %s; rewrite ^ https://$server_name$request_uri? permanent; } ' % (http_port, server['domain'])
+            nginx_insert += 'server { listen %s; server_name .%s; rewrite ^ https://$server_name$request_uri? permanent; } ' % (http_port, server['domain'])
         if default_port:
             nginx_insert += 'server { listen %s default_server; location / { proxy_pass http://localhost:%s; %s} } ' % (http_port, default_port, proxy_headers)
 
@@ -103,8 +103,9 @@ def compile_nginx(server_list, http_port=80, ssl_port=None, ssl_gateway=''):
     
     # add redirection for all other subdomains
         for server in domain_list:
-            ssl_listener += ' server { listen %s; server_name www.%s; return 301 https://%s; }' % (ssl_port, server['domain'], server['domain'])
-        if default_domain:
+            if ssl_gateway == 'elb':
+                ssl_listener += ' server { listen %s; server_name www.%s; return 301 https://%s; }' % (ssl_port, server['domain'], server['domain'])
+        if default_domain and ssl_gateway == 'elb':
             ssl_listener += ' server { listen %s default_server; rewrite ^ https://%s permanent; }' % (ssl_port, default_domain)
         nginx_insert += ssl_listener
 
@@ -185,6 +186,7 @@ if __name__ == '__main__':
     container_list.append({'domain': 'api.collectiveacuity.com', 'port': 5001})
     nginx_text = compile_nginx(container_list, ssl_port=443, ssl_gateway='elb')
     nginx_readable = nginx_text.replace(';', ';\n').replace('}', '}\n').replace('{', '{\n')
+    print(nginx_readable)
     new_list = extract_servers(nginx_text)
     assert len(new_list) == len(container_list)
     assert new_list[0]['default']
@@ -193,6 +195,7 @@ if __name__ == '__main__':
     nginx_text = open('../../../cred/conf/nginx.conf').read()
     nginx_text = compile_nginx(container_list, ssl_port=443, ssl_gateway='certbot')
     nginx_readable = nginx_text.replace(';', ';\n').replace('}', '}\n').replace('{', '{\n')
+    print(nginx_readable)
     new_list = extract_servers(nginx_text)
     assert len(new_list) == len(container_list)
     assert new_list[0]['default']

@@ -31,6 +31,7 @@
     "verbose": true,
     "overwrite": true,
     "ssl": true,
+    "resume_routine": true,
     "all_services": true,
     "all_info": true,
     "init_module": true,
@@ -358,6 +359,14 @@
         "cli_help": "turn off ssl everywhere"
       }
     },
+    ".resume_routine": {
+      "field_description": "Resumes routine from last success operation.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--resume" ],
+        "cli_help": "resume from prior progress point"
+      }
+    },
     ".init_module": {
       "field_description": "Initialize python module framework.",
       "default_value": false,
@@ -415,11 +424,11 @@
       }
     },
     ".print_terminal": {
-      "field_description": "Prints out command to terminal.",
+      "field_description": "Prints out command(s) to terminal.",
       "default_value": false,
       "field_metadata": {
           "cli_flags": [ "--print" ],
-          "cli_help": "prints command without running"
+          "cli_help": "prints command(s) without running"
       }
     },
     ".paginate": {
