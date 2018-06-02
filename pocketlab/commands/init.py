@@ -85,7 +85,12 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
             print('%s %s created in %s.' % (file, node_type, folder))
 
 # handle requirements
-    if not init_aws and not init_heroku and not init_ec2 and not service_name:
+    auto_active = False
+    auto_files = [ init_aws, init_heroku, init_ec2, init_asg ]
+    for toggle in auto_files:
+        if toggle:
+            auto_active = True
+    if not auto_active and not service_name:
         raise ValueError('Lab init requires a name for the service framework.\nTry: lab init <service>')
 
 # handl service init
@@ -386,7 +391,14 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
                     platform_names.append(value['name'])
 
 # define ec2 yaml constructor
-    def _generate_ec2():
+    def _generate_ec2(serv_name):
+    
+    # retrieve service name
+        from pocketlab.methods.service import retrieve_service_name
+        if not serv_name:
+            serv_name = retrieve_service_name('./')
+        if not serv_name:
+            serv_name = 'server'
         
     # compile schema
         from pocketlab.methods.aws import compile_schema
@@ -399,6 +411,7 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
         new_dt = labDT.new()
         dt_string = str(new_dt.date()).replace('-','')
         config_text = config_text.replace('generate-date', dt_string)
+        config_text = config_text.replace('generate-service', serv_name)
         for key_name in ('region_name', 'iam_profile', 'elastic_ip'):
             key_pattern = '\n%s:' % key_name
             if config_text.find(key_pattern) > -1:
@@ -413,7 +426,7 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
         if not path.exists(config_path):
 
         # compile ec2 config text and save
-            config_text = _generate_ec2()
+            config_text = _generate_ec2(service_name)
             with open(config_path, 'wt') as f:
                 f.write(config_text)
                 f.close()
@@ -439,7 +452,7 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
             asg_text = asg_text.replace('generate-date', dt_string)
 
         # compile ec2 text
-            ec2_text = _generate_ec2()
+            ec2_text = _generate_ec2(service_name)
             ec2_lines = ec2_text.splitlines(keepends=True)
             ec2_splice = []
             for i in range(len(ec2_lines)):

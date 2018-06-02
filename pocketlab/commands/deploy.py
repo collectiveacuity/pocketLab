@@ -714,7 +714,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                                 elif not value['domain'] in certbot_map[key]:
                                     certbot_map[key].append(value['domain'])
         
-                        # register certbot information
+                        # TODO register certbot information
                             initial_commands = []
                             for key, value in initial_certs.items():
                                 initial_command = 'certbot-auto certonly --standalone -d %s --debug --pre-hook "service nginx stop" --post-hook "service nginx start"' % ','.join(value)

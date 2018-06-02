@@ -21,7 +21,7 @@ def compile_run_kwargs(service_config, service_repo, service_alias, service_tag,
     if 'environment' in service_config.keys():
         for key, value in service_config['environment'].items():
             if key.upper() not in run_kwargs['environmental_variables'].keys():
-                run_kwargs['environmental_variables'][key] = value
+                run_kwargs['environmental_variables'][key.upper()] = value
     if 'ports' in service_config.keys():   
         for port in service_config['ports']:
             port_split = port.split(':')
@@ -34,7 +34,20 @@ def compile_run_kwargs(service_config, service_repo, service_alias, service_tag,
                 volume_path = path.join(service_path, volume['source'])
                 run_kwargs['mounted_volumes'][volume_path] = volume['target']
     if 'command' in service_config.keys():
-        run_kwargs['start_command'] = service_config['command']
+        import re
+        bracket_pattern = re.compile('\$\{.*?\}')
+        space_pattern = re.compile('\$.*?(\s|$)')
+        def _replace_bracket(x):
+            envvar_key = x.group()[2:-1]
+            if envvar_key in run_kwargs['environmental_variables'].keys():
+                return run_kwargs['environmental_variables'][envvar_key]
+        def _replace_space(x):
+            envvar_key = x.group().strip()[1:]
+            if envvar_key in run_kwargs['environmental_variables'].keys():
+                return run_kwargs['environmental_variables'][envvar_key]
+        start_command = bracket_pattern.sub(_replace_bracket, service_config['command'])
+        start_command = space_pattern.sub(_replace_space, start_command)
+        run_kwargs['start_command'] = start_command
     if 'networks' in service_config.keys():
         if service_config['networks']:
             run_kwargs['network_name'] = service_config['networks'][0]
