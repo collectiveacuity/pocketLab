@@ -18,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False, ssl=True, resume_routine=False, print_terminal=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder=''):
+def deploy(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False, ssl=True, resume_routine=False, print_terminal=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder='', jingo_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -37,6 +37,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
     :param java_folder: [optional] string with path to java app folder root
     :param ruby_folder: [optional] string with path to ruby app folder root
     :param node_folder: [optional] string with path to node app folder root
+    :param jingo_folder: [optional] string with path to jingo app folder root
     :param print_terminal: [optional] boolean to print ssh commands and conf values
     :return: string with exit message
     '''
@@ -61,7 +62,8 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
         'python_folder': python_folder,
         'java_folder': java_folder,
         'ruby_folder': ruby_folder,
-        'node_folder': node_folder
+        'node_folder': node_folder,
+        'jingo_folder': jingo_folder
     }
     for key, value in input_fields.items():
         if value:
@@ -161,6 +163,10 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                 node_folder = _site_path(node_folder, service['path'], service_insert, 'node')
                 heroku_client.deploy_app(node_folder, 'node')
                 exit_msg = 'Node app of %s' % heroku_insert
+            elif jingo_folder:
+                jingo_folder = _site_path(jingo_folder, service['path'], service_insert, 'jingo')
+                heroku_client.deploy_app(jingo_folder, 'jingo')
+                exit_msg = 'Jingo app of %s' % heroku_insert
 
         # deploy app in docker container
             else:

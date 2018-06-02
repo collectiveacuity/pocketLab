@@ -28,6 +28,7 @@
     "java_folder": "server/",
     "ruby_folder": "server/",
     "node_folder": "app/",
+    "jingo_folder": "./",
     "verbose": true,
     "overwrite": true,
     "ssl": true,
@@ -317,6 +318,14 @@
         "cli_group": "runtimes",
         "cli_flags": [ "--node" ],
         "cli_help": "path to folder with package.json"
+      }
+    },
+    ".jingo_folder": {
+      "field_description": "Path to Jingo app root folder.",
+      "field_metadata": {
+        "cli_group": "runtimes",
+        "cli_flags": [ "--jingo" ],
+        "cli_help": "path to folder with jingo Procfile"
       }
     },
     ".verbose": {
