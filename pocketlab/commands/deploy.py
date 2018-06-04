@@ -18,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True, overwrite=False, ssl=True, resume_routine=False, print_terminal=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder='', jingo_folder=''):
+def deploy(platform_name, service_option, environ_type='test', resource_tag='', region_name='', verbose=True, overwrite=False, ssl=True, resume_routine=False, print_terminal=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder='', jingo_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -181,7 +181,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
     
             # construct system envvar
                 system_envvar = {
-                    'system_environment': 'prod',
+                    'system_environment': environ_type,
                     'system_platform': 'heroku'
                 }
 
@@ -385,7 +385,7 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                     except:
                         status = 'exited'
                     synopsis = docker_client._synopsis(settings[0], status)
-                    if not overwrite:
+                    if not overwrite and not resume_routine:
                         raise Exception('"%s" is %s on ec2 image. To replace, add "-f"' % (service_name, synopsis['container_status']))
                     else:
                         existing_container = synopsis
@@ -700,16 +700,22 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                             certbot_text = print_script(sys_command, sys_message)
         
                         # parse renewal domains in certbot information
+                            from time import time
                             from pocketlab.methods.certbot import extract_domains
                             certbot_domains = extract_domains(certbot_text)
                             certbot_map = {}
+                            renew_certs = False
+                            renew_time = time() + 29 * 24 * 3600
                             for domain in certbot_domains:
                                 if not domain['cert'] in certbot_map.keys():
                                     certbot_map[domain['cert']] = []
                                 certbot_map[domain['cert']].append(domain['domain'])
+                                if domain['expires'] < renew_time:
+                                    renew_certs = True
         
                         # add new domains to certbot map
                             initial_certs = {}
+                            update_certs = []
                             for key, value in domain_map.items():
                                 if not key in certbot_map.keys():
                                     initial_certs[key] = []
@@ -719,24 +725,31 @@ def deploy(platform_name, service_option, environ_type='', resource_tag='', regi
                                     pass
                                 elif not value['domain'] in certbot_map[key]:
                                     certbot_map[key].append(value['domain'])
-        
-                        # TODO register certbot information
+                                    update_certs.append(key)
+
+                        # register certbot information
                             initial_commands = []
                             for key, value in initial_certs.items():
                                 initial_command = 'certbot-auto certonly --standalone -d %s --debug --pre-hook "service nginx stop" --post-hook "service nginx start"' % ','.join(value)
                                 initial_commands.append(initial_command)
                             if initial_commands:
-                                raise Exception('Registration of a new certificate using CertBot must be done manually.\nTry: lab connect ec2\n%s' % '\n'.join(initial_commands))
+                                raise Exception('Registration of a new ssl certificate using CertBot must be done manually.\nTry: lab connect ec2\n%s\nThen exit ssh and run "lab deploy ec2 --resume"' % '\n'.join(initial_commands))
         
                         # update certbot information
-                            certbot_commands = []
-                            for key, value in certbot_map.items():
-                                certbot_command = 'certbot-auto certonly --standalone --debug -n --cert-name %s -d %s --pre-hook "service nginx stop" --post-hook "service nginx start"  --debug' % (key, ','.join(value))
-                                certbot_commands.append(certbot_command)
-                            if certbot_commands:
-                                sys_message = 'Updating certificate information ... '
-                                print_script(certbot_commands, sys_message)
+                            update_commands = []
+                            for cert in update_certs:
+                                certbot_command = 'certbot-auto certonly --standalone --debug -n --cert-name %s -d %s --pre-hook "service nginx stop" --post-hook "service nginx start"  --debug' % (cert, ','.join(certbot_map[cert]))
+                                update_commands.append(certbot_command)
+                            if update_commands:
+                                sys_message = 'Updating ssl certificate information ... '
+                                print_script(update_commands, sys_message)
 
+                        # renew certbot information
+                            if renew_certs:
+                                sys_command = 'certbot-auto renew --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start"'
+                                sys_message = 'Renewing ssl certificates ... '
+                                print_script(sys_command, sys_message)
+                            
                     # save progress
                         progress_map['step'] = 4
                         progress_client.save(progress_id, encode_data(progress_id, progress_map))

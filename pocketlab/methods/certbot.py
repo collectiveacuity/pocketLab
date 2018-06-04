@@ -7,14 +7,16 @@ def extract_domains(certbot_text):
     domain_list = []
     
     import re
-    cert_pattern = re.compile('(\s\sCertificate Name:\s)(.*?)(\n\s+Domains:\s)(.*?)(\n\s+Expiry)', re.S)
+    from labpack.records.time import labDT
+    cert_pattern = re.compile('(\s\sCertificate Name:\s)(.*?)(\n\s+Domains:\s)(.*?)(\n\s+Expiry Date:\s)(.*?)(\s\()', re.S)
     cert_search = cert_pattern.findall(certbot_text)
     if cert_search:
         for cert_tuple in cert_search:
             cert_name = cert_tuple[1]
+            cert_expire = labDT.fromISO(cert_tuple[5]).epoch()
             cert_domains = cert_tuple[3].split(' ')
             for domain in cert_domains:
-                domain_list.append({'cert': cert_name, 'domain': domain})
+                domain_list.append({'cert': cert_name, 'domain': domain, 'expires': cert_expire})
     
     return domain_list
 
