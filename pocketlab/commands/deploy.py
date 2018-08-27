@@ -704,14 +704,14 @@ def deploy(platform_name, service_option, environ_type='test', resource_tag='', 
                             from pocketlab.methods.certbot import extract_domains
                             certbot_domains = extract_domains(certbot_text)
                             certbot_map = {}
-                            renew_certs = False
+                            renew_certs = {}
                             renew_time = time() + 29 * 24 * 3600
                             for domain in certbot_domains:
                                 if not domain['cert'] in certbot_map.keys():
                                     certbot_map[domain['cert']] = []
                                 certbot_map[domain['cert']].append(domain['domain'])
                                 if domain['expires'] < renew_time:
-                                    renew_certs = True
+                                    renew_certs[domain['cert']] = True
         
                         # add new domains to certbot map
                             initial_certs = {}
@@ -745,11 +745,11 @@ def deploy(platform_name, service_option, environ_type='test', resource_tag='', 
                                 print_script(update_commands, sys_message)
 
                         # renew certbot information
-                            if renew_certs:
+                            if set(renew_certs) - set(update_certs):
                                 sys_command = 'certbot-auto renew --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start"'
                                 sys_message = 'Renewing ssl certificates ... '
                                 print_script(sys_command, sys_message)
-                            
+
                     # save progress
                         progress_map['step'] = 4
                         progress_client.save(progress_id, encode_data(progress_id, progress_map))

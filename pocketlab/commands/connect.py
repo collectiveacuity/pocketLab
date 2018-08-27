@@ -51,9 +51,18 @@ def connect(platform_name, service_option, environ_type='', resource_tag='', reg
         service_root = './'
 
 # retrieve service configurations
-    from pocketlab.methods.service import retrieve_service_config
-    service_title = '%s %s' % (title, platform_name)
-    service_config, service_name = retrieve_service_config(service_root, service_name, service_title)
+    from pocketlab.methods.service import retrieve_service_name
+    service_name = retrieve_service_name(service_root)
+    if not service_name:
+        try:
+            from pocketlab.methods.service import retrieve_service_config
+            service_title = '%s %s' % (title, platform_name)
+            service_config, service_name = retrieve_service_config(service_root, service_name, service_title)
+        except Exception as err:
+            if str(err).find('docker-compose.yaml does not exist in'):
+                raise ValueError('Working directory needs a service name or docker-compose.yaml file.\nTry: "lab home <service_name>" or "lab init <service_name" in working directory.')
+            else:
+                raise
 
 # handle ec2 platform
     if platform_name == 'ec2':

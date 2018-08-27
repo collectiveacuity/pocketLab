@@ -1,13 +1,15 @@
 ChangeLog
 =========
 
-0.8 (2018.05.??)
+0.8 (2018.08.27)
 ----------------
 * [COMMAND ADDED] added launch command to start a remote instance (ec2 only)
 * [FEATURE ADDED] --ec2 flag for init command to setup ec2 config file for launch
 * [FEATURE ADDED] added ec2 platform and certbot ssl to deploy options
 * [FEATURE ADDED] added jingo app support for heroku deployment
 * [UPDATE] added container:release to heroku-cli commands in deployment
+* [UPDATE] added list of certificates to renew during ec2 deploy 
+* [BUG FIX] removed requirement for docker-compose.yaml to use connect command
 * [BUG FIX] added support for docker-compose.yml extension as well as .yaml
 * [BUG FIX] removed auto-generation of "network" field from docker-compose.yaml
 * [BUG FIX] migrated proxies field functionality to "labels" in docker-compose.yaml
