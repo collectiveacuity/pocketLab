@@ -45,6 +45,8 @@ docs_dev/
 generate.py
 
 ###############   IDE files   ##################
+venv/
+venv3/
 .~lock.*
 *.so
 .DS_STORE

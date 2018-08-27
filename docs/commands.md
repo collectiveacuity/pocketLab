@@ -1,44 +1,16 @@
 # Commands
 
-## Home
-_Home makes it easy to locate your services._  
-
-**Description:**  
-Home adds the service name and working directory to the lab registry. On its first run, it also adds the alias 'home' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <service>``` will change the working directory to the folder registered under the service name.  
-
-**Usage:**
-```bash
-$ lab home [-h] [--print] [--path STRING] [-f] SERVICE
-```
-**Help:** 
-```bash
-Home adds the service name and working directory to the lab registry. On its
-first run, it also adds the alias 'home' to bash config. As a result, on
-subsequent terminal sessions, typing 'home <service>' will change the working
-directory to the folder registered under the service name.
-
-positional arguments:
-  SERVICE        name of service in lab registry
-
-optional arguments:
-  -h, --help     show this help message and exit
-  --print        prints path of service root
-  --path STRING  path to service root
-  -f, --force    overwrite the existing resource
-```
-  
-
 ## Init
 _Init adds the config files for other lab commands._  
 
 **Description:**  
 Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.
 
-PLEASE NOTE: With the option ```--module <module_name>```, init creates instead a standard framework for publishing a python module.  
+PLEASE NOTE: With the option ```--module```, init creates instead a standard framework for publishing a python module.  
 
 **Usage:**
 ```bash
-$ lab init [-h] [--module STRING] [--vcs STRING] [--license STRING] [--heroku] [--aws] [-q] [SERVICE]
+$ lab init [-h] [--vcs STRING] [--license STRING] [--module] [--heroku] [--aws] [--ec2] [--asg] [-q] [-f] [SERVICE]
 ```
 **Help:** 
 ```bash
@@ -48,20 +20,23 @@ and a '.lab' folder in the root directory to manage various configuration
 options. It will also create, if missing, 'cred/' and 'data/' folders to store
 sensitive project information outside version control along with a '.gitignore'
 (or '.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With
-the option '--module <module_name>', init creates instead a standard framework
-for publishing a python module.
+the option '--module', init creates instead a standard framework for publishing
+a python module.
 
 positional arguments:
   SERVICE           (optional) service in lab registry
 
 optional arguments:
   -h, --help        show this help message and exit
-  --module STRING   name for python module
   --vcs STRING      VCS service to generate ignore file
   --license STRING  name of software license type
+  --module          create python module framework
   --heroku          add heroku config to .lab folder
   --aws             add aws config to .lab folder
+  --ec2             add ec2 config to workdir
+  --asg             add asg config to workdir
   -q, --quiet       turn off lab process messages
+  -f, --force       overwrite the existing resource
 ```
   
 
@@ -92,7 +67,7 @@ _Edit settings on remote host manually._
 **Description:**  
 Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.
 
-PLEASE NOTE: connect uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+PLEASE NOTE: connect uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".  
 
 **Usage:**
 ```bash
@@ -103,10 +78,10 @@ $ lab connect [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] PLATFORM
 Opens up a direct ssh connection to remote host. Connect is currently only
 available to the Amazon ec2 platform and only on systems running ssh natively.
 To connect to a remote host on Windows, try using Putty instead. PLEASE NOTE:
-connect uses the docker container alias value specified in the docker-
-compose.yaml configuration file to determine which instance to connect to. A tag
-must be added manually to the instance with key "Containers" and value
-"<container_alias>".
+connect uses the service name specified in the docker-compose.yaml configuration
+file to determine which instance to connect to. The service name will be added
+as part of 'lab launch ec2'. Otherwise, a tag must be added to the instance with
+key "Services" and value "<service1>,<service2>".
 
 positional arguments:
   PLATFORM         name of remote platform
@@ -114,7 +89,7 @@ positional arguments:
 
 optional arguments:
   -h, --help       show this help message and exit
-  --env STRING     type of development environment (default: dev)
+  --env STRING     type of development environment (default: test)
   --tag STRING     tag associated with resource
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
@@ -125,18 +100,24 @@ optional arguments:
 _Makes a service available online._  
 
 **Description:**  
-Deploys a service to a remote platform. Deploy is currently only available for the heroku platform. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)  
+Deploys a service to a remote platform. Deploy is currently only available for the heroku and ec2 platforms. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku --html site/)
+
+PLEASE NOTE: deploy uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".  
 
 **Usage:**
 ```bash
-$ lab deploy [-h] [-q] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING] PLATFORM [SERVICE]
+$ lab deploy [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] [--ssl] [--resume] [--print] [--mount] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING | --jingo STRING] PLATFORM [SERVICE]
 ```
 **Help:** 
 ```bash
 Deploys a service to a remote platform. Deploy is currently only available for
-the heroku platform. Deploy can also deploy static html sites and apps using
-their dependencies if the root folder is added to one of the runtime type flags
-(ex. lab deploy heroku --html site/)
+the heroku and ec2 platforms. Deploy can also deploy static html sites and apps
+using their dependencies if the root folder is added to one of the runtime type
+flags (ex. lab deploy heroku --html site/) PLEASE NOTE: deploy uses the service
+name specified in the docker-compose.yaml configuration file to determine which
+instance to connect to. The service name will be added as part of 'lab launch
+ec2'. Otherwise, a tag must be added to the instance with key "Services" and
+value "<service1>,<service2>".
 
 positional arguments:
   PLATFORM             name of remote platform
@@ -144,7 +125,15 @@ positional arguments:
 
 optional arguments:
   -h, --help           show this help message and exit
+  --env STRING         type of development environment (default: test)
+  --tag STRING         tag associated with resource
+  --region STRING      name of platform region
   -q, --quiet          turn off lab process messages
+  -f, --force          overwrite the existing resource
+  --ssl                turn off ssl everywhere
+  --resume             resume from prior progress point
+  --print              prints command(s) without running
+  --mount              mount volumes onto container
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
   --html STRING        path to folder with index.html
   --php STRING         path to folder with index.php
@@ -152,6 +141,7 @@ optional arguments:
   --java STRING        path to folder with Java Procfile
   --ruby STRING        path to folder with Ruby Procfile
   --node STRING        path to folder with package.json
+  --jingo STRING       path to folder with jingo Procfile
 ```
   
 
@@ -161,7 +151,7 @@ _Copies remote files to your local machine._
 **Description:**  
 Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.
 
-PLEASE NOTE: get uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+PLEASE NOTE: get uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".  
 
 **Usage:**
 ```bash
@@ -171,9 +161,10 @@ $ lab get [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PL
 ```bash
 Copies a file or folder on remote host to working directory on localhost. Get is
 currently only available for the Amazon ec2 platform. PLEASE NOTE: get uses the
-docker container alias value specified in the docker-compose.yaml configuration
-file to determine which instance to connect to. A tag must be added manually to
-the instance with key "Containers" and value "<container_alias>".
+service name specified in the docker-compose.yaml configuration file to
+determine which instance to connect to. The service name will be added as part
+of 'lab launch ec2'. Otherwise, a tag must be added to the instance with key
+"Services" and value "<service1>,<service2>".
 
 positional arguments:
   PATH             path to file or folder
@@ -182,9 +173,68 @@ positional arguments:
 
 optional arguments:
   -h, --help       show this help message and exit
-  --env STRING     type of development environment (default: dev)
+  --env STRING     type of development environment (default: test)
   --tag STRING     tag associated with resource
   --region STRING  name of platform region
+  -q, --quiet      turn off lab process messages
+  -f, --force      overwrite the existing resource
+```
+  
+
+## Home
+_Home makes it easy to locate your services._  
+
+**Description:**  
+Home adds the service name and working directory to the lab registry. On its first run, it also adds the alias 'home' to bash config. As a result, on subsequent terminal sessions, typing ```$ home <service>``` will change the working directory to the folder registered under the service name. A quicklink to the workdir is also added by ```lab init <service>```  
+
+**Usage:**
+```bash
+$ lab home [-h] [--print] [--path STRING] [-f] SERVICE
+```
+**Help:** 
+```bash
+Home adds the service name and working directory to the lab registry. On its
+first run, it also adds the alias 'home' to bash config. As a result, on
+subsequent terminal sessions, typing 'home <service>' will change the working
+directory to the folder registered under the service name. A quicklink to the
+workdir is also added by 'lab init <service>'
+
+positional arguments:
+  SERVICE        name of service in lab registry
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --print        prints path of service root
+  --path STRING  path to service root
+  -f, --force    overwrite the existing resource
+```
+  
+
+## Launch
+_Launch creates one or more remote instances to host services._  
+
+**Description:**  
+Launches an instance or an auto-scaling group on a remote platform. Launch is currently only available for the ec2 platform. To create an configuration file to launch an ec2 instance, run ```lab init --ec2``` and adjust the settings appropriately.  
+
+**Usage:**
+```bash
+$ lab launch [-h] [--region STRING] [-i] [-q] [-f] PLATFORM [SERVICE]
+```
+**Help:** 
+```bash
+Launches an instance or an auto-scaling group on a remote platform. Launch is
+currently only available for the ec2 platform. To create an configuration file
+to launch an ec2 instance, run 'lab init --ec2' and adjust the settings
+appropriately.
+
+positional arguments:
+  PLATFORM         name of remote platform
+  SERVICE          (optional) service in lab registry
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --region STRING  name of platform region
+  -i, --install    install deployment libraries on platform
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
 ```
@@ -198,7 +248,7 @@ Generates a list of the resources of a specific type. Only the service resource 
 
 **Usage:**
 ```bash
-$ lab list [-h] [--region STRING] [--more] RESOURCE [PLATFORM]
+$ lab list [-h] [--region STRING] [--more] [-a] RESOURCE [PLATFORM]
 ```
 **Help:** 
 ```bash
@@ -214,6 +264,7 @@ optional arguments:
   -h, --help       show this help message and exit
   --region STRING  name of platform region
   --more           paginate results longer than console height
+  -a, --all        include all details in results
 ```
   
 
@@ -223,7 +274,7 @@ _Copy files from your local machine._
 **Description:**  
 Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.
 
-PLEASE NOTE: put uses the docker container alias value specified in the docker-compose.yaml configuration file to determine which instance to connect to. A tag must be added manually to the instance with key "Containers" and value "<container_alias>".  
+PLEASE NOTE: put uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".  
 
 **Usage:**
 ```bash
@@ -232,10 +283,11 @@ $ lab put [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PL
 **Help:** 
 ```bash
 Copies a local file or folder to user home on remote host. Put is currently only
-available for the Amazon ec2 platform. PLEASE NOTE: put uses the docker
-container alias value specified in the docker-compose.yaml configuration file to
-determine which instance to connect to. A tag must be added manually to the
-instance with key "Containers" and value "<container_alias>".
+available for the Amazon ec2 platform. PLEASE NOTE: put uses the service name
+specified in the docker-compose.yaml configuration file to determine which
+instance to connect to. The service name will be added as part of 'lab launch
+ec2'. Otherwise, a tag must be added to the instance with key "Services" and
+value "<service1>,<service2>".
 
 positional arguments:
   PATH             path to file or folder
@@ -244,7 +296,7 @@ positional arguments:
 
 optional arguments:
   -h, --help       show this help message and exit
-  --env STRING     type of development environment (default: dev)
+  --env STRING     type of development environment (default: test)
   --tag STRING     tag associated with resource
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
@@ -278,17 +330,18 @@ optional arguments:
 _Makes services available on localhost_  
 
 **Description:**  
-Initiates a container with the Docker image for one or more services. Unless overridden by flags, lab automatically adds the host machine variables SYSTEM_LOCALHOST=`hostname -i` and SYSTEM_ENVIRONMENT="dev" to the container.  
+Initiates a container with the Docker image for one or more services. Unless overridden by flags, lab automatically adds the environmental variables SYSTEM_IP, SYSTEM_ENVIRONMENT, SYSTEM_PLATFORM and PUBLIC_IP of the host machine to the container.  
 
 **Usage:**
 ```bash
-$ lab start [-h] [-q] [--virtualbox STRING] [--env STRING] [--ip STRING] [--print] [SERVICES [SERVICES ...]]
+$ lab start [-h] [-q] [--virtualbox STRING] [--env STRING] [--print] [SERVICES [SERVICES ...]]
 ```
 **Help:** 
 ```bash
 Initiates a container with the Docker image for one or more services. Unless
-overridden by flags, lab automatically adds the host machine variables
-SYSTEM_LOCALHOST=`hostname -i` and SYSTEM_ENVIRONMENT="dev" to the container.
+overridden by flags, lab automatically adds the environmental variables
+SYSTEM_IP, SYSTEM_ENVIRONMENT, SYSTEM_PLATFORM and PUBLIC_IP of the host machine
+to the container.
 
 positional arguments:
   SERVICES             list of services in lab registry
@@ -298,8 +351,7 @@ optional arguments:
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
   --env STRING         type of development environment (default: dev)
-  --ip STRING          ipv4 or ipv6 address
-  --print              prints command without running
+  --print              prints command(s) without running
 ```
   
 
