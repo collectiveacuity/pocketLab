@@ -2,6 +2,8 @@
     :target: https://pypi.python.org/pypi/pocketlab
 .. image:: https://img.shields.io/pypi/l/pocketlab.svg
     :target: https://pypi.python.org/pypi/pocketlab
+.. image:: https://img.shields.io/coveralls/github/collectiveacuity/pocketlab.svg
+    :target: https://pypi.python.org/pypi/pocketlab
 
 =========
 pocketLab

@@ -439,7 +439,7 @@ def construct_setup(module_name):
     
     return file_text
 
-def construct_init(module_name):
+def construct_init(module_name, type='python'):
 
     '''
         a method to create the text for a __init__.py file for a new module
@@ -467,20 +467,33 @@ def construct_init(module_name):
     date_string = '%s.%s' % (str(new_date.year), new_month)
 
 # construct init text
-    init_text = "''' A Brand New Python Module '''\n"
-    init_text += "__author__ = '%s'\n" % username
-    init_text += "__created__ = '%s'\n" % date_string
-    init_text += "__module__ = '%s'\n" % module_name
-    init_text += "__version__ = '0.1'\n"
-    init_text += "__license__ = 'MIT'  # MIT, BSD, ALv2, GPLv3+, LGPLv3+, ©%s Collective Acuity\n" % str(new_date.year)
-    init_text += "__team__ = 'Collective Acuity'\n"
-    init_text += "__email__ = 'support@collectiveacuity.com'\n"
-    init_text += "__url__ = 'https://github.com/collectiveacuity/%s'\n" % module_name
-    init_text += "__description__ = 'A Brand New Python Module'\n"
-
+    init_text = ''
+    if type == 'node':
+        init_text = '/*!\n'
+        init_text += '* @name %s\n' % module_name
+        init_text += '* @description A Brand New Node Module\n'
+        init_text += '* @author %s\n' % username
+        init_text += '* @license MIT  // MIT, BSD, ALv2, GPLv3+, LGPLv3+, SEE LICENSE IN LICENSE.txt\n'
+        init_text += '* @version 0.0.1\n'
+        init_text += '* @copyright %s Collective Acuity\n' % str(new_date.year)
+        init_text += '* @email support@collectiveacuity.com\n'
+        init_text += '* @url https://github.com/collectiveacuity/%s\n' % module_name
+        init_text += '* @preserve\n*/'
+    else:
+        init_text = "''' A Brand New Python Module '''\n"
+        init_text += "__author__ = '%s'\n" % username
+        init_text += "__created__ = '%s'\n" % date_string
+        init_text += "__module__ = '%s'\n" % module_name
+        init_text += "__version__ = '0.1'\n"
+        init_text += "__license__ = 'MIT'  # MIT, BSD, ALv2, GPLv3+, LGPLv3+, ©%s Collective Acuity\n" % str(new_date.year)
+        init_text += "__team__ = 'Collective Acuity'\n"
+        init_text += "__email__ = 'support@collectiveacuity.com'\n"
+        init_text += "__url__ = 'https://github.com/collectiveacuity/%s'\n" % module_name
+        init_text += "__description__ = 'A Brand New Python Module'\n"
+        
     return init_text
 
-def construct_readme(module_name='', vcs_service='git'):
+def construct_readme(module_type='service', module_name='', vcs_service='git'):
 
     '''
         a method to create the text for a README.rst file for the module
@@ -491,7 +504,9 @@ def construct_readme(module_name='', vcs_service='git'):
     '''
 
 # retrieve readme text
-    if module_name:
+    if module_type == 'node':
+        file_path = 'models/node.readme.md.txt'
+    elif module_type == 'python':
         file_path = 'models/readme.rst.txt'
     else:
         file_path = 'models/readme.md.txt'
@@ -522,10 +537,13 @@ def construct_manifest(module_name):
 
     return file_text
 
-def construct_changes():
+def construct_changes(type='python'):
 
 # retrieve changes text
-    file_text = retrieve_template('models/changes.rst.txt')
+    if type == 'node':
+        file_text = retrieve_template('models/changelog.md.txt')
+    else:
+        file_text = retrieve_template('models/changes.rst.txt')
 
 # retrieve date
     from datetime import datetime
@@ -591,11 +609,11 @@ def construct_index(module_name):
     return file_text
 
 if __name__ == '__main__':
-    user_path = '../../tests/testservice/lab.yaml'
-    standard_path = '../models/lab-config.json'
+
+    standard_path = '../models/heroku-config.json'
     from labpack.records.settings import load_settings
     standard_schema = load_settings(standard_path)
-    text = compile_yaml(standard_schema, user_path)
+    text = compile_yaml(standard_schema)
     # print(text)
 
     init_path = '../__init__.py'
@@ -612,7 +630,7 @@ if __name__ == '__main__':
     # print(setup_text)
     init_text = construct_init(module_name)
     # print(init_text)
-    readme_text = construct_readme(module_name)
+    readme_text = construct_readme(module_type='python', module_name=module_name)
     # print(readme_text)
     service_text = construct_readme(vcs_service='mercurial')
     # print(service_text)

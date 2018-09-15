@@ -19,14 +19,14 @@ add --aws as a flag to create aws.yaml in .lab
 
 _init_details = {
     'title': 'Init',
-    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--module```, init creates instead a standard framework for publishing a python module.',
+    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--python``` (or ```--node```), init creates instead a standard framework for publishing a python (or node) module.',
     'help': 'creates a lab framework in workdir',
     'benefit': 'Init adds the config files for other lab commands.'
 }
 
 from pocketlab.init import fields_model
 
-def init(service_option, vcs_service='', license_type='MIT', init_module=False, init_heroku=False, init_aws=False, init_ec2=False, init_asg=False, verbose=True, overwrite=False):
+def init(service_option, vcs_service='', license_type='MIT', init_python=False, init_node=False, init_heroku=False, init_aws=False, init_ec2=False, init_asg=False, verbose=True, overwrite=False):
 
     '''
         a method to add lab framework files to the current directory
@@ -34,7 +34,8 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
     :param service_option: [optional] string with name of service in lab registry
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
-    :param init_module: [optional] boolean to initialize a python module framework
+    :param init_python: [optional] boolean to initialize a python module framework
+    :param init_node: [optional] boolean to initialize a node module framework
     :param init_heroku: [optional] boolean to add heroku.yaml to .lab folder
     :param init_aws: [optional] boolean to add aws.yaml to .lab folder
     :param init_ec2: [optional] boolean to add ec2.yaml to working directory
@@ -114,43 +115,75 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
                 from pocketlab.commands.home import home
                 home(service_name, overwrite=overwrite)
 
-    # setup module architecture
-        if init_module:
+    # setup python module architecture
+        if init_python or init_node:
     
         # create vcs ignore files
             import re
             from pocketlab.methods.vcs import load_ignore
             vcs_regex = re.compile('#+\s+version\scontrol\s+#+')
-            git_insert = '#############  version control  ################\n.hgignore\n.hg/\ndev/\ntests_dev/'
-            hg_insert = '#############  version control  ################\n\\\.git/'
+            dev_regex = re.compile('#+\s+dev\sfiles\s+#+')
+            dep_regex = re.compile('#+\s+dependencies\s+#+')
+            unit_regex = re.compile('#+\s+unit\stesting\s+#+')
+            git_insert = '################  version control  ################\n.hgignore\n.hg/'
+            hg_insert = '################  version control  ################\n\\\.git/'
+            dev_insert = '#################    dev files    #################\ndev/\ntests_dev/'
+            npm_dep_insert = '#################  dependencies   #################\n*.swp\nnpm-debug.log'
+            npm_dev_insert = '#################    dev files    #################\ndev/\ntest/\ntest_dev/\ndocs/\ndocs_dev/\n.babelrc\nwebpack.config.js\nkarma.config.js'
+            npm_vcs_insert = '################  version control  ################\n.hgignore\n.hg/\n.gitignore\n.git/'
+            npm_unit_insert = '#################  unit testing   #################\ncoverage/'
             git_path = '.gitignore'
             hg_path = '.hgignore'
+            npm_path = '.npmignore'
+            module_type = 'python'
+            test_folder = 'tests'
+            if init_node:
+                module_type = 'node'
+                test_folder = 'test'
             if not path.exists(git_path):
-                git_text = load_ignore()
+                git_text = load_ignore(type=module_type)
                 git_text = vcs_regex.sub(git_insert, git_text)
+                git_text = dev_regex.sub(dev_insert, git_text)
+                if init_node:
+                    git_text = re.sub('\ntests_dev/','\ntest_dev/', git_text)
                 with open(git_path, 'wt') as f:
                     f.write(git_text)
                     f.close()
                 _printer(git_path)
             if not path.exists(hg_path):
-                hg_text = load_ignore(vcs='mercurial')
+                hg_text = load_ignore(vcs='mercurial', type=module_type)
                 hg_text = vcs_regex.sub(hg_insert, hg_text)
                 with open(hg_path, 'wt') as f:
                     f.write(hg_text)
                     f.close()
                 _printer(hg_path)
+            if init_node and not path.exists(npm_path):
+                npm_text = load_ignore(type='node')
+                npm_text = dep_regex.sub(npm_dep_insert, npm_text)
+                npm_text = dev_regex.sub(npm_dev_insert, npm_text)
+                npm_text = vcs_regex.sub(npm_vcs_insert, npm_text)
+                npm_text = unit_regex.sub(npm_unit_insert, npm_text)
+                with open(npm_path, 'wt') as f:
+                    f.write(npm_text)
+                    f.close()
+                _printer(npm_path)
     
-        # create module folder
-            if not path.exists(service_name):
+        # create source folder
+            source_path = service_name
+            if init_node:
+                source_path = 'src'
+            if not path.exists(source_path):
                 from os import makedirs
-                makedirs(service_name)
-                _printer(service_name, 'folder')
-    
+                makedirs(source_path)
+                _printer(source_path, 'folder')
+
         # create init file
-            init_path = path.join(service_name, '__init__.py')
+            init_path = path.join(source_path, '__init__.py')
+            if init_node:
+                init_path = path.join(source_path, '%s.js' % service_name)
             if not path.exists(init_path):
                 from pocketlab.methods.config import construct_init
-                init_text = construct_init(service_name)
+                init_text = construct_init(service_name, module_type)
                 with open(init_path, 'wt', encoding='utf-8') as f:
                     f.write(init_text)
                     f.close()
@@ -161,75 +194,127 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
                 from os import makedirs
                 makedirs('docs')
                 _printer('docs', 'folder')
-            if not path.exists('docs_dev'):
+        # create test folder
+            if not path.exists(test_folder):
                 from os import makedirs
-                makedirs('docs_dev')
-                _printer('docs_dev', 'folder')
-    
-        # create mkdocs markdown file
-            mkdocs_path = path.join('docs', 'mkdocs.md')
-            if not path.exists(mkdocs_path):
-                from pocketlab.methods.config import retrieve_template
-                mkdocs_text = retrieve_template('models/mkdocs.md.txt')
-                with open(mkdocs_path, 'wt') as f:
-                    f.write(mkdocs_text)
-                    f.close()
-                _printer(mkdocs_path)
-    
-        # create roadmap markdown files
-            roadmap_docs = path.join('docs', 'roadmap.md')
-            roadmap_temp = path.join('docs_dev', 'roadmap.md')
-            roadmap_list = [ roadmap_docs, roadmap_temp ]
-            for file_path in roadmap_list:
-                if not path.exists(file_path):
+                makedirs(test_folder)
+                _printer(test_folder, 'folder')
+
+            if init_node:
+
+            # create docsify index file
+                index_path = path.join('docs', 'index.html')
+                if not path.exists(index_path):
                     from pocketlab.methods.config import retrieve_template
-                    roadmap_text = retrieve_template('models/roadmap.md.txt')
-                    with open(file_path, 'wt') as f:
-                        f.write(roadmap_text)
+                    index_text = retrieve_template('models/docsify.index.html.txt')
+                    with open(index_path, 'wt') as f:
+                        f.write(index_text)
                         f.close()
-                    _printer(file_path)
-    
-        # create components yaml file
-            components_path = path.join('docs_dev', 'components.csv')
-            if not path.exists(components_path):
-                from pocketlab.methods.config import retrieve_template
-                components_text = retrieve_template('models/components.csv.txt')
-                with open(components_path, 'wt') as f:
-                    f.write(components_text)
-                    f.close()
-                _printer(components_path)
-    
-        # create generate script file
-            generate_path = path.join('docs_dev', 'generate.py')
-            if not path.exists(generate_path):
-                from pocketlab.methods.config import retrieve_template
-                generate_text = retrieve_template('models/generate.py.txt')
-                with open(generate_path, 'wt') as f:
-                    f.write(generate_text)
-                    f.close()
-                _printer(generate_path)
-    
-        # create index markdown file
-            index_path = path.join('docs', 'index.md')
-            if not path.exists(index_path):
-                from pocketlab.methods.config import construct_index
-                index_text = construct_index(service_name)
-                with open(index_path, 'wt') as f:
-                    f.write(index_text)
-                    f.close()
-                _printer(index_path)
+                    _printer(index_path)
+                jekyll_path = path.join('docs', '.nojekyll')
+                if not path.exists(jekyll_path):
+                    with open(jekyll_path, 'wt') as f:
+                        f.write('')
+                        f.close()
+                    _printer(jekyll_path)
+
+            else:
+            
+            # create docs dev folder
+                if not path.exists('docs_dev'):
+                    from os import makedirs
+                    makedirs('docs_dev')
+                    _printer('docs_dev', 'folder')
+                
+            # create mkdocs markdown file
+                mkdocs_path = path.join('docs', 'mkdocs.md')
+                if not path.exists(mkdocs_path):
+                    from pocketlab.methods.config import retrieve_template
+                    mkdocs_text = retrieve_template('models/mkdocs.md.txt')
+                    with open(mkdocs_path, 'wt') as f:
+                        f.write(mkdocs_text)
+                        f.close()
+                    _printer(mkdocs_path)
+        
+            # create roadmap markdown files
+                roadmap_docs = path.join('docs', 'roadmap.md')
+                roadmap_temp = path.join('docs_dev', 'roadmap.md')
+                roadmap_list = [ roadmap_docs, roadmap_temp ]
+                for file_path in roadmap_list:
+                    if not path.exists(file_path):
+                        from pocketlab.methods.config import retrieve_template
+                        roadmap_text = retrieve_template('models/roadmap.md.txt')
+                        with open(file_path, 'wt') as f:
+                            f.write(roadmap_text)
+                            f.close()
+                        _printer(file_path)
+        
+            # create components yaml file
+                components_path = path.join('docs_dev', 'components.csv')
+                if not path.exists(components_path):
+                    from pocketlab.methods.config import retrieve_template
+                    components_text = retrieve_template('models/components.csv.txt')
+                    with open(components_path, 'wt') as f:
+                        f.write(components_text)
+                        f.close()
+                    _printer(components_path)
+        
+            # create generate script file
+                generate_path = path.join('docs_dev', 'generate.py')
+                if not path.exists(generate_path):
+                    from pocketlab.methods.config import retrieve_template
+                    generate_text = retrieve_template('models/generate.py.txt')
+                    with open(generate_path, 'wt') as f:
+                        f.write(generate_text)
+                        f.close()
+                    _printer(generate_path)
+
+            # create index markdown file
+                index_path = path.join('docs', 'index.md')
+                if not path.exists(index_path):
+                    from pocketlab.methods.config import construct_index
+                    index_text = construct_index(service_name)
+                    with open(index_path, 'wt') as f:
+                        f.write(index_text)
+                        f.close()
+                    _printer(index_path)
     
         # create other root files
             license_type = license_type.lower()
-            from pocketlab.methods.config import construct_changes, construct_license, construct_manifest, construct_readme, construct_mkdocs, construct_setup
-            module_files = {
-                'CHANGES.rst': construct_changes(),
-                'LICENSE.txt': construct_license(license_type),
-                'MANIFEST.in': construct_manifest(service_name),
-                'README.rst': construct_readme(module_name=service_name),
-                'mkdocs.yml': construct_mkdocs(service_name),
-                'setup.py': construct_setup(service_name)
-            }
+            from pocketlab.methods.config import construct_changes, construct_license, construct_manifest, construct_readme, construct_mkdocs, construct_setup, retrieve_template
+            module_files = {}
+            if init_node:
+                module_files = {
+                    'CHANGELOG.md': construct_changes(module_type),
+                    'LICENSE.txt': construct_license(license_type),
+                    'README.md': construct_readme(module_type=module_type, module_name=service_name),
+                    '.coveralls.yml': retrieve_template('models/coveralls.yml.txt'),
+                    '.babelrc': retrieve_template('models/babelrc.txt')
+                }
+            # create nested node files
+                docs_path = path.join('docs', 'README.md')
+                if not path.exists(docs_path):
+                    with open(docs_path, 'wt', encoding='utf-8') as f:
+                        f.write(module_files['README.md'])
+                        f.close()
+                    _printer(docs_path)
+                test_path = path.join('test', '%s-spec.js' % service_name)
+                if not path.exists(test_path):
+                    test_text = retrieve_template('models/test-spec.js.txt')
+                    test_text= test_text.replace('pocketlab', service_name)
+                    with open(test_path, 'wt', encoding='utf-8') as f:
+                        f.write(test_text)
+                        f.close()
+                    _printer(test_path)
+            else:
+                module_files = {
+                    'CHANGES.rst': construct_changes(),
+                    'LICENSE.txt': construct_license(license_type),
+                    'MANIFEST.in': construct_manifest(service_name),
+                    'README.rst': construct_readme(module_type=module_type, module_name=service_name),
+                    'mkdocs.yml': construct_mkdocs(service_name),
+                    'setup.py': construct_setup(service_name)
+                }
             for key, value in module_files.items():
                 if not path.exists(key):
                     with open(key, 'wt', encoding='utf-8') as f:
@@ -239,6 +324,10 @@ def init(service_option, vcs_service='', license_type='MIT', init_module=False, 
     
             exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
     
+    # setup node module architecture
+        elif init_node:
+            pass
+        
     # setup service architecture
         else:
     

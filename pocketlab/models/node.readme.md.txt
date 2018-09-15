@@ -1,0 +1,39 @@
+[![Version](https://img.shields.io/npm/v/pocketlab.svg)](https://www.npmjs.com/package/pocketlab)
+[![License](https://img.shields.io/npm/l/pocketlab.svg)](https://www.npmjs.com/package/pocketlab)
+[![Coverage](https://img.shields.io/coveralls/github/<user-name>/<repo-name>.svg)](https://www.npmjs.com/package/pocketlab)
+
+# pocketlab
+_A Brilliant Tool_  
+
+<table>
+<tr><td>Downloads:</td><td><a href="https://www.npmjs.com/package/pocketlab">https://www.npmjs.com/package/pocketlab</a></td></tr>
+<tr><td>Source:</td><td><a href="https://github.com/<user-name>/<repo-name>">https://github.com/<user-name>/<repo-name></a></td><tr>
+</table>
+
+## Intro
+Why you should use this brilliant tool
+
+## Installation
+
+Using npm:
+```bash
+npm install pocketlab
+```
+
+## Usage
+How to import and use each class or function in the module...
+
+## Testing
+```bash
+npm test
+```
+
+## Building
+```bash
+npm run build
+```
+
+## Reporting
+```bash
+npm run coverage
+```

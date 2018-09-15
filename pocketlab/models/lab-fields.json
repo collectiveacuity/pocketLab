@@ -35,7 +35,8 @@
     "resume_routine": true,
     "all_services": true,
     "all_info": true,
-    "init_module": true,
+    "init_python": true,
+    "init_node": true,
     "init_heroku": true,
     "init_aws": true,
     "init_ec2": true,
@@ -376,12 +377,20 @@
         "cli_help": "resume from prior progress point"
       }
     },
-    ".init_module": {
+    ".init_python": {
       "field_description": "Initialize python module framework.",
       "default_value": false,
       "field_metadata": {
-        "cli_flags": [ "--module" ],
+        "cli_flags": [ "--python", "--module" ],
         "cli_help": "create python module framework"
+      }
+    },
+    ".init_node": {
+      "field_description": "Initialize node module framework.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--node" ],
+        "cli_help": "create node module framework"
       }
     },
     ".init_heroku": {

@@ -1,0 +1,41 @@
+#################   .gitignore    #################
+
+#################   data files    #################
+data/
+
+#################  distro files   #################
+build/
+site/
+
+#################  unit testing   #################
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+
+#################  dependencies   #################
+
+
+#################    dev files    #################
+
+
+################# version control #################
+
+
+#################    IDE files    #################
+.DS_STORE
+.netbeans
+nbproject
+.idea
+__pycache__
+venv/
+venv3/
+
+#################   backup sync   #################
+desktop.ini
+*.gdoc
+.dropbox
+Thumbs.db

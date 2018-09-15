@@ -2,16 +2,30 @@ __author__ = 'rcj1492'
 __created__ = '2017.05'
 __license__ = 'MIT'
 
-def load_ignore(vcs='git'):
+def load_ignore(vcs='git', type='service'):
 
     ''' a method to retrieve the module template vcs ignore text '''
 
+    # retrieve module path
     from os import path
     from pocketlab import __module__
     from importlib.util import find_spec
     module_path = find_spec(__module__).submodule_search_locations[0]
-    file_path = path.join(module_path, 'models/gitignore.txt')
-    file_text = open(file_path).read()
+    file_text = ''
+
+    # retrieve file text
+    if vcs.lower() in ('git', 'mercurial'):
+        file_name = 'models/gitignore'
+        if type.lower() == 'python':
+            file_name += '.python'
+        elif type.lower() == 'node':
+            file_name += '.node'
+        else:
+            file_name += '.service'
+        file_name += '.txt'
+        file_path = path.join(module_path, file_name)
+        file_text = open(file_path).read()
+    # modify file
     if vcs.lower() == 'mercurial':
         import re
         wildcard_regex = re.compile('\n\*\.')

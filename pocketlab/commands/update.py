@@ -34,13 +34,16 @@ def update(service_list, all_services=False, verbose=True):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
 
-# retrieve vcs templates
-    from pocketlab.methods.vcs import load_ignore
-    vcs_templates = {
-        'git': load_ignore(vcs='git'),
-        'mercurial': load_ignore(vcs='mercurial'),
-        'docker': load_ignore(vcs='docker')
-    }
+# define test ignore
+    def _test_ignore(text):
+        import re
+        lab_test = re.findall('\\?\.lab', text)
+        node_test = re.findall('\nnode_modules/', text)
+        if lab_test:
+            return 'service'
+        elif node_test:
+            return 'node'
+        return 'python'
 
 # define update process
     def _apply_update(root_path, service_name=''):
@@ -53,30 +56,40 @@ def update(service_list, all_services=False, verbose=True):
         setup_path = path.join(root_path, 'setup.py')
         if path.exists(setup_path):
             msg_insert = msg_insert.replace('service', 'module')
-        
+
     # update vcs ignore
         import hashlib
-        
+        from pocketlab.methods.vcs import load_ignore
         from pocketlab.methods.vcs import merge_ignores
         vcs_files = {
             'git': {
                 'path': path.join(root_path, '.gitignore'),
-                'name': '.gitignore'
+                'name': '.gitignore',
+                'vcs': 'git'
             },
             'mercurial': {
                 'path': path.join(root_path, '.hgignore'),
-                'name': '.hgignore'
+                'name': '.hgignore',
+                'vcs': 'mercurial'
+            },
+            'npm': {
+                'path': path.join(root_path, '.npmignore'),
+                'name': '.npmignore',
+                'vcs': 'git'
             },
             'docker': {
                 'path': path.join(root_path, '.dockerignore'),
-                'name': '.dockerignore'
+                'name': '.dockerignore',
+                'vcs': 'docker'
             }
         }
         for key, value in vcs_files.items():
             if path.exists(value['path']):
                 old_text = open(value['path']).read()
                 old_hash = hashlib.sha1(old_text.encode('utf-8')).hexdigest()
-                new_text = merge_ignores(old_text, vcs_templates[key])
+                ignore_type = _test_ignore(old_text)
+                template_text = load_ignore(vcs=value['vcs'], type=ignore_type)
+                new_text = merge_ignores(old_text, template_text)
                 new_hash = hashlib.sha1(new_text.encode('utf-8')).hexdigest()
                 if old_hash != new_hash:
                     with open(value['path'], 'wt') as f:
@@ -84,30 +97,6 @@ def update(service_list, all_services=False, verbose=True):
                         f.close()
                     if verbose:
                         print('%s file for %s updated.' % (value['name'], msg_insert))
-
-    # # update lab yaml
-    #     from pocketlab import __module__
-    #     from jsonmodel.loader import jsonLoader
-    #     from jsonmodel.validators import jsonModel
-    #     from labpack.records.settings import save_settings, load_settings
-    #     config_schema = jsonLoader(__module__, 'models/lab-config.json')
-    #     config_model = jsonModel(config_schema)
-    #     template_config = config_model.ingest()
-    #     config_path = path.join(root_path, 'lab.yaml')
-    #     if path.exists(config_path):
-    #         try:
-    #             old_config = load_settings(config_path)
-    #             template_config.update(**old_config)
-    #             if old_config != template_config:
-    #                 from pocketlab.methods.config import compile_yaml
-    #                 config_text = compile_yaml(config_schema, config_path)
-    #                 with open(config_path, 'wt') as f:
-    #                     f.write(config_text)
-    #                     f.close()
-    #                 if verbose:
-    #                     print('lab.yaml file for %s updated.' % msg_insert)
-    #         except:
-    #              print('lab.yaml file for %s is corrupted. Skipped.' % msg_insert)
 
     # update setup.py
         setup_path = path.join(root_path, 'setup.py')

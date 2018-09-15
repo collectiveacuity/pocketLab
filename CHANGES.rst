@@ -1,6 +1,11 @@
 ChangeLog
 =========
 
+0.9 (2018.09.14)
+----------------
+* [FEATURE ADDED] --node flag for init command to setup a node module framework
+* [DEPRECATED] --module flag has been replaced by --python in init command
+
 0.8 (2018.08.27)
 ----------------
 * [COMMAND ADDED] added launch command to start a remote instance (ec2 only)

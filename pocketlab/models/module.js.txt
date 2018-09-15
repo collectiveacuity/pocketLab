@@ -1,0 +1,11 @@
+// import dependencies
+
+// placeholder class
+export default class Placeholder {
+  constructor(name) {
+    this.name = name
+  }
+  log(msg) {
+    console.log(this.name + ': ' + msg)
+  }
+}

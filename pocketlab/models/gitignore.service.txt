@@ -1,0 +1,54 @@
+#################   .gitignore    #################
+
+#################   credentials   #################
+.lab/
+cred/
+keys/
+
+#################   data files    #################
+data/
+appdata/
+
+#################  distro files   #################
+.webassets-cache/
+site/
+target/
+plugins/
+hooks/
+
+#################  unit testing   #################
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+.nyc_output/
+.coveralls.*
+
+#################    dev files    #################
+
+
+#################  dependencies   #################
+node_modules/
+package-lock.json
+
+################# version control #################
+
+
+#################    IDE files    #################
+.DS_STORE
+.netbeans
+nbproject
+.idea
+.node_history
+__pycache__
+venv/
+venv3/
+
+#################   backup sync   #################
+desktop.ini
+*.gdoc
+.dropbox
+Thumbs.db
