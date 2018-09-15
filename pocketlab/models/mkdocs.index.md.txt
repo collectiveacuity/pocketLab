@@ -1,0 +1,50 @@
+![Version](https://img.shields.io/pypi/v/pocketlab.svg)
+![License](https://img.shields.io/pypi/l/pocketlab.svg)
+![Coverage](https://img.shields.io/coveralls/github/<org-name>/pocketlab.svg)
+
+# pocketlab
+_<service-description>_  
+by [<org-title>](<org-url>)  
+
+<table>
+  <tbody>
+    <tr>
+      <td><b>Downloads</b></td>
+      <td><a href="http://pypi.python.org/pypi/pocketlab">http://pypi.python.org/pypi/pocketlab</a></td>
+    </tr>
+    <tr>
+      <td><b>Source</b></td>
+      <td><a href="https://github.com/<org-name>/pocketlab">https://github.com/<org-name>/pocketlab</a></td>
+    </tr>
+    <tr>
+      <td><b>Documentation</b></td>
+      <td><a href="https://<org-name>.github.io/pocketlab">https://<org-name>.github.io/pocketlab/</a></td>
+    </tr>
+  </tbody>
+</table>
+
+## Introduction
+This module solves a problem which has vexed many.
+
+## Installation
+From PyPi
+```bash
+    $ pip install pocketlab
+```
+From GitHub
+```bash
+    $ git clone https://github.com/<org-name>/pocketlab
+    $ cd pocketlab
+    $ python setup.py install
+```
+
+## Getting Started
+This module is designed to do something that no python module has ever done before.
+
+To make something new::
+
+    from pocketlab import pocketlab
+    shiny_new_thing = pocketlab.new()
+
+## Further Reading
+For more information about all the things this module can do, refer to the [Reference Page](mkdocs.md)

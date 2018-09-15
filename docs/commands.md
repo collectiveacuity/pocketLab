@@ -6,11 +6,11 @@ _Init adds the config files for other lab commands._
 **Description:**  
 Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.
 
-PLEASE NOTE: With the option ```--module```, init creates instead a standard framework for publishing a python module.  
+PLEASE NOTE: With the option ```--python``` (or ```--node```), init creates instead a standard framework for publishing a python (or node) module.  
 
 **Usage:**
 ```bash
-$ lab init [-h] [--vcs STRING] [--license STRING] [--module] [--heroku] [--aws] [--ec2] [--asg] [-q] [-f] [SERVICE]
+$ lab init [-h] [--vcs STRING] [--license STRING] [--python] [--node] [--jquery] [--heroku] [--aws] [--ec2] [--asg] [-q] [-f] [SERVICE]
 ```
 **Help:** 
 ```bash
@@ -20,23 +20,25 @@ and a '.lab' folder in the root directory to manage various configuration
 options. It will also create, if missing, 'cred/' and 'data/' folders to store
 sensitive project information outside version control along with a '.gitignore'
 (or '.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With
-the option '--module', init creates instead a standard framework for publishing
-a python module.
+the option '--python' (or '--node'), init creates instead a standard framework
+for publishing a python (or node) module.
 
 positional arguments:
-  SERVICE           (optional) service in lab registry
+  SERVICE             (optional) service in lab registry
 
 optional arguments:
-  -h, --help        show this help message and exit
-  --vcs STRING      VCS service to generate ignore file
-  --license STRING  name of software license type
-  --module          create python module framework
-  --heroku          add heroku config to .lab folder
-  --aws             add aws config to .lab folder
-  --ec2             add ec2 config to workdir
-  --asg             add asg config to workdir
-  -q, --quiet       turn off lab process messages
-  -f, --force       overwrite the existing resource
+  -h, --help          show this help message and exit
+  --vcs STRING        VCS service to generate ignore file
+  --license STRING    name of software license type
+  --python, --module  create python module framework
+  --node              create node module framework
+  --jquery            create jquery module framework
+  --heroku            add heroku config to .lab folder
+  --aws               add aws config to .lab folder
+  --ec2               add ec2 config to workdir
+  --asg               add asg config to workdir
+  -q, --quiet         turn off lab process messages
+  -f, --force         overwrite the existing resource
 ```
   
 

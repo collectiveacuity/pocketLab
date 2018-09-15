@@ -1,19 +1,12 @@
 from setuptools import setup, find_packages
 from pocketlab.methods.config import inject_init
 
-init_path = 'pocketlab/__init__.py'
+init_path = ''
 readme_path = 'README.rst'
 setup_kwargs = {
-    'include_package_data': True, # Checks MANIFEST.in for explicit rules
+    'include_package_data': True,  # Checks MANIFEST.in for explicit rules
     'packages': find_packages(),
-    'install_requires': [
-        'jsonmodel',
-        'labpack',
-        'tabulate>=0.7.7',
-        'ruamel.yaml>=0.14.12',
-        'pexpect',
-        'colorama'
-    ],
+    'install_requires': [],
     'classifiers': [
         # https://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 3 - Alpha',
@@ -22,7 +15,6 @@ setup_kwargs = {
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6'
     ]
 }
@@ -44,10 +36,10 @@ pip install twine
 
 Build Distributions:
 python setup.py sdist --format=gztar,zip
-pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.9.tar.gz
+pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.1.tar.gz
 
 Upload (or Register) Distributions to PyPi:
-twine upload dist/pocketlab-0.9*
+twine upload dist/pocketlab-0.1*
 
 Upload Documentation to Github:
 mkdocs gh-deploy
@@ -57,7 +49,7 @@ Installation:
 pip install [module]
 python setup.py develop  # for local on-the-fly file updates
 python setup.py install  # when possessing distribution files
-pip install dist/pocketlab-0.9-py3-none-any.whl # when possessing wheel file
+pip install dist/pocketlab-0.1-py3-none-any.whl # when possessing wheel file
 
 Uninstall:
 pip uninstall [module]
@@ -81,7 +73,7 @@ hgrc [paths] default = ssh://hg@bitbucket.org/collectiveacuity/pocketlab
 Git Public Setup:
 .gitignore (add dist/, *.egg-info/, dev/, tests_dev/, docs/, docs_dev/, .hg/, .hgignore)
 git init
-git remote add origin git@github.com:collectiveacuity/pocketLab.git
+git remote add origin https://github.com/collectiveacuity/pocketLab.git
 
 Git Public Updates:
 git add -A

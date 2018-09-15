@@ -2,10 +2,16 @@
 
 // placeholder class
 export default class Placeholder {
-  constructor(name) {
-    this.name = name
+  constructor() {
+    // other static properties
   }
   log(msg) {
     console.log(this.name + ': ' + msg)
+  }
+  get name() {
+    return this.name
+  }
+  set name(name) {
+    this.name = name
   }
 }

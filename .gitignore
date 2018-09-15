@@ -67,12 +67,15 @@ Thumbs.db
 tinker/
 
 #################  dependencies   #################
+package-lock.json
 node_modules/
 
 #################   backup sync   #################
 *.gdoc
 
 #################  unit testing   #################
+.coveralls.*
+.nyc_output/
 htmlcov/
 .tox/
 .coverage
@@ -80,3 +83,5 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
+
+#################    dev files    #################

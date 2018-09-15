@@ -1,39 +1,70 @@
-[![Version](https://img.shields.io/npm/v/pocketlab.svg)](https://www.npmjs.com/package/pocketlab)
-[![License](https://img.shields.io/npm/l/pocketlab.svg)](https://www.npmjs.com/package/pocketlab)
-[![Coverage](https://img.shields.io/coveralls/github/<user-name>/<repo-name>.svg)](https://www.npmjs.com/package/pocketlab)
+![Version](https://img.shields.io/npm/v/pocketlab.svg)
+![License](https://img.shields.io/npm/l/pocketlab.svg)
+![Coverage](https://img.shields.io/coveralls/github/<org-name>/pocketlab.svg)
 
 # pocketlab
-_A Brilliant Tool_  
+_<service-description>_  
 
 <table>
-<tr><td>Downloads:</td><td><a href="https://www.npmjs.com/package/pocketlab">https://www.npmjs.com/package/pocketlab</a></td></tr>
-<tr><td>Source:</td><td><a href="https://github.com/<user-name>/<repo-name>">https://github.com/<user-name>/<repo-name></a></td><tr>
+  <tbody>
+    <tr>
+      <td><b>Downloads</b></td>
+      <td><a href="https://www.npmjs.com/package/pocketlab">https://www.npmjs.com/package/pocketlab</a></td>
+    </tr>
+    <tr>
+      <td><b>Source</b></td>
+      <td><a href="https://github.com/<org-name>/pocketlab">https://github.com/<org-name>/pocketlab</a></td>
+    </tr>
+    <tr>
+      <td><b>Documentation</b></td>
+      <td><a href="https://<org-name>.github.io/pocketlab">https://<org-name>.github.io/pocketlab/</a></td>
+    </tr>
+  </tbody>
 </table>
 
 ## Intro
 Why you should use this brilliant tool
 
 ## Installation
-
-Using npm:
-```bash
-npm install pocketlab
+From NPM:
+```shell
+$ npm install pocketlab --only=prod
+```
+From GitHub:
+```shell
+$ git clone https://github.com/<org-name>/pocketlab
+$ cd pocketlab
+$ npm install --only=prod
 ```
 
 ## Usage
 How to import and use each class or function in the module...
 
-## Testing
-```bash
-npm test
+## Dev Installation
+```shell
+$ npm install --only=dev 
+  # or
+$ npm install -g <global-dependencies>
+$ npm install <local-dependencies> 
 ```
 
-## Building
-```bash
-npm run build
+## Test
+```shell
+$ npm test
 ```
 
-## Reporting
-```bash
-npm run coverage
+## Build
+```shell
+$ npm run build
 ```
+
+## Report
+```shell
+$ npm run coverage
+```
+
+## Collaboration Notes
+A collaborator should always **FORK** the repo from the main master and fetch changes from the upstream repo before making pull requests. Please add unittests and documentation for any features added in the pull request.
+
+
+

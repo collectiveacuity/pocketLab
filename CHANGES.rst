@@ -1,8 +1,9 @@
 ChangeLog
 =========
 
-0.9 (2018.09.14)
+0.9 (2018.09.15)
 ----------------
+* [FEATURE ADDED] --jquery flag for init command to setup a jquery module framework
 * [FEATURE ADDED] --node flag for init command to setup a node module framework
 * [DEPRECATED] --module flag has been replaced by --python in init command
 

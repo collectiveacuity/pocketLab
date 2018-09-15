@@ -10,7 +10,7 @@
     "resource_type": "services",
     "virtualbox": "default",
     "file_path": "images/icon.png",
-	"container_alias": "server",
+	  "container_alias": "server",
     "image_name": "flaskserver",
     "module_name": "pocketlab",
     "platform_name": "heroku",
@@ -37,6 +37,7 @@
     "all_info": true,
     "init_python": true,
     "init_node": true,
+    "init_jquery": true,
     "init_heroku": true,
     "init_aws": true,
     "init_ec2": true,
@@ -391,6 +392,14 @@
       "field_metadata": {
         "cli_flags": [ "--node" ],
         "cli_help": "create node module framework"
+      }
+    },
+    ".init_jquery": {
+      "field_description": "Initialize a jquery-based node module framework.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--jquery" ],
+        "cli_help": "create jquery module framework"
       }
     },
     ".init_heroku": {

@@ -1,0 +1,18 @@
+// import dependencies
+import * as $ from 'jquery'
+
+// placeholder class
+export default class Placeholder {
+  constructor() {
+    // other static properties
+  }
+  log(msg) {
+    console.log(this.name + ': ' + msg)
+  }
+  get name() {
+    return $('#name').text()
+  }
+  set name(name) {
+    $('#name').text(name)
+  }
+}

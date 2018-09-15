@@ -1,5 +1,0 @@
-recursive-include pocketlab *
-prune */__pycache__
-include *.rst
-include *.txt
-include *.md
