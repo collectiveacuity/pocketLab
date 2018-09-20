@@ -1,5 +1,7 @@
 import * as pocketlab from '../src/pocketlab.js'
 
+// https://www.chaijs.com/guide/styles
+
 describe('pocketlab', function() {
   describe('Placeholder()', function() {
     it('should do nothing yet', function() {

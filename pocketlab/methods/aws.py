@@ -239,7 +239,7 @@ def establish_connection(aws_cred, instance_id, pem_file, service_insert, region
         if verbose:
             print('ERROR.')
         error_msg = str(err)
-        if str(error_msg).find('private key files are NOT accessible by others'):
+        if str(error_msg).find('private key files are NOT accessible by others') > -1:
             from os import path
             pem_root, pem_node = path.split(pem_file)
             if pem_node:

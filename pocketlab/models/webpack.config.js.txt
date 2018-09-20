@@ -4,7 +4,8 @@ module.exports = {
   entry: './src/pocketlab.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: 'pocketlab.min.js'
+    filename: 'pocketlab.min.js',
+    library:'pocketlab' // to enable pocketlab as object in window
   },
   mode: 'production',
   externals: {

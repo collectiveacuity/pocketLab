@@ -178,7 +178,8 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
                 '#+\s+version\scontrol\s+#+': '################  version control  ################\n.hgignore\n.hg/\n.gitignore\n.git/',
                 '#+\s+dev\sfiles\s+#+': '#################    dev files    #################\ndev/\ntest/\ntest_dev/\ndocs/\ndocs_dev/\n.babelrc\nwebpack.config.js\nkarma.config.js',
                 '#+\s+dependencies\s+#+': '#################  dependencies   #################\n*.swp\nnpm-debug.log',
-                '#+\s+unit\stesting\s+#+': '#################  unit testing   #################\ncoverage/'
+                '#+\s+unit\stesting\s+#+': '#################  unit testing   #################\ncoverage/',
+                '#+\s+.gitignore\s+#+': '#################   .npmignore    #################'
             }
 
         # create .gitignore file
