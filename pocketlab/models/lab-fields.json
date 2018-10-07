@@ -20,7 +20,7 @@
     "environ_type": "test",
     "ip_address": "127.0.0.1",
     "url_address": "https://collectiveacuity.com",
-    "resource_tag": "20170615",
+    "resource_tags": "20180101",
     "region_name": "us-east-1",
     "html_folder": "site/",
     "php_folder": "www/",
@@ -260,11 +260,13 @@
         "cli_help": "url address"
       }
     },
-    ".resource_tag": {
-      "field_description": "Tag value associated with resource.",
+    ".resource_tags": {
+      "max_length": 255,
+      "must_not_contain": [ "aws:", "[^\\w\\-\\=\\._:/]+" ],
+      "field_description": "Tag values associated with resource.",
       "field_metadata": {
-        "cli_flags": [ "--tag" ],
-        "cli_help": "tag associated with resource"
+        "cli_flags": [ "--tags" ],
+        "cli_help": "tags associated with resource (comma sep)"
       }
     },
     ".region_name": {

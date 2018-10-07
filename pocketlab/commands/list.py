@@ -137,8 +137,8 @@ def list(resource_type, platform_option, region_name='', paginate=False, all_inf
             instance_keys.pop()
             table_headers.insert(0, 'Name')
             instance_keys.insert(0, 'name')
-            table_headers.extend(['Login', 'Instance Id', 'Image Id', 'State'])
-            instance_keys.extend(['login', 'id', 'image', 'state'])
+            table_headers.extend(['Login', 'Instance Id', 'Image Id', 'Tags', 'State'])
+            instance_keys.extend(['login', 'id', 'image', 'tags', 'state'])
         for instance in instance_list:
             instance_row = []
             for key in instance_keys:

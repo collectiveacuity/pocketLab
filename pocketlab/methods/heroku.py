@@ -28,11 +28,12 @@ def compile_instances(service_list):
                 'machine': '',
                 'image': '',
                 'region': '',
-                'access': heroku_details['heroku_auth_token'],
+                'access_key': heroku_details['heroku_auth_token'],
                 'ip_address': heroku_details['heroku_app_subdomain'] + '.herokuapp.com',
                 'name': heroku_details['heroku_app_subdomain'],
                 'environment': 'prod',
-                'services': service['name']
+                'services': service['name'],
+                'tags': ''
             }
         # add service to account map
             if not heroku_details['heroku_account_email'] in account_map.keys():

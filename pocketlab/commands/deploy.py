@@ -18,7 +18,7 @@ _deploy_details = {
 
 from pocketlab.init import fields_model
 
-def deploy(platform_name, service_option, environ_type='test', resource_tag='', region_name='', verbose=True, overwrite=False, ssl=True, resume_routine=False, print_terminal=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder='', jingo_folder=''):
+def deploy(platform_name, service_option, environ_type='test', resource_tags='', region_name='', verbose=True, overwrite=False, ssl=True, resume_routine=False, print_terminal=False, mount_volumes=False, virtualbox='default', html_folder='', php_folder='', python_folder='', java_folder='', ruby_folder='', node_folder='', jingo_folder=''):
     
     '''
         a method to deploy the docker image of a service to a remote host
@@ -54,7 +54,7 @@ def deploy(platform_name, service_option, environ_type='test', resource_tag='', 
         'service_option': service_option,
         'platform_name': platform_name,
         'environ_type': environ_type,
-        'resource_tag': resource_tag,
+        'resource_tags': resource_tags,
         'region_name': region_name,
         'virtualbox': virtualbox,
         'html_folder': html_folder,
@@ -298,7 +298,7 @@ def deploy(platform_name, service_option, environ_type='test', resource_tag='', 
                 service_root=service_root, 
                 region_name=region_name, 
                 environment_type=environ_type, 
-                resource_tag=resource_tag, 
+                resource_tags=resource_tags, 
                 verbose=verbose
             )
 

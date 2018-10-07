@@ -18,17 +18,22 @@ def construct_client_ec2(ec2_cred, region_name=''):
 
     return ec2_client
 
-def retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tag):
+def retrieve_instance_details(ec2_client, container_alias, environment_type, resource_tags):
 
     valid_instances = []
-    filter_insert = 'for service "%s" in AWS region %s' % (container_alias, ec2_client.iam.region_name)
-    tag_values = []
+    filter_insert = 'for service "%s"' % container_alias
+    if not container_alias:
+        filter_insert = 'for service in working directory'
+    filter_insert += ' in AWS region %s' % (ec2_client.iam.region_name)
+    tag_values = {}
+    split_tags = []
     if environment_type:
         filter_insert += ' in the "%s" env' % environment_type
-        tag_values.append(environment_type)
-    if resource_tag:
-        filter_insert += ' with a "%s" tag' % resource_tag
-        tag_values.append(resource_tag)
+        tag_values['Env'] = environment_type
+    if resource_tags:
+        from labpack.parsing.grammar import join_words
+        split_tags = resource_tags.split(',')
+        filter_insert += ' with tags %s' % join_words(split_tags)
     if tag_values:
         instance_list = ec2_client.list_instances(tag_values=tag_values)
     else:
@@ -36,17 +41,22 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
     for instance_id in instance_list:
         instance_details = ec2_client.read_instance(instance_id)
         if instance_details['tags']:
+            instance_tags = set()
+            search_tags = set()
+            for item in split_tags:
+                search_tags.add(item)
+            search_tags.add(container_alias)
             for tag in instance_details['tags']:
-                if tag['key'] == 'Services':
-                    if tag['value'].find(container_alias) > -1:
-                        valid_instances.append(instance_details)
-                        break
+                for item in tag['value'].split(','):
+                    instance_tags.add(item)
+            if not search_tags - instance_tags:
+                valid_instances.append(instance_details)
 
 # verify only one instance exists
     if not valid_instances:
         raise Exception('No instances found %s.\nTry: lab list instances ec2' % filter_insert)
     elif len(valid_instances) > 1:
-        raise Exception('More than one instance was found %s.\nTry adding optional flags as filters.')
+        raise Exception('More than one instance was found %s.\nTry adding optional flags as filters.' % filter_insert)
 
     instance_details = valid_instances[0]
     
@@ -108,19 +118,25 @@ def compile_instances(region_name='', service_list=None):
             'image': '',
             'ip_address': '',
             'region': '',
-            'access_key': ''
+            'access_key': '',
+            'tags': ''
         }
         ec2_details = ec2_client.read_instance(instance_id)
         if ec2_details['tags']:
+            instance_tags = []
             for tag in ec2_details['tags']:
                 if tag['key'] == 'Services':
                     instance_details['services'] = tag['value'].strip()
-                if tag['key'] == 'Env':
+                elif tag['key'] == 'Env':
                     instance_details['environment'] = tag['value'].strip()
-                if tag['key'] == 'Name':
+                elif tag['key'] == 'Name':
                     instance_details['name'] = tag['value'].strip()
-                if tag['key'] == 'LoginName':
+                elif tag['key'] == 'LoginName':
                     instance_details['login'] = tag['value'].strip()
+                else:
+                    instance_tags.extend(tag['value'].split(','))
+            if instance_tags:
+                instance_details['tags'] = ','.join(instance_tags)
         if 'instance_type' in ec2_details.keys():
             instance_details['machine'] = ec2_details['instance_type'].strip()
         if 'key_name' in ec2_details.keys():
@@ -160,7 +176,7 @@ def compile_schema(file_path='models/ec2-config.json'):
 
     return config_schema
 
-def initialize_clients(aws_cred, service_name, service_insert, service_root, region_name, environment_type, resource_tag, verbose):
+def initialize_clients(aws_cred, service_name, service_insert, service_root, region_name, environment_type, resource_tags, verbose):
     
 # retrieve instance details from ec2
     from pocketlab.init import logger
@@ -179,7 +195,7 @@ def initialize_clients(aws_cred, service_name, service_insert, service_root, reg
         if region_name:
             ec2_cred['region_name'] = region_name
         ec2_client = construct_client_ec2(ec2_cred)
-        instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tag)
+        instance_details = retrieve_instance_details(ec2_client, service_name, environment_type, resource_tags)
         if verbose:
             print('done.')
     except Exception:

@@ -16,7 +16,7 @@ _connect_details = {
 
 from pocketlab.init import fields_model
 
-def connect(platform_name, service_option, environ_type='', resource_tag='', region_name='', verbose=True):
+def connect(platform_name, service_option, environ_type='', resource_tags='', region_name='', verbose=True):
 
     title = 'connect'
 
@@ -29,7 +29,7 @@ def connect(platform_name, service_option, environ_type='', resource_tag='', reg
         'verbose': verbose,
         'platform_name': platform_name,
         'environ_type': environ_type,
-        'resource_tag': resource_tag
+        'resource_tags': resource_tags
     }
     for key, value in input_fields.items():
         if value:
@@ -93,7 +93,7 @@ def connect(platform_name, service_option, environ_type='', resource_tag='', reg
             service_root=service_root, 
             region_name=region_name, 
             environment_type=environ_type, 
-            resource_tag=resource_tag, 
+            resource_tags=resource_tags, 
             verbose=verbose
         )
     
