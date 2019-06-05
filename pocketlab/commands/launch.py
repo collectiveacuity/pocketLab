@@ -112,7 +112,7 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
                 tag_list.append(tag['value'])
         if tag_list:
             name_tag = tag_list[0]
-            instance_list = ec2_client.list_instances(tag_values=tag_list)
+            instance_list = ec2_client.list_instances(tag_values={ 'Name': name_tag })
             for instance_id in instance_list:
                 break_off = False
                 ec2_details = ec2_client.read_instance(instance_id)
@@ -162,6 +162,9 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
             )
 
         # install libaries
+            # TODO check for linux2 version
+            # https://aws.amazon.com/amazon-linux-2/faqs/
+            # https://stackoverflow.com/a/49199858
             dependency_cmds = [
                 'sudo yum update -y',
                 'sudo yum install -y nginx',
@@ -170,5 +173,5 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
             ssh_client.script(dependency_cmds, verbose=verbose)
 
             exit_msg = 'Instance %s ready to deploy services on ec2.'
-
+    
     return exit_msg

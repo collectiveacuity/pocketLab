@@ -276,7 +276,8 @@ def deploy(platform_name, service_option, environ_type='test', resource_tags='',
         docker_client = dockerClient()
 
         from pprint import pprint
-
+    
+    
     # iterate over each service
         for service in service_list:
 

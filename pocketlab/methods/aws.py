@@ -45,7 +45,8 @@ def retrieve_instance_details(ec2_client, container_alias, environment_type, res
             search_tags = set()
             for item in split_tags:
                 search_tags.add(item)
-            search_tags.add(container_alias)
+            if container_alias:
+                search_tags.add(container_alias)
             for tag in instance_details['tags']:
                 for item in tag['value'].split(','):
                     instance_tags.add(item)

@@ -16,7 +16,8 @@ module.exports = function(config) {
         ]
       },
       watch: true,
-      mode: 'none'
+      mode: 'none',
+      resolve: { symlinks: false }
     },
     webpackServer: {
       noInfo: true
