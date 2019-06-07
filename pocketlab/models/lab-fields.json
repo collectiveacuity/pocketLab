@@ -42,7 +42,6 @@
     "init_aws": true,
     "init_ec2": true,
     "init_asg": true,
-    "install_deploy": true,
     "print_path": true,
     "print_terminal": true,
     "paginate": true,
@@ -434,14 +433,6 @@
       "field_metadata": {
         "cli_flags": [ "--asg" ],
         "cli_help": "add asg config to workdir"
-      }
-    },
-    ".install_deploy": {
-      "field_description": "Install libraries required for deployment on remote platform.",
-      "default_value": false,
-      "field_metadata": {
-        "cli_flags": [ "-i", "--install" ],
-        "cli_help": "install deployment libraries on platform"
       }
     },
     ".print_path": {

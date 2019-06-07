@@ -11,7 +11,7 @@ _launch_details = {
 
 from pocketlab.init import fields_model
 
-def launch(platform_name, service_option, region_name='', install_deploy=False, verbose=True, overwrite=False):
+def launch(platform_name, service_option, region_name='', verbose=True, overwrite=False):
 
     title = 'launch'
 
@@ -82,7 +82,7 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
         ec2_schema = compile_schema('models/ec2-config.json')
         ec2_model = jsonModel(ec2_schema)
         ec2_config = validate_platform(ec2_model, service_root, service_name)
-    
+
     # construct variables
         msg_insert = 'working directory'
         if service_name:
@@ -134,7 +134,7 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
     # create new instance
         instance_kwargs = {}
         for key, value in ec2_config.items():
-            if key not in ('region_name', 'elastic_ip'):
+            if key not in ('region_name', 'elastic_ip', 'install_scripts'):
                 instance_kwargs[key] = value
         new_instance = ec2_client.create_instance(**instance_kwargs)
         exit_msg = 'Instance %s launched on ec2.' % new_instance
@@ -144,9 +144,12 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
     
     # TODO remove existing image
     
-    # install libraries
-        if install_deploy:
-        
+    # run scripts
+        install_scripts = []
+        if 'install_scripts' in ec2_config.keys():
+            install_scripts = ec2_config['install_scripts']
+        if install_scripts:
+
         # wait for instance to be available
             ec2_client.check_instance_status(new_instance)
     
@@ -161,17 +164,8 @@ def launch(platform_name, service_option, region_name='', install_deploy=False, 
                 verbose=verbose
             )
 
-        # install libaries
-            # TODO check for linux2 version
-            # https://aws.amazon.com/amazon-linux-2/faqs/
-            # https://stackoverflow.com/a/49199858
-            dependency_cmds = [
-                'sudo yum update -y',
-                'sudo yum install -y nginx',
-                'sudo chmod 777 /etc/rc3.d/S99local; echo "service nginx restart" >> /etc/rc3.d/S99local'
-            ]
-            ssh_client.script(dependency_cmds, verbose=verbose)
-
+        # install libraries
+            ssh_client.script(install_scripts)
             exit_msg = 'Instance %s ready to deploy services on ec2.'
     
     return exit_msg

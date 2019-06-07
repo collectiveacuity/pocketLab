@@ -16,11 +16,12 @@
     "region_name": "",
     "elastic_ip": "",
     "iam_profile": "",
-    "tag_list": [ { "key": "Services", "value": "server,db" } ]
+    "tag_list": [ { "key": "Services", "value": "server,db" } ],
+    "install_scripts": [ "sudo yum update -y" ]
   },
   "components": {
     ".image_id": {
-      "default_value": "ami-5253c32d",
+      "default_value": "ami-00cf4737e238866a3",
       "field_metadata": {
         "comments": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-optimized_AMI.html"
       }
@@ -89,6 +90,18 @@
       ],
       "field_metadata": {
         "comments": "ec2 supports up to 5 additional tags"
+      }
+    },
+    ".install_scripts": {
+      "required_field": false,
+      "default_value": [ 
+        "sudo yum update -y",
+        "sudo yum install -y nano",
+        "sudo yum install -y wget",
+        "sudo amazon-linux-extras list | sudo awk '/nginx/{ print $2 }' | sudo xargs amazon-linux-extras install -y"
+      ],
+      "field_metadata": {
+        "comments": "scripts to run once instance is launched"
       }
     }
   }
