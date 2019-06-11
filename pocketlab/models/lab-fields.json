@@ -13,6 +13,7 @@
 	  "container_alias": "server",
     "image_name": "flaskserver",
     "module_name": "pocketlab",
+    "package_name": "nginx",
     "platform_name": "heroku",
     "platform_option": [ "heroku" ],
     "license_type": "MIT",
@@ -190,6 +191,18 @@
       "field_metadata": {
         "cli_flags": [ "--module" ],
         "cli_help": "name for python module"
+      }
+    },
+    ".package_name": {
+      "field_description": "Name of software package.",
+      "discrete_values": [ "nginx", "certbot" ],
+      "max_length": 64,
+      "must_contain": [ "^[a-zA-Z\\d\\-]+$" ],
+      "must_not_contain": [ "^\\d", "^\\-", "\\-$" ],
+      "field_metadata": {
+        "cli_flag": [ "--package" ],
+        "cli_help": "name of software package",
+        "cli_metavar": "PACKAGE"
       }
     },
     ".platform_name":{

@@ -1,0 +1,12 @@
+[
+  {
+    "identifiers": [
+      "amzn2-ami-ecs-hvm"
+    ],
+    "scripts": [
+      "sudo amazon-linux-extras list | sudo awk '/nginx/{ print $2 }'"
+    ],
+    "dependencies": [],
+    "check": "certbot-auto --version"
+  }
+]

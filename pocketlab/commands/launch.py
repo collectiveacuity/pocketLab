@@ -166,6 +166,6 @@ def launch(platform_name, service_option, region_name='', verbose=True, overwrit
 
         # install libraries
             ssh_client.script(install_scripts)
-            exit_msg = 'Instance %s ready to deploy services on ec2.'
+            exit_msg = 'Instance %s ready to deploy services on ec2.' % new_instance
     
     return exit_msg

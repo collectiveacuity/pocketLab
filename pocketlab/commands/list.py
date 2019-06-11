@@ -130,15 +130,15 @@ def list(resource_type, platform_option, region_name='', paginate=False, all_inf
     # TODO add http code ???
     
     # format list of instances
-        table_headers = [ 'Machine', 'Services', 'Env', 'Region', 'IP Address', 'State' ]
-        instance_keys = [ 'machine', 'services', 'environment', 'region', 'ip_address', 'state' ]
+        table_headers = [ 'Name', 'Machine', 'Services', 'Env', 'IP Address', 'State' ]
+        instance_keys = [ 'name', 'machine', 'services', 'environment', 'ip_address', 'state' ]
         if all_info:
             table_headers.pop()
             instance_keys.pop()
-            table_headers.insert(0, 'Name')
-            instance_keys.insert(0, 'name')
-            table_headers.extend(['Login', 'Instance Id', 'Image Id', 'Tags', 'State'])
-            instance_keys.extend(['login', 'id', 'image', 'tags', 'state'])
+            # table_headers.insert(0, 'Name')
+            # instance_keys.insert(0, 'name')
+            table_headers.extend(['Region', 'Login', 'Instance Id', 'Image Id', 'Tags', 'State'])
+            instance_keys.extend(['region', 'login', 'id', 'image', 'tags', 'state'])
         for instance in instance_list:
             instance_row = []
             for key in instance_keys:

@@ -5,8 +5,8 @@ __license__ = 'MIT'
 
 '''
 deploy to heroku
-TODO: deploy to EC2
-TODO: deploy to other platforms (azure, gcp, bluemix, rackspace)
+deploy to EC2
+TODO: deploy to other platforms (azure, gcp, bluemix, rackspace, openshift)
 '''
 
 _deploy_details = {
