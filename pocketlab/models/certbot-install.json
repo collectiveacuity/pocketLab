@@ -3,10 +3,41 @@
     "identifiers": [
       "amzn2-ami-ecs-hvm"
     ],
+    "prescript": "", 
     "scripts": [
-      "sudo amazon-linux-extras list | sudo awk '/nginx/{ print $2 }'"
+      "sudo yum install -y wget",
+      "wget https://dl.eff.org/certbot-auto",
+      "sed -i 's+elif \\[ -f /etc/issue \\] && grep -iq \"Amazon Linux\" /etc/issue ; then+elif grep -i \"Amazon Linux\" /etc/issue > /dev/null 2>\\&1 || grep \"cpe:.*:amazon_linux:2\" /etc/os-release > /dev/null 2>\\&1; then+' certbot-auto",
+      "sudo chmod a+x certbot-auto",
+      "sudo mv certbot-auto /usr/local/bin/certbot-auto",
+      "certbot-auto --version --debug -y"
+    ],
+    "autostart": [
+      "sudo chmod 777 /etc/crontab; echo '32 17 * * 1 root certbot-auto renew --standalone --no-self-upgrade --pre-hook \"service nginx stop\" --post-hook \"service nginx start\"' >> /etc/crontab",
+      "sudo systemctl restart crond"
     ],
     "dependencies": [],
-    "check": "certbot-auto --version"
+    "check": "certbot-auto --version --no-self-upgrade",
+    "docs": []
+  },
+  {
+    "identifiers": [
+      "amzn-ami amazon-ecs-optimized"
+    ],
+    "prescript": "", 
+    "scripts": [
+      "sudo yum install -y wget",
+      "wget https://dl.eff.org/certbot-auto",
+      "sudo chmod a+x certbot-auto",
+      "sudo mv certbot-auto /usr/local/bin/certbot-auto",
+      "certbot-auto --version --debug -y"
+    ],
+    "autostart": [
+      "sudo chmod 777 /etc/crontab; echo '32 17 * * 1 root certbot-auto renew --standalone --no-self-upgrade --pre-hook \"service nginx stop\" --post-hook \"service nginx start\"' >> /etc/crontab",
+      "sudo service crond restart"
+    ],
+    "dependencies": [],
+    "check": "certbot-auto --version --no-self-upgrade",
+    "docs": []
   }
 ]

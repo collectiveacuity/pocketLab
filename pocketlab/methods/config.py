@@ -20,6 +20,33 @@ def retrieve_template(file_path):
 
     return file_text
 
+def retrieve_scripts(package_name, os_identifier):
+
+    # retrieve list of scripts for package
+    from pocketlab import __module__
+    from jsonmodel.loader import jsonLoader
+    package_scripts = jsonLoader(__module__, 'models/%s-install.json' % package_name)
+
+    # determine scripts for os
+    install_details = {}
+    stop = False
+    for scripts in package_scripts:
+        for identifier in scripts['identifiers']:
+            identified = True
+            identifiers = identifier.split(' ')
+            for s in identifiers:
+                if os_identifier.find(s) == -1:
+                    identified = False
+                    break
+            if identified:
+                stop = True
+                install_details = scripts
+                break
+        if stop:
+            break
+
+    return install_details
+    
 def replace_text(file_text, substitution_map=None, replacement_map=None):
 
     '''

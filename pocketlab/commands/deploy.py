@@ -607,6 +607,10 @@ def deploy(platform_name, service_option, environ_type='test', resource_tags='',
             sys_command = 'sudo cat /etc/rc3.d/S99local'
             sys_message = 'Checking S99local for service restart command ... '
             s99local_text = print_script(sys_command, sys_message)
+        
+        # TODO change docker startup on boot to systemctl for aws linux2
+        # sudo systemctl enable nginx
+        # sudo systemctl start nginx
 
         # update docker restart command
             if progress_map['step'] < 3:
@@ -646,6 +650,7 @@ def deploy(platform_name, service_option, environ_type='test', resource_tags='',
                 progress_map['step'] = 3
                 progress_client.save(progress_id, encode_data(progress_id, progress_map))
 
+        # TODO spin off nginx & certbot to install and update processes
         # add reverse proxies
             if 'labels' in service_config.keys():
                 if service_config['labels']:

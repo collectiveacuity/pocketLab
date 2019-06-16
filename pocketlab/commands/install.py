@@ -48,11 +48,6 @@ def install(package_name, platform_name, service_option, environ_type='', region
         service_insert = 'in working directory'
         service_root = './'
 
-    # retrieve list of scripts for package
-    from pocketlab import __module__
-    from jsonmodel.loader import jsonLoader
-    package_scripts = jsonLoader(__module__, 'models/%s-install.json' % package_name)
-
     # catch heroku error
     exit_msg = ''
     if platform_name == 'heroku':
@@ -70,6 +65,8 @@ def install(package_name, platform_name, service_option, environ_type='', region
         import_boto3('ec2 platform')
 
         # retrieve aws config
+        from pocketlab import __module__
+        from jsonmodel.loader import jsonLoader
         from jsonmodel.validators import jsonModel
         from pocketlab.methods.validation import validate_platform
         aws_schema = jsonLoader(__module__, 'models/aws-config.json')
@@ -90,29 +87,12 @@ def install(package_name, platform_name, service_option, environ_type='', region
         )
 
         # retrieve scripts for image type
+        from pocketlab.methods.config import retrieve_scripts
         image_details = ec2_client.read_image(instance_details['image_id'])
-        install_scripts = []
-        install_dependencies = []
-        install_check = ''
-        image_identifier = ''
-        stop = False
-        for scripts in package_scripts:
-            for identifier in scripts['identifiers']:
-                identified = True
-                identifiers = identifier.split(' ')
-                for s in identifiers:
-                    if image_details['name'].find(s) == -1:
-                        identified = False
-                        break
-                if identified:
-                    stop = True
-                    image_identifier = identifier
-                    install_scripts = scripts['scripts']
-                    install_dependencies = scripts['dependencies']
-                    install_check = scripts['check']
-                    break
-            if stop:
-                break
+        install_details = retrieve_scripts(package_name, image_details['name'])
+        install_scripts = install_details.get('scripts',[])
+        install_dependencies = install_details.get('dependencies',[])
+        install_check = install_details.get('check','')
 
         # construct dependency text
         dependency_text = ''
@@ -126,9 +106,9 @@ def install(package_name, platform_name, service_option, environ_type='', region
 
         # handle print to terminal request
         elif print_terminal:
-            printout = 'To check for existing installation:\n%s\n%s' % (install_check, dependency_text)
+            printout = 'To check for existing installation:\n  %s\n%s' % (install_check, dependency_text)
             if install_scripts:
-                printout += 'To install %s run the following commands:\n%s' % (package_name, '\n'.join(install_scripts))
+                printout += 'To install %s run the following commands:\n  %s' % (package_name, '\n  '.join(install_scripts))
             print(printout)
             return exit_msg
 
@@ -143,24 +123,16 @@ def install(package_name, platform_name, service_option, environ_type='', region
         # handle package already installed
         if package_installed:
             exit_msg = 'Package %s is already installed on ec2 instance %s.' % (package_name, instance_details['instance_id'])
-            return exit_msg
 
         # check for dependency installation
         elif install_dependencies:
             dependency_checks = []
             dependency_names = []
             for dependency in install_dependencies:
-                check_found = False
-                dependency_scripts = jsonLoader(__module__, 'models/%s-install.json' % dependency)
-                for scripts in dependency_scripts:
-                    for identifier in scripts['identifiers']:
-                        if identifier == image_identifier:
-                            dependency_checks.append(scripts['check'])
-                            dependency_names.append(dependency)
-                            check_found = True
-                            break
-                    if check_found:
-                        break
+                dependency_details = retrieve_scripts(dependency, image_details['name'])
+                if dependency_details.get('check',None):
+                    dependency_checks.append(dependency_details.get('check'))
+                    dependency_names.append(dependency)
             if verbose and dependency_checks:
                 print('Checking that dependencies are installed ...')
             for i in range(len(dependency_checks)):
@@ -170,6 +142,8 @@ def install(package_name, platform_name, service_option, environ_type='', region
                     raise ValueError('%s not installed on ec2 instance %s.\n%s' % (dependency_names[i], instance_details['instance_id'], dependency_text))
 
                 # TODO automatically install missing dependencies
+
+            return exit_msg
 
         # run installation
         ssh_client.script(install_scripts)

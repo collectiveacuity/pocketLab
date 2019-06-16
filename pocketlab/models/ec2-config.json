@@ -97,8 +97,7 @@
       "default_value": [ 
         "sudo yum update -y",
         "sudo yum install -y nano",
-        "sudo yum install -y wget",
-        "sudo amazon-linux-extras list | sudo awk '/nginx/{ print $2 }' | sudo xargs amazon-linux-extras install -y"
+        "sudo yum install -y wget"
       ],
       "field_metadata": {
         "comments": "scripts to run once instance is launched"

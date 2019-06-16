@@ -9,7 +9,7 @@ TODO: connect to other platforms (bluemix, azure, gcp)
 
 _connect_details = {
     'title': 'connect',
-    'description': 'Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.\n\nPLEASE NOTE: connect uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".',
+    'description': 'Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.\n\nPLEASE NOTE: connect uses the service name and other tags associated with remote instances to determine which instance to connect to. The service name will be added as part of ```lab launch ec2```. Otherwise, a tag must be added to the instance with key "Services" and value "<service1>,<service2>".',
     'help': 'connects to remote host through ssh',
     'benefit': 'Edit settings on remote host manually.'
 }
