@@ -14,6 +14,7 @@
     "image_name": "flaskserver",
     "module_name": "pocketlab",
     "package_name": "nginx",
+    "package_option": [ "nginx" ],
     "platform_name": "heroku",
     "platform_option": [ "heroku" ],
     "license_type": "MIT",
@@ -204,6 +205,20 @@
         "cli_help": "name of software package",
         "cli_metavar": "PACKAGE"
       }
+    },
+    ".package_option": {
+      "field_description": "(Optional) name of software package.",
+      "min_size": 0,
+      "max_size": 1,
+      "field_metadata": {
+        "cli_flag": [ "--package" ],
+        "cli_help": "(optional) name of software package",
+        "cli_metavar": "PACKAGE"
+      }
+    },
+    ".package_option[0]": {
+      "field_description": "Package in list of software packages.",
+      "discrete_values": [ "", "nginx", "certbot" ]
     },
     ".platform_name":{
       "field_description": "Name of remote platform to host service.",

@@ -98,7 +98,7 @@ def install(package_name, platform_name, service_option, environ_type='', region
         dependency_text = ''
         if install_dependencies:
             dependency_text = '%s has the following dependencies:\n%s\n' % (package_name, '\n'.join(install_dependencies))
-            
+
         # throw error if image is not supported
         package_installed = False
         if not install_scripts:

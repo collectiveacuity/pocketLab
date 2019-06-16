@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+0.10 (???)
+----------
+* [COMMAND ADDED] added install command to add package to instance (ec2 only)
+* [FEATURE ADDED] remote package configuration added to update command
+* [UPDATE] added resource tag option to connect command
+* [DEPRECATED] multiple services option removed from update command
+* [DEPRECATED] package installation and config update removed from deploy command
+
 0.9 (2018.09.15)
 ----------------
 * [FEATURE ADDED] --jquery flag for init command to setup a jquery module framework
