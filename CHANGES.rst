@@ -1,8 +1,8 @@
 ChangeLog
 =========
 
-0.10 (???)
-----------
+0.10 (2019.06.17)
+-----------------
 * [COMMAND ADDED] added install command to add package to instance (ec2 only)
 * [FEATURE ADDED] remote package configuration updating added to update command
 * [UPDATE] added resource tag option to connect command
