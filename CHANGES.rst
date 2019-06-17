@@ -4,7 +4,7 @@ ChangeLog
 0.10 (???)
 ----------
 * [COMMAND ADDED] added install command to add package to instance (ec2 only)
-* [FEATURE ADDED] remote package configuration added to update command
+* [FEATURE ADDED] remote package configuration updating added to update command
 * [UPDATE] added resource tag option to connect command
 * [DEPRECATED] multiple services option removed from update command
 * [DEPRECATED] package installation and config update removed from deploy command

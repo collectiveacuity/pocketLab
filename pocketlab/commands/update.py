@@ -23,16 +23,16 @@ def update(package_option, platform_option, service_option, environ_type='', reg
     ''' 
         a method to update a software configuration on remote host with service details
 
-    :param package_option: 
-    :param platform_option: 
-    :param service_option: 
-    :param environ_type: 
-    :param region_name: 
-    :param resource_tags: 
-    :param print_terminal: 
-    :param all_services: 
-    :param ssl: [optional] boolean to enable ssl certification
-    :param verbose: 
+    :param package_option: [optional] string with name of software to add to remote platform
+    :param platform_option: [optional] string with name of remote platform to host service
+    :param service_option: [optional] string with name of service in lab registry
+    :param environ_type: [optional] string with environment of instance (dev, test, prod, asg)
+    :param region_name: [optional] string with name of remote provider region
+    :param resource_tags: [optional] comma separated string with tags on remote platform
+    :param print_terminal: [optional] boolean to enable printout of all ssh commands
+    :param all_services: [optional] boolean to update all local service repositories
+    :param ssl: [optional] boolean to disable ssl routing on reverse proxy
+    :param verbose: [optional] boolean to disable process reporting
     :return: string with exit message
     '''
 
@@ -270,7 +270,7 @@ def update(package_option, platform_option, service_option, environ_type='', reg
             image_details = ec2_client.read_image(instance_details['image_id'])
             package_details = retrieve_scripts(package_name, image_details['name'])
             package_check = package_details.get('check','')
-            package_autostart = package_details.get('autostart', [])
+            package_system = package_details.get('system', {})
 
             # verify installation
             if package_check:
@@ -278,11 +278,13 @@ def update(package_option, platform_option, service_option, environ_type='', reg
                 sys_error = 'Package %s is not installed on ec2 instance %s.\nTry: lab install %s ec2' % (package_name, instance_details['instance_id'], package_name)
                 print_script(package_check, sys_message, sys_error)
 
-            # TODO verify package in system boot
-
-            # TODO add package to system boot
-            # sudo systemctl enable nginx
-            # sudo systemctl start nginx
+            # verify package in system boot sequence
+            if package_system:
+                sys_message = 'Verifying %s is enabled ... ' % package_name
+                enabled_text = print_script(package_system['enabled'], sys_message)
+                if not enabled_text:
+                    sys_message = 'Enabling %s on system startup ... ' % package_name
+                    print_script(package_system['enable'], sys_message)
 
             # add reverse proxies
             service_labels = service_config.get('labels',{})
@@ -312,14 +314,23 @@ def update(package_option, platform_option, service_option, environ_type='', reg
                             'cert': cert_name
                         }
 
-                print(domain_map)
-                dev = False
+                if print_terminal:
+                    domain_message = 'Domain map associated with service %s:\n%s' % (service_insert, domain_map)
+                    print(domain_message)
 
-                # TODO handle certbot
-                if package_name == 'certbot' and dev:
+                # handle certbot
+                if package_name == 'certbot':
+
+                    # check if nginx is running
+                    restart_insert = '--debug'
+                    sys_command = 'sudo service nginx status'
+                    sys_message = 'Verifying reverse proxy is running ... '
+                    running_text = print_script(sys_command, sys_message)
+                    if running_text.find('active (running)') > -1:
+                        restart_insert += ' --pre-hook "service nginx stop" --post-hook "service nginx start"'
 
                     # retrieve certbot information
-                    sys_command = 'certbot-auto certificates --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start"'
+                    sys_command = 'certbot-auto certificates --standalone --no-self-upgrade %s' % restart_insert
                     sys_message = 'Retrieving certificate information ... '
                     certbot_text = print_script(sys_command, sys_message)
 
@@ -354,29 +365,35 @@ def update(package_option, platform_option, service_option, environ_type='', reg
                     # register certbot information
                     initial_commands = []
                     for key, value in initial_certs.items():
-                        initial_command = 'certbot-auto certonly --standalone -d %s --debug --pre-hook "service nginx stop" --post-hook "service nginx start"' % ','.join(value)
+                        initial_command = 'certbot-auto certonly --standalone --no-self-upgrade -d %s %s' % (','.join(value), restart_insert)
                         initial_commands.append(initial_command)
                     if initial_commands:
-                        raise Exception('Registration of a new ssl certificate using CertBot must be done manually.\nTry: lab connect ec2\n%s\nThen exit ssh and run "lab deploy ec2 --resume"' % '\n'.join(initial_commands))
+                        raise Exception('Registration of a new ssl certificate using CertBot must be done manually.\nTry: lab connect ec2\n%s' % '\n'.join(initial_commands))
 
                     # update certbot information
                     update_commands = []
+                    certbot_current = True
                     for cert in update_certs:
-                        certbot_command = 'certbot-auto certonly --standalone --debug -n --cert-name %s -d %s --pre-hook "service nginx stop" --post-hook "service nginx start"  --debug' % (cert, ','.join(certbot_map[cert]))
+                        certbot_command = 'certbot-auto certonly --standalone --no-self-upgrade -n --cert-name %s -d %s %s' % (cert, ','.join(certbot_map[cert]), restart_insert)
                         update_commands.append(certbot_command)
                     if update_commands:
+                        certbot_current = False
                         sys_message = 'Updating ssl certificate information ... '
                         print_script(update_commands, sys_message)
 
                     # renew certbot information
                     if set(renew_certs) - set(update_certs):
-                        sys_command = 'certbot-auto renew --standalone --debug --pre-hook "service nginx stop" --post-hook "service nginx start"'
+                        certbot_current = False
+                        sys_command = 'certbot-auto renew --standalone --no-self-upgrade %s' % restart_insert
                         sys_message = 'Renewing ssl certificates ... '
                         print_script(sys_command, sys_message)
 
+                    # report no changes
+                    if certbot_current:
+                        print('All ssl certificates are up-to-date.')
 
                 # handle nginx
-                elif package_name == 'nginx' and dev:
+                elif package_name == 'nginx' and print_terminal:
 
                     # retrieve nginx information
                     nginx_path = '/etc/nginx/nginx.conf'
@@ -402,35 +419,38 @@ def update(package_option, platform_option, service_option, environ_type='', reg
                             ssl_port=443,
                             ssl_gateway='certbot'
                         )
-                    if print_terminal:
-                        print(nginx_updated)
 
                     # replace nginx conf and restart nginx on ec2 image
-                    else:
-                        from os import path, remove
-                        from time import time
-                        nginx_name = 'nginx%s.conf' % int(time())
-                        nginx_temp = path.relpath(path.join(service_root, nginx_name))
-                        with open(nginx_temp, 'wt') as f:
-                            f.write(nginx_updated)
-                            f.close()
+                    from os import path, remove
+                    from time import time
+                    nginx_name = 'nginx%s.conf' % int(time())
+                    nginx_temp = path.relpath(path.join(service_root, nginx_name))
+                    with open(nginx_temp, 'wt') as f:
+                        f.write(nginx_updated)
+                        f.close()
+                    if verbose:
+                        print('Updating nginx configurations on ec2 image ... ', end='', flush=True)
+                    try:
+                        ssh_client.put(nginx_temp, nginx_path, overwrite=True)
+                        ssh_client.script('sudo service nginx restart')
                         if verbose:
-                            print('Updating nginx configurations on ec2 image ... ', end='', flush=True)
-                        try:
-                            ssh_client.put(nginx_temp, nginx_path, overwrite=True)
-                            ssh_client.script('sudo service nginx restart')
-                            if verbose:
-                                print('done.')
-                        except:
-                            if verbose:
-                                print('ERROR.')
-                            remove(nginx_temp)
-                            raise
+                            print('done.')
+                    except:
+                        if verbose:
+                            print('ERROR.')
+                        remove(nginx_temp)
+                        raise
 
-        print(service_config)
-        msg_insert = '%s on %s with service %s' % (package_name, platform_name, service_insert)
+                    # report changes
+                    if print_terminal:
+                        nginx_comparison = 'Old nginx configuration:\n%s\nNew nginx configuration:\n%s' % (nginx_text, nginx_updated)
+                        print(nginx_comparison)
+
+                    # TODO remove port/container from reverse proxy
+
+        msg_insert = '%s on %s for service %s' % (package_name, platform_name, service_insert)
 
     # construct exit message
     exit_msg = 'Configurations for %s have been updated.' % msg_insert
-        
+
     return exit_msg

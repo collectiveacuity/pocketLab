@@ -12,10 +12,14 @@
       "sudo mv certbot-auto /usr/local/bin/certbot-auto",
       "certbot-auto --version --debug -y"
     ],
-    "autostart": [
-      "sudo chmod 777 /etc/crontab; echo '32 17 * * 1 root certbot-auto renew --standalone --no-self-upgrade --pre-hook \"service nginx stop\" --post-hook \"service nginx start\"' >> /etc/crontab",
-      "sudo systemctl restart crond"
-    ],
+    "system": {
+      "enable": [
+        "sudo chmod 777 /etc/crontab; echo '32 17 * * 1 root certbot-auto renew --standalone --no-self-upgrade --pre-hook \"service nginx stop\" --post-hook \"service nginx start\"' >> /etc/crontab",
+        "sudo systemctl restart crond"
+      ],
+      "status": "",
+      "enabled": "sudo grep 'certbot-auto' /etc/crontab"
+    },
     "dependencies": [],
     "check": "certbot-auto --version --no-self-upgrade",
     "docs": []
@@ -32,10 +36,14 @@
       "sudo mv certbot-auto /usr/local/bin/certbot-auto",
       "certbot-auto --version --debug -y"
     ],
-    "autostart": [
-      "sudo chmod 777 /etc/crontab; echo '32 17 * * 1 root certbot-auto renew --standalone --no-self-upgrade --pre-hook \"service nginx stop\" --post-hook \"service nginx start\"' >> /etc/crontab",
-      "sudo service crond restart"
-    ],
+    "system": {
+      "enable": [
+        "sudo chmod 777 /etc/crontab; echo '32 17 * * 1 root certbot-auto renew --standalone --no-self-upgrade --pre-hook \"service nginx stop\" --post-hook \"service nginx start\"' >> /etc/crontab",
+        "sudo service crond restart"
+      ],
+      "status": "",
+      "enabled": "sudo grep 'certbot-auto' /etc/crontab"
+    },
     "dependencies": [],
     "check": "certbot-auto --version --no-self-upgrade",
     "docs": []

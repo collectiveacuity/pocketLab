@@ -25,6 +25,9 @@ def deploy(platform_name, service_option, environ_type='test', resource_tags='',
         
     :param platform_name: string with name of remote platform to host service
     :param service_option: [optional] string with name of service in lab registry
+    :param environ_type: [optional] string with environment of instance (dev, test, prod, asg)
+    :param resource_tags: [optional] comma separated string with tags on remote platform
+    :param region_name: [optional] string with name of remote provider region
     :param verbose: [optional] boolean to toggle process messages
     :param overwrite: [optional] boolean to overwrite existing container
     :param resume_routine: [optional] boolean to resume from last sub-routine
@@ -672,7 +675,7 @@ def deploy(platform_name, service_option, environ_type='test', resource_tags='',
 
             # compose exit message
             ssh_client.ec2.iam.verbose = True
-            exit_msg = 'Docker image of %s' % ec2_insert
+            exit_msg = 'Docker image of %s.\nTo add a reverse proxy, try: lab update nginx ec2' % ec2_insert
 
             if len(service_list) > 1:
                 print(exit_msg)
