@@ -1,0 +1,41 @@
+[
+  {
+    "identifiers": [
+      "amzn2-ami-ecs-hvm"
+    ],
+    "scripts": [
+      "sudo amazon-linux-extras list | sudo awk '/nginx/{ print $2 }' | sudo xargs amazon-linux-extras install -y"
+    ],
+    "autostart": [
+      "sudo systemctl enable nginx"
+    ],
+    "services": {
+      "init": "/etc/rc.d/init.d/docker",
+      "enable": "sudo chkconfig docker on"
+    },
+    "dependencies": [ ],
+    "check": "docker --help",
+    "docs": [
+      "https://stackoverflow.com/a/49199858",
+      "https://aws.amazon.com/amazon-linux-2/faqs/"
+    ]
+  },
+  {
+    "identifiers": [
+      "amzn-ami amazon-ecs-optimized"
+    ],
+    "scripts": [
+      "sudo yum install -y nginx"
+    ],
+    "autostart": [
+      "sudo chmod 777 /etc/rc3.d/S99local; echo 'service nginx restart' >> /etc/rc3.d/S99local"
+    ],
+    "services": {
+      "init": "/etc/rc3.d/S99local",
+      "enable": ""
+    },
+    "dependencies": [ ],
+    "check": "docker --help",
+    "docs": []
+  }
+]

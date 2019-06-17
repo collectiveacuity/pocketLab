@@ -118,7 +118,7 @@ def install(package_name, platform_name, service_option, environ_type='', region
                 ssh_client.script(install_check)
                 package_installed = True
             except Exception as err:
-                print(err)
+                pass
 
         # handle package already installed
         if package_installed:
