@@ -93,6 +93,7 @@
             <li><a href="#deploy">Deploy</a></li>
             <li><a href="#get">Get</a></li>
             <li><a href="#home">Home</a></li>
+            <li><a href="#install">Install</a></li>
             <li><a href="#launch">Launch</a></li>
             <li><a href="#list">List</a></li>
             <li><a href="#put">Put</a></li>
@@ -108,7 +109,7 @@
 <p><em>Init adds the config files for other lab commands.</em>  </p>
 <p><strong>Description:</strong><br />
 Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a <code>docker-compose.yaml</code> file and a <code>.lab</code> folder in the root directory to manage various configuration options. It will also create, if missing, <code>cred/</code> and <code>data/</code> folders to store sensitive project information outside version control along with a <code>.gitignore</code> (or <code>.hgignore</code>) file to escape out standard non-VCS files.</p>
-<p>PLEASE NOTE: With the option <code>--python</code> (or <code>--node</code>), init creates instead a standard framework for publishing a python (or node) module.  </p>
+<p>PLEASE NOTE: With the option <code>--python</code> (or <code>--node</code> or <code>--jquery</code>), init creates instead a standard framework for publishing a python (or node or jquery) module.  </p>
 <p><strong>Usage:</strong></p>
 <pre><code class="bash">$ lab init [-h] [--vcs STRING] [--license STRING] [--python] [--node] [--jquery] [--heroku] [--aws] [--ec2] [--asg] [-q] [-f] [SERVICE]
 </code></pre>
@@ -120,8 +121,8 @@ and a '.lab' folder in the root directory to manage various configuration
 options. It will also create, if missing, 'cred/' and 'data/' folders to store
 sensitive project information outside version control along with a '.gitignore'
 (or '.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With
-the option '--python' (or '--node'), init creates instead a standard framework
-for publishing a python (or node) module.
+the option '--python' (or '--node' or '--jquery'), init creates instead a
+standard framework for publishing a python (or node or jquery) module.
 
 positional arguments:
   SERVICE             (optional) service in lab registry
@@ -162,19 +163,19 @@ optional arguments:
 <p><em>Edit settings on remote host manually.</em>  </p>
 <p><strong>Description:</strong><br />
 Opens up a direct ssh connection to remote host. Connect is currently only available to the Amazon ec2 platform and only on systems running ssh natively. To connect to a remote host on Windows, try using Putty instead.</p>
-<p>PLEASE NOTE: connect uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of <code>lab launch ec2</code>. Otherwise, a tag must be added to the instance with key &ldquo;Services&rdquo; and value &ldquo;<service1>,<service2>&ldquo;.  </p>
+<p>PLEASE NOTE: connect uses the service name and other tags associated with remote instances to determine which instance to connect to. The service name will be added as part of <code>lab launch ec2</code>. Otherwise, a tag must be added to the instance with key &ldquo;Services&rdquo; and value &ldquo;<service1>,<service2>&ldquo;.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab connect [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] PLATFORM [SERVICE]
+<pre><code class="bash">$ lab connect [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] PLATFORM [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
 <pre><code class="bash">Opens up a direct ssh connection to remote host. Connect is currently only
 available to the Amazon ec2 platform and only on systems running ssh natively.
 To connect to a remote host on Windows, try using Putty instead. PLEASE NOTE:
-connect uses the service name specified in the docker-compose.yaml configuration
-file to determine which instance to connect to. The service name will be added
-as part of 'lab launch ec2'. Otherwise, a tag must be added to the instance with
-key &quot;Services&quot; and value &quot;&lt;service1&gt;,&lt;service2&gt;&quot;.
+connect uses the service name and other tags associated with remote instances to
+determine which instance to connect to. The service name will be added as part
+of 'lab launch ec2'. Otherwise, a tag must be added to the instance with key
+&quot;Services&quot; and value &quot;&lt;service1&gt;,&lt;service2&gt;&quot;.
 
 positional arguments:
   PLATFORM         name of remote platform
@@ -183,7 +184,7 @@ positional arguments:
 optional arguments:
   -h, --help       show this help message and exit
   --env STRING     type of development environment (default: test)
-  --tag STRING     tag associated with resource
+  --tags STRING    tags associated with resource (comma sep)
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
 </code></pre>
@@ -194,7 +195,7 @@ optional arguments:
 Deploys a service to a remote platform. Deploy is currently only available for the heroku and ec2 platforms. Deploy can also deploy static html sites and apps using their dependencies if the root folder is added to one of the runtime type flags (ex. lab deploy heroku &ndash;html site/)</p>
 <p>PLEASE NOTE: deploy uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of <code>lab launch ec2</code>. Otherwise, a tag must be added to the instance with key &ldquo;Services&rdquo; and value &ldquo;<service1>,<service2>&ldquo;.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab deploy [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] [--ssl] [--resume] [--print] [--mount] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING | --jingo STRING] PLATFORM [SERVICE]
+<pre><code class="bash">$ lab deploy [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] [-f] [--resume] [--print] [--mount] [--virtualbox STRING] [--html STRING | --php STRING | --python STRING | --java STRING | --ruby STRING | --node STRING | --jingo STRING] PLATFORM [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
@@ -214,11 +215,10 @@ positional arguments:
 optional arguments:
   -h, --help           show this help message and exit
   --env STRING         type of development environment (default: test)
-  --tag STRING         tag associated with resource
+  --tags STRING        tags associated with resource (comma sep)
   --region STRING      name of platform region
   -q, --quiet          turn off lab process messages
   -f, --force          overwrite the existing resource
-  --ssl                turn off ssl everywhere
   --resume             resume from prior progress point
   --print              prints command(s) without running
   --mount              mount volumes onto container
@@ -238,7 +238,7 @@ optional arguments:
 Copies a file or folder on remote host to working directory on localhost. Get is currently only available for the Amazon ec2 platform.</p>
 <p>PLEASE NOTE: get uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of <code>lab launch ec2</code>. Otherwise, a tag must be added to the instance with key &ldquo;Services&rdquo; and value &ldquo;<service1>,<service2>&ldquo;.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab get [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PLATFORM [SERVICE]
+<pre><code class="bash">$ lab get [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] [-f] PATH PLATFORM [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
@@ -257,7 +257,7 @@ positional arguments:
 optional arguments:
   -h, --help       show this help message and exit
   --env STRING     type of development environment (default: test)
-  --tag STRING     tag associated with resource
+  --tags STRING    tags associated with resource (comma sep)
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
@@ -288,12 +288,41 @@ optional arguments:
   -f, --force    overwrite the existing resource
 </code></pre>
 
+<h2 id="install">Install</h2>
+<p><em>Install adds a fully-configured software package to a remote platform.</em>  </p>
+<p><strong>Description:</strong><br />
+Installs a software package on a running instance on a remote platform. Install is currently only available for the ec2 platform and supports the following packages:
+nginx
+certbot  </p>
+<p><strong>Usage:</strong></p>
+<pre><code class="bash">$ lab install [-h] [--env STRING] [--region STRING] [--tags STRING] [--print] [-q] PACKAGE PLATFORM [SERVICE]
+</code></pre>
+
+<p><strong>Help:</strong> </p>
+<pre><code class="bash">Installs a software package on a running instance on a remote platform. Install
+is currently only available for the ec2 platform and supports the following
+packages: nginx certbot
+
+positional arguments:
+  PACKAGE          name of software package
+  PLATFORM         name of remote platform
+  SERVICE          (optional) service in lab registry
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --env STRING     type of development environment (default: test)
+  --region STRING  name of platform region
+  --tags STRING    tags associated with resource (comma sep)
+  --print          prints command(s) without running
+  -q, --quiet      turn off lab process messages
+</code></pre>
+
 <h2 id="launch">Launch</h2>
 <p><em>Launch creates one or more remote instances to host services.</em>  </p>
 <p><strong>Description:</strong><br />
 Launches an instance or an auto-scaling group on a remote platform. Launch is currently only available for the ec2 platform. To create an configuration file to launch an ec2 instance, run <code>lab init --ec2</code> and adjust the settings appropriately.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab launch [-h] [--region STRING] [-i] [-q] [-f] PLATFORM [SERVICE]
+<pre><code class="bash">$ lab launch [-h] [--region STRING] [-q] [-f] PLATFORM [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
@@ -309,7 +338,6 @@ positional arguments:
 optional arguments:
   -h, --help       show this help message and exit
   --region STRING  name of platform region
-  -i, --install    install deployment libraries on platform
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
 </code></pre>
@@ -344,7 +372,7 @@ optional arguments:
 Copies a local file or folder to user home on remote host. Put is currently only available for the Amazon ec2 platform.</p>
 <p>PLEASE NOTE: put uses the service name specified in the docker-compose.yaml configuration file to determine which instance to connect to. The service name will be added as part of <code>lab launch ec2</code>. Otherwise, a tag must be added to the instance with key &ldquo;Services&rdquo; and value &ldquo;<service1>,<service2>&ldquo;.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab put [-h] [--env STRING] [--tag STRING] [--region STRING] [-q] [-f] PATH PLATFORM [SERVICE]
+<pre><code class="bash">$ lab put [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] [-f] PATH PLATFORM [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
@@ -363,7 +391,7 @@ positional arguments:
 optional arguments:
   -h, --help       show this help message and exit
   --env STRING     type of development environment (default: test)
-  --tag STRING     tag associated with resource
+  --tags STRING    tags associated with resource (comma sep)
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
@@ -415,22 +443,31 @@ optional arguments:
 <h2 id="update">Update</h2>
 <p><em>Keeps your services up-to-date with the latest configurations.</em>  </p>
 <p><strong>Description:</strong><br />
-Updates the configuration files for a service with the latest pocketlab configurations.  </p>
+Updates the configuration files for a service. When a package and platform are specified, update adds (or updates) the service to the configuration files for the package on the platform. Otherwise, update only updates the local configuration files for a service with the latest pocketlab configurations.  </p>
 <p><strong>Usage:</strong></p>
-<pre><code class="bash">$ lab update [-h] [-a] [-q] [SERVICES [SERVICES ...]]
+<pre><code class="bash">$ lab update [-h] [--env STRING] [--region STRING] [--tags STRING] [--print] [-a] [--ssl] [-q] [PACKAGE] [PLATFORM] [SERVICE]
 </code></pre>
 
 <p><strong>Help:</strong> </p>
-<pre><code class="bash">Updates the configuration files for a service with the latest pocketlab
-configurations.
+<pre><code class="bash">Updates the configuration files for a service. When a package and platform are
+specified, update adds (or updates) the service to the configuration files for
+the package on the platform. Otherwise, update only updates the local
+configuration files for a service with the latest pocketlab configurations.
 
 positional arguments:
-  SERVICES     list of services in lab registry
+  PACKAGE          (optional) name of software package
+  PLATFORM         (optional) name of remote platfrom
+  SERVICE          (optional) service in lab registry
 
 optional arguments:
-  -h, --help   show this help message and exit
-  -a, --all    apply to all services in registry
-  -q, --quiet  turn off lab process messages
+  -h, --help       show this help message and exit
+  --env STRING     type of development environment (default: test)
+  --region STRING  name of platform region
+  --tags STRING    tags associated with resource (comma sep)
+  --print          prints command(s) without running
+  -a, --all        apply to all services in registry
+  --ssl            turn off ssl everywhere
+  -q, --quiet      turn off lab process messages
 </code></pre></div>
         </div>
 
