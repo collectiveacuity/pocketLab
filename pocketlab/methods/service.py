@@ -46,7 +46,7 @@ def retrieve_service_root(service_name, command_context=''):
 # retrieve root path to service
     import yaml
     service_data = registry_client.load(file_name)
-    service_details = yaml.load(service_data.decode())
+    service_details = yaml.full_load(service_data.decode())
     if not 'service_root' in service_details.keys():
         error_msg = 'Record for project "%s" has been corrupted.' % service_name
         if command_context:
