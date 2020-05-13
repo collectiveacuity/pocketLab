@@ -9,6 +9,7 @@ site/
 
 #################  unit testing   #################
 htmlcov/
+.pytest_cache/
 .tox/
 .coverage
 .coverage.*
