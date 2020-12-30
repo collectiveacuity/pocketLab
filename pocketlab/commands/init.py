@@ -102,16 +102,6 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     if named_active and not service_name:
         raise ValueError('Lab init option requires a name for the service framework.\nTry: lab init <service>')
 
-    # retrieve username
-    import os
-    from labpack.platforms.localhost import localhostClient
-    localhost_client = localhostClient()
-    if localhost_client.os.sysname == 'Windows':
-        username = os.environ.get('USERNAME')
-    else:
-        home_path = os.path.abspath(localhost_client.home)
-        root_path, username = os.path.split(home_path)
-
     # create service name if specified
     if service_name:
 
@@ -133,6 +123,16 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                 from pocketlab.commands.home import home
                 home(service_name, overwrite=overwrite)
 
+    # retrieve username
+    import os
+    from labpack.platforms.localhost import localhostClient
+    localhost_client = localhostClient()
+    if localhost_client.os.sysname == 'Windows':
+        username = os.environ.get('USERNAME')
+    else:
+        home_path = os.path.abspath(localhost_client.home)
+        root_path, username = os.path.split(home_path)
+
     # define default documentation values
     replacement_map = {
         '<service-description>': 'A Vital Service for a Brand New Project',
@@ -151,7 +151,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         replacement_map['<org-url>'] = 'https://collectiveacuity.com'
         replacement_map['<user-email>'] = ''
 
-    # determine if ignore files exist
+    # define ignore file modification variables
     ignore_map = {
         'git': {
             'type': 'vcs',
@@ -167,15 +167,32 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
             'type': 'deploy',
             'path': '.dockerignore',
             'kwargs': {'vcs': 'docker'}
+        },
+        'npm': {
+            'type': 'module',
+            'path': '.npmignore',
+            'kwargs': {'type': 'node'},
+            'substitutions': {
+                '#+\s+version\scontrol\s+#+': '################  version control  ################\n.hgignore\n.hg/\n.gitignore\n.git/',
+                '#+\s+dev\sfiles\s+#+': '#################    dev files    #################\ndev/\ntest/\ntest_dev/\ndocs/\ndocs_dev/\n.babelrc\nwebpack.config.js\nkarma.config.js',
+                '#+\s+dependencies\s+#+': '#################  dependencies   #################\n*.swp\nnpm-debug.log',
+                '#+\s+unit\stesting\s+#+': '#################  unit testing   #################\ncoverage/',
+                '#+\s+.gitignore\s+#+': '#################   .npmignore    #################'
+            }
         }
     }
+
+    # determine what ignore files exist
     existing_ignores = set()
+    existing_vcs = set()
     for key, value in ignore_map.items():
+        existing_ignores.add(key)
         if value['type'] == 'vcs':
             if path.exists(value['path']):
-                existing_ignores.add(key) 
+                existing_vcs.add(key)
 
     # define default variables
+    init_module = False
     init_project = False
     platform_names = []
     creating_ignores = []
@@ -184,15 +201,284 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     if init_docker:
         platform_names.append('docker')
 
-    # handle module inits
+    # define module variables
+    source_path = service_name
+    init_path = path.join(source_path, '__init__.py')
+    module_type = 'python'
+    test_folder = 'tests'
+    readme_path = 'README.md'
+    license_path = 'LICENSE.txt'
+    replacement_map['<service-description>'] = 'A Brand New Python Module'
     if init_python:
-        pass
+        readme_path = 'README.rst'
+        init_module = True
     if init_node:
-        pass
+        source_path = 'src'
+        init_path = path.join(source_path, '__init__.js')
+        module_type = 'node'
+        test_folder = 'test'
+        replacement_map['<service-description>'] = 'A Powerful Javascript Tool for NodeJS'
+        creating_ignores.append('npm')
+        init_module = True
 
-    # handle project inits
+    # add module configs
+    if init_module:
+
+        # add gitignore to modules with no vcs specified
+        if not vcs_service and not existing_vcs:
+            creating_ignores.append('git')
+
+        # add MIT license to modules with no license specified
+        if not license_type and not path.exists(license_path):
+            license_type = 'mit'
+
+        # add dev files to vcs ignore
+        dev_files_ignore = '#################    dev files    #################\ndev/\n%s_dev/' % test_folder
+        ignore_map['git']['substitutions'] = { '#+\s+dev\sfiles\s+#+': dev_files_ignore }
+        ignore_map['mercurial']['substitutions'] = { '#+\s+dev\sfiles\s+#+': dev_files_ignore }
+
+        # create source folder
+        if not path.exists(source_path):
+            from os import makedirs
+            makedirs(source_path)
+            _printer(source_path, 'folder')
+
+        # create init file
+        from pocketlab.methods.config import replace_text
+        if init_path and not path.exists(init_path):
+            from pocketlab.methods.config import construct_init
+            init_text = construct_init(module_type)
+            init_text = replace_text(init_text, replacement_map=replacement_map)
+            with open(init_path, 'wt', encoding='utf-8') as f:
+                f.write(init_text)
+                f.close()
+            _printer(init_path)
+
+        # create source file
+        from pocketlab.methods.config import retrieve_template
+        if module_type == 'node':
+            source_file_path = path.join(source_path, '%s.js' % service_name)
+            if not path.exists(source_file_path):
+                source_text = retrieve_template('models/node.source.js.txt')
+                with open(source_file_path, 'wt', encoding='utf-8') as f:
+                    f.write(source_text)
+                    f.close()
+                _printer(source_file_path)
+
+        # create package json
+        if module_type == 'node':
+            from pocketlab.methods.node import generate_package
+            package_path = 'package.json'
+            package_text = retrieve_template('models/node.package.json')
+            dependency_text = retrieve_template('models/node.global.dependencies.json')
+            generate_package(package_path, package_text, dependency_text, replacement_map, _printer)
+
+        # create readme file
+        readme_text = ''
+        if not path.exists(readme_path):
+            if module_type == 'node':
+                readme_text = retrieve_template('models/node.readme.md.txt')
+                readme_text = replace_text(readme_text, replacement_map=replacement_map)
+            if module_type == 'python':
+                highlight_text = ''
+                for i in range(len(service_name)):
+                    highlight_text += '='
+                sub_rst = {
+                    '\n=*?\npocketlab.*?=\n': '\n%s\n%s\n%s\n' % (highlight_text, service_name, highlight_text)
+                }
+                readme_text = retrieve_template('models/python.readme.rst.txt')
+                readme_text = replace_text(
+                    readme_text,
+                    substitution_map=sub_rst,
+                    replacement_map=replacement_map
+                )
+            with open(readme_path, 'wt', encoding='utf-8') as f:
+                f.write(readme_text)
+                f.close()
+            _printer(readme_path)
+
+        # create docs folders
+        if not path.exists('docs'):
+            from os import makedirs
+            makedirs('docs')
+            _printer('docs', 'folder')
+
+        # create test folder
+        if not path.exists(test_folder):
+            from os import makedirs
+            makedirs(test_folder)
+            _printer(test_folder, 'folder')
+
+        # create docsify files
+        if module_type == 'node':
+            index_path = path.join('docs', 'index.html')
+            if not path.exists(index_path):
+                index_text = retrieve_template('models/docsify.index.html.txt')
+                with open(index_path, 'wt') as f:
+                    f.write(index_text)
+                    f.close()
+                _printer(index_path)
+            jekyll_path = path.join('docs', '.nojekyll')
+            if not path.exists(jekyll_path):
+                with open(jekyll_path, 'wt') as f:
+                    f.write('')
+                    f.close()
+                _printer(jekyll_path)
+            readme_path = path.join('docs', 'README.md')
+            if readme_text and not path.exists(readme_path):
+                with open(readme_path, 'wt') as f:
+                    f.write(readme_text)
+                    f.close()
+                _printer(readme_path)
+
+        # create mkdocs files
+        if module_type == 'python':
+
+            # create docs dev folder
+            if not path.exists('docs_dev'):
+                from os import makedirs
+                makedirs('docs_dev')
+                _printer('docs_dev', 'folder')
+
+            # create mkdocs markdown file
+            mkdocs_path = path.join('docs', 'mkdocs.md')
+            if not path.exists(mkdocs_path):
+                mkdocs_text = retrieve_template('models/mkdocs.md.txt')
+                with open(mkdocs_path, 'wt') as f:
+                    f.write(mkdocs_text)
+                    f.close()
+                _printer(mkdocs_path)
+
+            # create roadmap markdown files
+            roadmap_docs = path.join('docs', 'roadmap.md')
+            roadmap_temp = path.join('docs_dev', 'roadmap.md')
+            roadmap_list = [roadmap_docs, roadmap_temp]
+            for file_path in roadmap_list:
+                if not path.exists(file_path):
+                    roadmap_text = retrieve_template('models/mkdocs.roadmap.md.txt')
+                    with open(file_path, 'wt') as f:
+                        f.write(roadmap_text)
+                        f.close()
+                    _printer(file_path)
+
+            # create components yaml file
+            components_path = path.join('docs_dev', 'components.csv')
+            if not path.exists(components_path):
+                components_text = retrieve_template('models/mkdocs.components.csv.txt')
+                with open(components_path, 'wt') as f:
+                    f.write(components_text)
+                    f.close()
+                _printer(components_path)
+
+            # create generate script file
+            generate_path = path.join('docs_dev', 'generate.py')
+            if not path.exists(generate_path):
+                generate_text = retrieve_template('models/mkdocs.generate.py.txt')
+                with open(generate_path, 'wt') as f:
+                    f.write(generate_text)
+                    f.close()
+                _printer(generate_path)
+
+            # create index markdown file
+            index_path = path.join('docs', 'index.md')
+            if not path.exists(index_path):
+                index_text = retrieve_template('models/mkdocs.index.md.txt')
+                index_text = replace_text(index_text, replacement_map=replacement_map)
+                with open(index_path, 'wt') as f:
+                    f.write(index_text)
+                    f.close()
+                _printer(index_path)
+
+        # create test files
+        if module_type == 'node':
+            test_path = path.join('test', '%s-spec.js' % service_name)
+            if not path.exists(test_path):
+                test_text = retrieve_template('models/node.spec.js.txt')
+                test_text = test_text.replace('pocketlab', service_name)
+                with open(test_path, 'wt', encoding='utf-8') as f:
+                    f.write(test_text)
+                    f.close()
+                _printer(test_path)
+
+        # create other root files
+        from pocketlab.methods.config import construct_changes, construct_setup
+        manifest_text = retrieve_template('models/python.manifest.in.txt')
+        mkdocs_text = retrieve_template('models/mkdocs.yaml.txt')
+        module_files = {
+            'CHANGES.rst': construct_changes(),
+            'MANIFEST.in': replace_text(manifest_text, replacement_map=replacement_map),
+            'mkdocs.yml': replace_text(mkdocs_text, replacement_map=replacement_map),
+            'setup.py': construct_setup(service_name, replacement_map['<org-name>'])
+        }
+        if module_type == 'node':
+            module_files = {
+                'CHANGELOG.md': construct_changes(module_type),
+                '.coveralls.yml': retrieve_template('models/coveralls.yml.txt'),
+                '.babelrc': retrieve_template('models/babelrc.txt')
+            }
+        for key, value in module_files.items():
+            if not path.exists(key):
+                with open(key, 'wt', encoding='utf-8') as f:
+                    f.write(value)
+                    f.close()
+                _printer(key)
+
+        exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
+
+    # create jquery controller files
+    # TODO add gulp
     if init_jquery:
-        pass
+
+        # define jquery variables
+        source_path = 'scripts'
+        replacement_map['<service-description>'] = 'A Brilliant Javascript Controller For The Browser'
+
+        # create source folder
+        if not path.exists(source_path):
+            from os import makedirs
+            makedirs(source_path)
+            _printer(source_path, 'folder')
+
+        # create source file
+        from pocketlab.methods.config import replace_text, retrieve_template
+        source_file_path = path.join(source_path, '%s.js' % service_name)
+        if not path.exists(source_file_path):
+            from pocketlab.methods.config import construct_init
+            source_text = retrieve_template('models/jquery.source.js.txt')
+            init_text = construct_init(module_type)
+            init_text = replace_text(init_text, replacement_map=replacement_map)
+            source_text = init_text + '\n' + source_text
+            with open(source_file_path, 'wt', encoding='utf-8') as f:
+                f.write(source_text)
+                f.close()
+            _printer(source_file_path)
+
+        # create package.json
+        from pocketlab.methods.node import generate_package
+        package_path = 'package.json'
+        package_text = retrieve_template('models/jquery.package.json')
+        dependency_text = retrieve_template('models/jquery.global.dependencies.json')
+        generate_package(package_path, package_text, dependency_text, replacement_map, _printer)
+
+        # create other jquery files
+        webpack_text = retrieve_template('models/webpack.config.js.txt')
+        jquery_files = {
+            '.babelrc': retrieve_template('models/babelrc.txt'),
+            'karma.config.js': retrieve_template('models/karma.config.js.txt'),
+            'webpack.config.js': replace_text(
+                webpack_text,
+                replacement_map=replacement_map
+            )
+        }
+        for key, value in jquery_files.items():
+            if not path.exists(key):
+                with open(key, 'wt', encoding='utf-8') as f:
+                    f.write(value)
+                    f.close()
+                _printer(key)
+
+        exit_msg = 'Framework for "%s" jquery controller setup in current directory.' % service_name
+
     if init_express:
         init_project = True
     if init_flask:
@@ -204,6 +490,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
     # TODO add gae configs
     if init_gae:
+        creating_ignores.append('gcloud')
         pass
 
     # add ec2 configurations
@@ -303,26 +590,28 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
     # add a license file
     if license_type:
-        pass
+        license_type = license_type.lower()
+        from pocketlab.methods.config import construct_license
+        license_text = construct_license(license_type, replacement_map)
+        if not path.exists(license_path):
+            with open(license_path, 'wt', encoding='utf-8') as f:
+                f.write(license_text)
+                f.close()
+            _printer(license_path)
 
     # add project folders
     if init_project:
 
         # add gitignore to projects with no vcs specified
-        if not vcs_service and existing_ignores - {'git'} == 0:
+        if not vcs_service and not existing_vcs:
             creating_ignores.append('git')
 
-        # add a data folder
-        data_path = 'data'
-        if not path.exists(data_path):
-            makedirs(data_path)
-            _printer(data_path, 'folder')
-
-        # add a keys folder
-        data_path = 'keys'
-        if not path.exists(data_path):
-            makedirs(data_path)
-            _printer(data_path, 'folder')
+        # define project folders
+        project_folders = [ 'data', 'keys', 'scripts', 'styles' ]
+        for folder in project_folders:
+            if not path.exists(folder):
+                makedirs(folder)
+                _printer(folder, 'folder')
 
         # add a credential folder
         cred_path = 'cred'
@@ -362,309 +651,6 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
         exit_msg = 'Framework for "%s" service setup in current directory.' % service_name
 
-    # setup module architecture
-        if init_python or init_node or init_jquery or init_express:
-
-        # determine module variables
-            from pocketlab.methods.vcs import load_ignore
-            from pocketlab.methods.config import replace_text, retrieve_template
-            module_type = 'python'
-            test_folder = 'tests'
-            readme_path = 'README.rst'
-            if init_node or init_jquery:
-                module_type = 'node'
-                test_folder = 'test'
-                readme_path = 'README.md'
-
-        # customize replacement map
-            if init_python:
-                replacement_map['<service-description>'] = 'A Brand New Python Module'
-            elif init_jquery:
-                replacement_map['<service-description>'] = 'A Brilliant Javascript Module For The Browser'
-            elif init_node:
-                replacement_map['<service-description>'] = 'A Powerful Javascript Tool for NodeJS'
-
-        # define substitution maps
-            gitignore_subsitutions = {
-                '#+\s+version\scontrol\s+#+': '################  version control  ################\n.hgignore\n.hg/',
-                '#+\s+dev\sfiles\s+#+': '#################    dev files    #################\ndev/\n%s_dev/' % test_folder
-            }
-            hgignore_subsitutions = {
-                '#+\s+version\scontrol\s+#+': '################  version control  ################\n\\\.git/'
-            }
-            npmignore_substitions = {
-                '#+\s+version\scontrol\s+#+': '################  version control  ################\n.hgignore\n.hg/\n.gitignore\n.git/',
-                '#+\s+dev\sfiles\s+#+': '#################    dev files    #################\ndev/\ntest/\ntest_dev/\ndocs/\ndocs_dev/\n.babelrc\nwebpack.config.js\nkarma.config.js',
-                '#+\s+dependencies\s+#+': '#################  dependencies   #################\n*.swp\nnpm-debug.log',
-                '#+\s+unit\stesting\s+#+': '#################  unit testing   #################\ncoverage/',
-                '#+\s+.gitignore\s+#+': '#################   .npmignore    #################'
-            }
-
-        # create .gitignore file
-            git_path = '.gitignore'
-            if not path.exists(git_path):
-                git_text = load_ignore(type=module_type)
-                git_text = replace_text(git_text, substitution_map=gitignore_subsitutions)
-                with open(git_path, 'wt') as f:
-                    f.write(git_text)
-                    f.close()
-                _printer(git_path)
-
-        # create .hgignore file
-            hg_path = '.hgignore'
-            if not path.exists(hg_path):
-                hg_text = load_ignore(vcs='mercurial', type=module_type)
-                hg_text = replace_text(hg_text, substitution_map=hgignore_subsitutions)
-                with open(hg_path, 'wt') as f:
-                    f.write(hg_text)
-                    f.close()
-                _printer(hg_path)
-
-        # create .npmignore file
-            npm_path = '.npmignore'
-            if module_type == 'node' and not path.exists(npm_path):
-                npm_text = load_ignore(type=module_type)
-                npm_text = replace_text(npm_text, substitution_map=npmignore_substitions)
-                with open(npm_path, 'wt') as f:
-                    f.write(npm_text)
-                    f.close()
-                _printer(npm_path)
-
-        # create source folder
-            source_path = service_name
-            if module_type == 'node':
-                source_path = 'src'
-            if not path.exists(source_path):
-                from os import makedirs
-                makedirs(source_path)
-                _printer(source_path, 'folder')
-
-        # create init file
-            init_path = path.join(source_path, '__init__.py')
-            if init_node:
-                init_path = path.join(source_path, '__init__.js')
-            elif init_jquery:
-                init_path = ''
-            if init_path and not path.exists(init_path):
-                from pocketlab.methods.config import construct_init
-                init_text = construct_init(module_type)
-                init_text = replace_text(init_text, replacement_map=replacement_map)
-                with open(init_path, 'wt', encoding='utf-8') as f:
-                    f.write(init_text)
-                    f.close()
-                _printer(init_path)
-
-        # create source file
-            if module_type == 'node':
-                source_path = path.join(source_path, '%s.js' % service_name)
-                if not path.exists(source_path):
-                    if init_jquery:
-                        from pocketlab.methods.config import construct_init
-                        source_text = retrieve_template('models/jquery.source.js.txt')
-                        init_text = construct_init(module_type)
-                        init_text = replace_text(init_text, replacement_map=replacement_map)
-                        source_text = init_text + '\n' + source_text
-                    else:
-                        source_text = retrieve_template('models/node.source.js.txt')
-                    with open(source_path, 'wt', encoding='utf-8') as f:
-                        f.write(source_text)
-                        f.close()
-                    _printer(source_path)
-
-        # create package json
-            if module_type == 'node':
-                package_path = 'package.json'
-                if not path.exists(package_path):
-                    if init_jquery:
-                        package_text = retrieve_template('models/jquery.package.json')
-                        dependency_text = retrieve_template('models/jquery.global.dependencies.json')
-                    else:
-                        package_text = retrieve_template('models/node.package.json')
-                        dependency_text = retrieve_template('models/node.global.dependencies.json')
-                    import json
-                    replacement_map['<global-dependencies>'] = ''
-                    replacement_map['<local-dependencies>'] = ''
-                    package_text = replace_text(package_text, replacement_map=replacement_map)
-                    package_json = json.loads(package_text)
-                    package_local = package_json['devDependencies']
-                    package_global = json.loads(dependency_text)
-                    for key in package_local.keys():
-                        if replacement_map['<local-dependencies>']:
-                            replacement_map['<local-dependencies>'] += ' '
-                        replacement_map['<local-dependencies>'] += key
-                    for key, value in package_global.items():
-                        if replacement_map['<global-dependencies>']:
-                            replacement_map['<global-dependencies>'] += ' '
-                        replacement_map['<global-dependencies>'] += key
-                        package_json['devDependencies'][key] = value
-                    package_text = json.dumps(package_json, indent=2)
-                    with open(package_path, 'wt', encoding='utf-8') as f:
-                        f.write(package_text)
-                        f.close()
-                    _printer(package_path)
-
-        # create readme file
-            readme_text = ''
-            if not path.exists(readme_path):
-                if module_type == 'node':
-                    readme_text = retrieve_template('models/node.readme.md.txt')
-                    readme_text = replace_text(readme_text, replacement_map=replacement_map)
-                elif init_python:
-                    highlight_text = ''
-                    for i in range(len(service_name)):
-                        highlight_text += '='
-                    sub_rst = {
-                        '\n=*?\npocketlab.*?=\n': '\n%s\n%s\n%s\n' % (highlight_text, service_name, highlight_text)
-                    }
-                    readme_text = retrieve_template('models/python.readme.rst.txt')
-                    readme_text = replace_text(
-                        readme_text, 
-                        substitution_map=sub_rst, 
-                        replacement_map=replacement_map
-                    )
-                with open(readme_path, 'wt', encoding='utf-8') as f:
-                    f.write(readme_text)
-                    f.close()
-                _printer(readme_path)
-
-        # create docs folders
-            if not path.exists('docs'):
-                from os import makedirs
-                makedirs('docs')
-                _printer('docs', 'folder')
-
-        # create test folder
-            if not path.exists(test_folder):
-                from os import makedirs
-                makedirs(test_folder)
-                _printer(test_folder, 'folder')
-
-        # create docsify files
-            if module_type == 'node':
-                index_path = path.join('docs', 'index.html')
-                if not path.exists(index_path):
-                    index_text = retrieve_template('models/docsify.index.html.txt')
-                    with open(index_path, 'wt') as f:
-                        f.write(index_text)
-                        f.close()
-                    _printer(index_path)
-                jekyll_path = path.join('docs', '.nojekyll')
-                if not path.exists(jekyll_path):
-                    with open(jekyll_path, 'wt') as f:
-                        f.write('')
-                        f.close()
-                    _printer(jekyll_path)
-                readme_path = path.join('docs', 'README.md')
-                if readme_text and not path.exists(readme_path):
-                    with open(readme_path, 'wt') as f:
-                        f.write(readme_text)
-                        f.close()
-                    _printer(readme_path)
-
-        # create mkdocs files
-            else:
-            # create docs dev folder
-                if not path.exists('docs_dev'):
-                    from os import makedirs
-                    makedirs('docs_dev')
-                    _printer('docs_dev', 'folder')
-
-            # create mkdocs markdown file
-                mkdocs_path = path.join('docs', 'mkdocs.md')
-                if not path.exists(mkdocs_path):
-                    mkdocs_text = retrieve_template('models/mkdocs.md.txt')
-                    with open(mkdocs_path, 'wt') as f:
-                        f.write(mkdocs_text)
-                        f.close()
-                    _printer(mkdocs_path)
-        
-            # create roadmap markdown files
-                roadmap_docs = path.join('docs', 'roadmap.md')
-                roadmap_temp = path.join('docs_dev', 'roadmap.md')
-                roadmap_list = [ roadmap_docs, roadmap_temp ]
-                for file_path in roadmap_list:
-                    if not path.exists(file_path):
-                        roadmap_text = retrieve_template('models/mkdocs.roadmap.md.txt')
-                        with open(file_path, 'wt') as f:
-                            f.write(roadmap_text)
-                            f.close()
-                        _printer(file_path)
-        
-            # create components yaml file
-                components_path = path.join('docs_dev', 'components.csv')
-                if not path.exists(components_path):
-                    components_text = retrieve_template('models/mkdocs.components.csv.txt')
-                    with open(components_path, 'wt') as f:
-                        f.write(components_text)
-                        f.close()
-                    _printer(components_path)
-        
-            # create generate script file
-                generate_path = path.join('docs_dev', 'generate.py')
-                if not path.exists(generate_path):
-                    generate_text = retrieve_template('models/mkdocs.generate.py.txt')
-                    with open(generate_path, 'wt') as f:
-                        f.write(generate_text)
-                        f.close()
-                    _printer(generate_path)
-
-            # create index markdown file
-                index_path = path.join('docs', 'index.md')
-                if not path.exists(index_path):
-                    index_text = retrieve_template('models/mkdocs.index.md.txt')
-                    index_text = replace_text(index_text, replacement_map=replacement_map)
-                    with open(index_path, 'wt') as f:
-                        f.write(index_text)
-                        f.close()
-                    _printer(index_path)
-
-        # create test files
-            if module_type == 'node':
-                test_path = path.join('test', '%s-spec.js' % service_name)
-                if not path.exists(test_path):
-                    test_text = retrieve_template('models/node.spec.js.txt')
-                    test_text= test_text.replace('pocketlab', service_name)
-                    with open(test_path, 'wt', encoding='utf-8') as f:
-                        f.write(test_text)
-                        f.close()
-                    _printer(test_path)
-
-        # create other root files
-            license_type = license_type.lower()
-            from pocketlab.methods.config import construct_changes, construct_license, construct_setup
-            if module_type == 'node':
-                module_files = {
-                    'CHANGELOG.md': construct_changes(module_type),
-                    'LICENSE.txt': construct_license(license_type, replacement_map),
-                    '.coveralls.yml': retrieve_template('models/coveralls.yml.txt'),
-                    '.babelrc': retrieve_template('models/babelrc.txt')
-                }
-                if init_jquery:
-                    webpack_text = retrieve_template('models/webpack.config.js.txt')
-                    module_files['karma.config.js'] = retrieve_template('models/karma.config.js.txt')
-                    module_files['webpack.config.js'] = replace_text(
-                        webpack_text,
-                        replacement_map=replacement_map
-                    )
-            else:
-                manifest_text = retrieve_template('models/python.manifest.in.txt')
-                mkdocs_text = retrieve_template('models/mkdocs.yaml.txt')
-                module_files = {
-                    'CHANGES.rst': construct_changes(),
-                    'LICENSE.txt': construct_license(license_type, replacement_map),
-                    'MANIFEST.in': replace_text(manifest_text, replacement_map=replacement_map),
-                    'mkdocs.yml': replace_text(mkdocs_text, replacement_map=replacement_map),
-                    'setup.py': construct_setup(service_name, replacement_map['<org-name>'])
-                }
-            for key, value in module_files.items():
-                if not path.exists(key):
-                    with open(key, 'wt', encoding='utf-8') as f:
-                        f.write(value)
-                        f.close()
-                    _printer(key)
-    
-            exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
-
     # add docker configs
     if init_docker:
 
@@ -699,8 +685,8 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                 f.close()
             _printer(config_path)
 
-        # add docker ignore file
-        creating_ignores.append('docker')
+        # # add docker ignore file
+        # creating_ignores.append('docker')
 
         # add dockerfile file
         # TODO determine dockerfile based upon project language
@@ -717,10 +703,13 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     # add ignore files
     if creating_ignores:
         from pocketlab.methods.vcs import load_ignore
+        from pocketlab.methods.config import replace_text
         for key, value in ignore_map.items():
             if key in creating_ignores:
                 if not path.exists(value['path']):
                     file_text = load_ignore(**value['kwargs'])
+                    if 'substitutions' in value.keys():
+                        file_text = replace_text(file_text, substitution_map=value['substitutions'])
                     with open(value['path'], 'wt') as f:
                         f.write(file_text)
                         f.close()
