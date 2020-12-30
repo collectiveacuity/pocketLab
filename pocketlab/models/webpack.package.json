@@ -16,16 +16,14 @@
     "url": "https://github.com/<org-name>/pocketlab"
   },
   "homepage": "https://github.com/<org-name>/pocketlab",
-  "dependencies": {
-    "jquery": "^3.3.1"
-  },
-  "license": "MIT",
-  "main": "dist/pocketlab.min.js",
+  "dependencies": { },
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "scripts/app.js",
   "scripts": {
-    "test": "karma start karma.config.js",
-    "build": "webpack --config webpack.config.js",
-    "prepare": "npm run build",
-    "coverage": "nyc report --reporter=text-lcov | coveralls"
+    "dev": "gulp dev; gulp watch",
+    "build": "gulp prod",
+    "setup": "npm link gulp gulp-sass gulp-concat gulp-postcss gulp-sourcemaps gulp-nodemon cssnano autoprefixer webpack"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

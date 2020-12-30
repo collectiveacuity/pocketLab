@@ -19,14 +19,14 @@ add --aws as a flag to create aws.yaml in .lab
 
 _init_details = {
     'title': 'Init',
-    'description': 'Init adds files to the working directory which are required for lab projects.\n\nBy default, init creates a framework for a flask service. Additional options can be selected to produce frameworks for other types of services, such as ```--jquery``` for a client-side ES6 framework using webpack and ```--express``` for a service-side ES6 framework using node.js. With the options ```--pypi``` (or ```--npm```), init creates instead a standard framework for publishing a python (or node) module and other stuff.  The options ```--heroku```, ```--ec2``` and ```--gae``` create configuration files used by other lab processes for cloud deployment on heroku, ec2 and gae (respectively).\n\nNOTE: Init only creates files which are not already present.',
+    'description': 'Init adds files to the working directory which are required for lab projects.\n\nTo create a framework for a webapp project, use the option ```--flask``` for a flask service, ```--webpack``` for a client-side ES6 framework using webpack or ```--express``` for a service-side ES6 server using node.js. With the options ```--pypi```, ```--npm``` or ```--jquery```, init creates instead a standard framework for publishing a module in python, node or jquery (respectively).  The options ```--heroku```, ```--ec2``` and ```--gae``` create configuration files used by other lab processes for cloud deployment on heroku, ec2 and gae (respectively).\n\nNOTE: Init only creates files which are not already present.',
     'help': 'creates a lab framework in workdir',
     'benefit': 'Init adds the config files for other lab commands.'
 }
 
 from pocketlab.init import fields_model
 
-def init(service_option, vcs_service='', license_type='', init_flask=False, init_express=False, init_jquery=False, init_python=False, init_node=False, init_heroku=False, init_ec2=False, init_gae=False, init_docker=False, init_aws=False, init_asg=False, verbose=True, overwrite=False):
+def init(service_option, vcs_service='', license_type='', init_flask=False, init_webpack=False, init_express=False, init_jquery=False, init_python=False, init_node=False, init_heroku=False, init_ec2=False, init_gae=False, init_docker=False, init_aws=False, init_asg=False, verbose=True, overwrite=False):
 
     '''
         a method to add lab framework files to the current directory
@@ -35,6 +35,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
     :param init_flask: [optional] boolean to initialize a flask service framework
+    :param init_webpack: [optional] boolean to initialize a client-side webpack framework
     :param init_express: [optional] boolean to initialize an express service framework
     :param init_jquery: [optional] boolean to initialize a jquery-webpack service framework
     :param init_python: [optional] boolean to initialize a python module framework
@@ -133,6 +134,10 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         home_path = os.path.abspath(localhost_client.home)
         root_path, username = os.path.split(home_path)
 
+    # retrieve current datetime
+    from labpack.records.time import labDT
+    current_datetime = labDT.new()
+    
     # define default documentation values
     replacement_map = {
         '<service-description>': 'A Vital Service for a Brand New Project',
@@ -142,7 +147,8 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         '<org-title>': username,
         '<org-email>': 'user@domain.com',
         '<org-url>': '',
-        '<user-email>': 'user@domain.com'
+        '<user-email>': 'user@domain.com',
+        '<creation-date>': '%s' % current_datetime.year
     }
     if username == 'rcj1492':
         replacement_map['<org-name>'] = 'collectiveacuity'
@@ -220,6 +226,14 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         replacement_map['<service-description>'] = 'A Powerful Javascript Tool for NodeJS'
         creating_ignores.append('npm')
         init_module = True
+    if init_jquery:
+        source_path = 'src'
+        init_path = ''
+        module_type = 'node'
+        test_folder = 'test'
+        replacement_map['<service-description>'] = 'A Brilliant Javascript Module For The Browser'
+        creating_ignores.append('npm')
+        init_module = True
 
     # add module configs
     if init_module:
@@ -259,7 +273,14 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         if module_type == 'node':
             source_file_path = path.join(source_path, '%s.js' % service_name)
             if not path.exists(source_file_path):
-                source_text = retrieve_template('models/node.source.js.txt')
+                if init_jquery:
+                    from pocketlab.methods.config import construct_init
+                    source_text = retrieve_template('models/jquery.source.js.txt')
+                    init_text = construct_init(module_type)
+                    init_text = replace_text(init_text, replacement_map=replacement_map)
+                    source_text = init_text + '\n' + source_text
+                else:
+                    source_text = retrieve_template('models/node.source.js.txt')
                 with open(source_file_path, 'wt', encoding='utf-8') as f:
                     f.write(source_text)
                     f.close()
@@ -269,8 +290,12 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         if module_type == 'node':
             from pocketlab.methods.node import generate_package
             package_path = 'package.json'
-            package_text = retrieve_template('models/node.package.json')
-            dependency_text = retrieve_template('models/node.global.dependencies.json')
+            if init_jquery:
+                package_text = retrieve_template('models/jquery.package.json')
+                dependency_text = retrieve_template('models/jquery.global.dependencies.json')
+            else:
+                package_text = retrieve_template('models/node.package.json')
+                dependency_text = retrieve_template('models/node.global.dependencies.json')
             generate_package(package_path, package_text, dependency_text, replacement_map, _printer)
 
         # create readme file
@@ -297,17 +322,13 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                 f.close()
             _printer(readme_path)
 
-        # create docs folders
-        if not path.exists('docs'):
-            from os import makedirs
-            makedirs('docs')
-            _printer('docs', 'folder')
-
-        # create test folder
-        if not path.exists(test_folder):
-            from os import makedirs
-            makedirs(test_folder)
-            _printer(test_folder, 'folder')
+        # create other module folders
+        module_folders = [ 'docs', test_folder, 'dev', '%s_dev' % test_folder ]
+        for folder in module_folders:
+            if not path.exists(folder):
+                from os import makedirs
+                makedirs(folder)
+                _printer(folder, 'folder')
 
         # create docsify files
         if module_type == 'node':
@@ -416,6 +437,13 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                 '.coveralls.yml': retrieve_template('models/coveralls.yml.txt'),
                 '.babelrc': retrieve_template('models/babelrc.txt')
             }
+            if init_jquery:
+                webpack_text = retrieve_template('models/jquery.webpack.config.js.txt')
+                module_files['karma.config.js'] = retrieve_template('models/karma.config.js.txt')
+                module_files['webpack.config.js'] = replace_text(
+                    webpack_text,
+                    replacement_map=replacement_map
+                )
         for key, value in module_files.items():
             if not path.exists(key):
                 with open(key, 'wt', encoding='utf-8') as f:
@@ -425,60 +453,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
         exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
 
-    # create jquery controller files
-    # TODO add gulp
-    if init_jquery:
-
-        # define jquery variables
-        source_path = 'scripts'
-        replacement_map['<service-description>'] = 'A Brilliant Javascript Controller For The Browser'
-
-        # create source folder
-        if not path.exists(source_path):
-            from os import makedirs
-            makedirs(source_path)
-            _printer(source_path, 'folder')
-
-        # create source file
-        from pocketlab.methods.config import replace_text, retrieve_template
-        source_file_path = path.join(source_path, '%s.js' % service_name)
-        if not path.exists(source_file_path):
-            from pocketlab.methods.config import construct_init
-            source_text = retrieve_template('models/jquery.source.js.txt')
-            init_text = construct_init(module_type)
-            init_text = replace_text(init_text, replacement_map=replacement_map)
-            source_text = init_text + '\n' + source_text
-            with open(source_file_path, 'wt', encoding='utf-8') as f:
-                f.write(source_text)
-                f.close()
-            _printer(source_file_path)
-
-        # create package.json
-        from pocketlab.methods.node import generate_package
-        package_path = 'package.json'
-        package_text = retrieve_template('models/jquery.package.json')
-        dependency_text = retrieve_template('models/jquery.global.dependencies.json')
-        generate_package(package_path, package_text, dependency_text, replacement_map, _printer)
-
-        # create other jquery files
-        webpack_text = retrieve_template('models/webpack.config.js.txt')
-        jquery_files = {
-            '.babelrc': retrieve_template('models/babelrc.txt'),
-            'karma.config.js': retrieve_template('models/karma.config.js.txt'),
-            'webpack.config.js': replace_text(
-                webpack_text,
-                replacement_map=replacement_map
-            )
-        }
-        for key, value in jquery_files.items():
-            if not path.exists(key):
-                with open(key, 'wt', encoding='utf-8') as f:
-                    f.write(value)
-                    f.close()
-                _printer(key)
-
-        exit_msg = 'Framework for "%s" jquery controller setup in current directory.' % service_name
-
+    # define project variables
     if init_express:
         init_project = True
     if init_flask:
@@ -602,6 +577,9 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     # add project folders
     if init_project:
 
+        # add a client side controller to project
+        init_webpack = True
+
         # add gitignore to projects with no vcs specified
         if not vcs_service and not existing_vcs:
             creating_ignores.append('git')
@@ -651,6 +629,72 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
         exit_msg = 'Framework for "%s" service setup in current directory.' % service_name
 
+    # create webpack controller files
+    if init_webpack:
+
+        # define webpack variables
+        source_paths = [ 'scripts', 'styles' ]
+        replacement_map['<service-description>'] = 'A Seamless Client-Side Controller Compiled By Webpack'
+
+        # create source and public folders
+        for folder in source_paths:
+            if not path.exists(folder):
+                from os import makedirs
+                makedirs(folder)
+                _printer(folder, 'folder')
+            public_path = path.join('public', folder)
+            if not path.exists(public_path):
+                from os import makedirs
+                makedirs(public_path)
+                _printer(public_path, 'folder')
+
+        # create app script file
+        from pocketlab.methods.config import replace_text, retrieve_template
+        source_file_path = path.join('scripts', 'app.js')
+        if not path.exists(source_file_path):
+            source_text = retrieve_template('models/webpack.app.js.txt')
+            source_text = replace_text(source_text, replacement_map=replacement_map)
+            with open(source_file_path, 'wt', encoding='utf-8') as f:
+                f.write(source_text)
+                f.close()
+            _printer(source_file_path)
+
+        # create app style file
+        source_file_path = path.join('styles', 'app.scss')
+        if not path.exists(source_file_path):
+            source_text = retrieve_template('models/webpack.app.scss.txt')
+            with open(source_file_path, 'wt', encoding='utf-8') as f:
+                f.write(source_text)
+                f.close()
+            _printer(source_file_path)
+
+        # create package.json
+        from pocketlab.methods.node import generate_package
+        package_path = 'package.json'
+        package_text = retrieve_template('models/webpack.package.json')
+        dependency_text = retrieve_template('models/webpack.global.dependencies.json')
+        generate_package(package_path, package_text, dependency_text, replacement_map, _printer)
+
+        # create other jquery files
+        webpack_text = retrieve_template('models/webpack.config.js.txt')
+        jquery_files = {
+            '.babelrc': retrieve_template('models/babelrc.txt'),
+            'gulpfile.js': retrieve_template('models/webpack.gulpfile.js.txt'),
+            'webpack.config.js': replace_text(
+                webpack_text,
+                replacement_map=replacement_map
+            )
+        }
+        for key, value in jquery_files.items():
+            if not path.exists(key):
+                with open(key, 'wt', encoding='utf-8') as f:
+                    f.write(value)
+                    f.close()
+                _printer(key)
+
+        if not init_project:
+            exit_msg = 'Framework for "%s" client-side controller setup in current directory.' % service_name
+    
     # add docker configs
     if init_docker:
 

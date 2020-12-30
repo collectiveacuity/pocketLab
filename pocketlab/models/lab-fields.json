@@ -38,6 +38,7 @@
     "all_services": true,
     "all_info": true,
     "init_flask": true,
+    "init_webpack": true,
     "init_express": true,
     "init_jquery": true,
     "init_python": true,
@@ -417,6 +418,14 @@
       "field_metadata": {
         "cli_flags": [ "--flask" ],
         "cli_help": "create flask service framework"
+      }
+    },
+    ".init_webpack": {
+      "field_description": "Initialize a webpack client framework.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--webpack" ],
+        "cli_help": "create webpack client framework"
       }
     },
     ".init_express": {

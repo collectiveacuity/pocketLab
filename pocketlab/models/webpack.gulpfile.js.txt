@@ -1,0 +1,68 @@
+const gulp = require('gulp');
+const sass = require('gulp-sass');
+const concat = require('gulp-concat');
+const postcss = require('gulp-postcss');
+const sourcemaps = require('gulp-sourcemaps');
+const autoprefixer = require('autoprefixer');
+const cssnano = require('cssnano');
+const webpack = require('webpack')
+const webpackConfig = require('./webpack.config.js')
+
+gulp.task('webpack_dev', function() {
+    return new Promise((resolve, reject) => {
+        // run in development mode to allow debugging
+        webpackConfig.mode = 'none'
+        webpack(webpackConfig, (err, stats) => {
+            if (err) {
+                return reject(err)
+            }
+            if (stats.hasErrors()) {
+                return reject(new Error(stats.compilation.errors.join('\n')))
+            }
+            resolve()
+        })
+    })
+})
+
+gulp.task('webpack_prod', function() {
+    return new Promise((resolve, reject) => {
+        webpack(webpackConfig, (err, stats) => {
+            if (err) {
+                return reject(err)
+            }
+            if (stats.hasErrors()) {
+                return reject(new Error(stats.compilation.errors.join('\n')))
+            }
+            resolve()
+        })
+    })
+})
+
+gulp.task('sass_prod', function() {
+  return gulp.src(['styles/app.scss'])
+      .pipe(sass().on('error', sass.logError))
+      .pipe(concat('bundle.min.css'))
+      .pipe(postcss([ autoprefixer(), cssnano() ]))
+      .pipe(gulp.dest('public/styles/'))
+});
+
+gulp.task('sass_dev', function() {
+  return gulp.src(['styles/app.scss'])
+      .pipe(sass().on('error', sass.logError))
+      .pipe(sourcemaps.init())
+      .pipe(concat('bundle.min.css'))
+      .pipe(postcss([ autoprefixer() ]))
+      .pipe(sourcemaps.write())
+      .pipe(gulp.dest('public/styles/'))
+});
+
+gulp.task('dev', gulp.series(['sass_dev','webpack_dev']));
+
+gulp.task('prod', gulp.series(['sass_prod','webpack_prod']))
+
+gulp.task('watch', function() {
+  gulp.watch(['styles'], gulp.series('sass_dev'));
+  gulp.watch(['scripts','webpack.config.js'], gulp.series('webpack_dev'));
+});
+
+gulp.task('default', gulp.series('dev'))

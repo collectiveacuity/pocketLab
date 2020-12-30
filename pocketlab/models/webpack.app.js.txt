@@ -1,0 +1,83 @@
+/*!
+* @name pocketlab
+* @description <service-description>
+* @author <user-name>
+* @license <creation-date> <org-title>
+* @email <org-email>
+**/
+
+// import dependencies
+import * as $ from 'jquery'
+
+let device = {
+
+  // Handler Constructor
+  init: function () {
+    this.bindEvents()
+  },
+  
+  // Bind Event Listeners
+  bindEvents: function () {
+    document.addEventListener('deviceready', this.onDeviceReady, false);
+    document.addEventListener('DOMContentLoaded', this.onDeviceReady, false)
+  },
+  
+  // Define Device Offline Event Handler
+  onDeviceOffline: function () {
+    window.device_online = false; // used in record retrieval logic
+    console.log('Device Offline')
+  },
+
+  // Define Device Online Event Handler
+  onDeviceOnline: function () {
+    window.device_online = true; // used for record retrieval logic
+    console.log('Device Online')
+  },
+
+  // Create Window Variables
+  constructWindow: function () {
+    
+    // set status and environment
+    window.device_online = true;
+    window.system_environment = $("meta[name='system-environment']").attr("content");
+    // window.system_platform = 'browser' TODO discover native platform
+
+    // set server url components
+    window.server_protocol = location.protocol;
+    window.server_domain = document.domain;
+    window.server_port = location.port;
+
+    // set server url
+    window.server_url = window.server_protocol + '//' + window.server_domain;
+    if (window.server_port) {
+      window.server_url += ':' + window.server_port
+    }
+    
+  },
+  
+  // Define View Constructor
+  openView: function () {
+  
+  },
+  
+  // Define Device Ready Event Handler
+  onDeviceReady: function () {
+    
+    // construct window
+    device.constructWindow();
+    
+    // open view
+    device.openView();
+
+    // add online and offline handlers
+    document.addEventListener('offline', device.onDeviceOffline, false);
+    document.addEventListener('online', device.onDeviceOnline, false);
+
+    // log state
+    console.log('Device Ready')
+    
+  }
+
+};
+
+device.init();

@@ -1,22 +1,15 @@
 const path = require('path');
 
 module.exports = {
-  entry: { 
-    'app': './scripts/app.js'
-    // 'helper': './scripts/helper.js' 
-  },
+  entry: './src/pocketlab.js',
   output: {
-    path: path.resolve(__dirname, 'public/scripts/'),
-    filename: (chunkData) => {
-      return chunkData.chunk.name === 'app' ? 'bundle.min.js': '[name].min.js';
-    }
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'pocketlab.min.js',
+    library:'pocketlab' // to enable pocketlab as object in window
   },
   mode: 'production',
   externals: {
     jquery: 'jQuery'
-    // handlebars: 'Handlebars',
-    // 'jquery-autobars': 'jquery-autobars',
-    // moment: 'moment',
     // add external dependencies here
   },
   module: {
