@@ -19,14 +19,14 @@ add --aws as a flag to create aws.yaml in .lab
 
 _init_details = {
     'title': 'Init',
-    'description': 'Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.\n\nPLEASE NOTE: With the option ```--python``` (or ```--node``` or ```--jquery```), init creates instead a standard framework for publishing a python (or node or jquery) module.',
+    'description': 'Init adds files to the working directory which are required for lab projects.\n\nBy default, init creates a framework for a flask service. Additional options can be selected to produce frameworks for other types of services, such as ```--jquery``` for a client-side ES6 framework using webpack and ```--express``` for a service-side ES6 framework using node.js. With the options ```--pypi``` (or ```--npm```), init creates instead a standard framework for publishing a python (or node) module and other stuff.  The options ```--heroku```, ```--ec2``` and ```--gae``` create configuration files used by other lab processes for cloud deployment on heroku, ec2 and gae (respectively).\n\nNOTE: Init only creates files which are not already present.',
     'help': 'creates a lab framework in workdir',
     'benefit': 'Init adds the config files for other lab commands.'
 }
 
 from pocketlab.init import fields_model
 
-def init(service_option, vcs_service='', license_type='MIT', init_python=False, init_node=False, init_jquery=False, init_heroku=False, init_aws=False, init_ec2=False, init_asg=False, verbose=True, overwrite=False):
+def init(service_option, vcs_service='', license_type='', init_flask=False, init_express=False, init_jquery=False, init_python=False, init_node=False, init_heroku=False, init_ec2=False, init_gae=False, init_docker=False, init_aws=False, init_asg=False, verbose=True, overwrite=False):
 
     '''
         a method to add lab framework files to the current directory
@@ -34,12 +34,16 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
     :param service_option: [optional] string with name of service in lab registry
     :param vcs_service: [optional] string with name of version control service
     :param license_type: [optional] string with name of software license type
+    :param init_flask: [optional] boolean to initialize a flask service framework
+    :param init_express: [optional] boolean to initialize an express service framework
+    :param init_jquery: [optional] boolean to initialize a jquery-webpack service framework
     :param init_python: [optional] boolean to initialize a python module framework
     :param init_node: [optional] boolean to initialize a node module framework
-    :param init_jquery: [optional] boolean to initialize a jquery based node module framework
-    :param init_heroku: [optional] boolean to add heroku.yaml to .lab folder
+    :param init_heroku: [optional] boolean to add heroku deploy configs
+    :param init_ec2: [optional] boolean to add ec2 deploy configs to working directory
+    :param init_gae [optional] boolean to add gae deploy configs to working directory
+    :param init_docker [optional] boolean to add .docker-compose.yaml to working directory
     :param init_aws: [optional] boolean to add aws.yaml to .lab folder
-    :param init_ec2: [optional] boolean to add ec2.yaml to working directory
     :param init_asg: [optional] boolean to add asg.yaml to working directory
     :param verbose: [optional] boolean to toggle process messages
     :param overwrite: [optional] boolean to overwrite existing service registration
@@ -63,19 +67,22 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
         if value:
             object_title = '%s(%s=%s)' % (title, key, str(value))
             fields_model.validate(value, '.%s' % key, object_title)
-    
-# determine service name
+
+    # determine service name
     service_name = ''
     if service_option:
         service_name = service_option[0]
+    if not service_name:
+        from pocketlab.methods.service import retrieve_service_name
+        service_name = retrieve_service_name('./')
 
-# import dependencies
+    # import dependencies
     exit_msg = ''
     from os import path, makedirs
     from pocketlab import __module__
     from jsonmodel.loader import jsonLoader
 
-# define printer submethod
+    # define printer submethod
     def _printer(file_path, node_type='file'):
         if verbose:
             from os import path
@@ -86,25 +93,35 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
                 folder = '%s folder' % folder
             print('%s %s created in %s.' % (file, node_type, folder))
 
-# handle requirements
-    auto_active = False
-    auto_files = [ init_aws, init_heroku, init_ec2, init_asg ]
-    for toggle in auto_files:
+    # handle service name requirement
+    named_active = False
+    named_files = [ init_flask, init_express, init_jquery, init_python, init_node, init_heroku, init_ec2, init_gae, init_docker, init_asg ]
+    for toggle in named_files:
         if toggle:
-            auto_active = True
-    if not auto_active and not service_name:
-        raise ValueError('Lab init requires a name for the service framework.\nTry: lab init <service>')
+            named_active = True
+    if named_active and not service_name:
+        raise ValueError('Lab init option requires a name for the service framework.\nTry: lab init <service>')
 
-# handl service init
+    # retrieve username
+    import os
+    from labpack.platforms.localhost import localhostClient
+    localhost_client = localhostClient()
+    if localhost_client.os.sysname == 'Windows':
+        username = os.environ.get('USERNAME')
+    else:
+        home_path = os.path.abspath(localhost_client.home)
+        root_path, username = os.path.split(home_path)
+
+    # create service name if specified
     if service_name:
 
-    # construct registry client
+        # construct registry client
         from labpack.storage.appdata import appdataClient
         registry_client = appdataClient(collection_name='Registry Data', prod_name=__module__)
-    
-    # validate service name is not already in registry
+
+        # validate service name is not already associated with a different service in registry
         file_name = '%s.yaml' % service_name
-        filter_function = registry_client.conditional_filter([{0:{'discrete_values':[file_name]}}])
+        filter_function = registry_client.conditional_filter([{0: {'discrete_values': [file_name]}}])
         service_list = registry_client.list(filter_function=filter_function)
         if not file_name in service_list:
             from pocketlab.commands.home import home
@@ -116,36 +133,237 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
                 from pocketlab.commands.home import home
                 home(service_name, overwrite=overwrite)
 
-    # retrieve username
-        import os
-        from labpack.platforms.localhost import localhostClient
-        localhost_client = localhostClient()
-        if localhost_client.os.sysname == 'Windows':
-            username = os.environ.get('USERNAME')
-        else:
-            home_path = os.path.abspath(localhost_client.home)
-            root_path, username = os.path.split(home_path)
-    
-    # define replacement map
-        replacement_map = {
-            '<service-description>': 'A Vital Service for a Brand New Project',
-            '<user-name>': username,
-            'pocketlab': service_name,
-            '<org-name>': username,
-            '<org-title>': username,
-            '<org-email>': 'user@domain.com',
-            '<org-url>': '',
-            '<user-email>': 'user@domain.com'
+    # define default documentation values
+    replacement_map = {
+        '<service-description>': 'A Vital Service for a Brand New Project',
+        '<user-name>': username,
+        'pocketlab': service_name,
+        '<org-name>': username,
+        '<org-title>': username,
+        '<org-email>': 'user@domain.com',
+        '<org-url>': '',
+        '<user-email>': 'user@domain.com'
+    }
+    if username == 'rcj1492':
+        replacement_map['<org-name>'] = 'collectiveacuity'
+        replacement_map['<org-title>'] = 'Collective Acuity'
+        replacement_map['<org-email>'] = 'support@collectiveacuity.com'
+        replacement_map['<org-url>'] = 'https://collectiveacuity.com'
+        replacement_map['<user-email>'] = ''
+
+    # determine if ignore files exist
+    ignore_map = {
+        'git': {
+            'type': 'vcs',
+            'path': '.gitignore',
+            'kwargs': {'vcs': 'git'}
+        },
+        'mercurial': {
+            'type': 'vcs',
+            'path': '.hgignore',
+            'kwargs': {'vcs': 'mercurial'}
+        },
+        'docker': {
+            'type': 'deploy',
+            'path': '.dockerignore',
+            'kwargs': {'vcs': 'docker'}
         }
-        if username == 'rcj1492':
-            replacement_map['<org-name>'] = 'collectiveacuity'
-            replacement_map['<org-title>'] = 'Collective Acuity'
-            replacement_map['<org-email>'] = 'support@collectiveacuity.com'
-            replacement_map['<org-url>'] = 'http://collectiveacuity.com'
-            replacement_map['<user-email>'] = ''
+    }
+    existing_ignores = set()
+    for key, value in ignore_map.items():
+        if value['type'] == 'vcs':
+            if path.exists(value['path']):
+                existing_ignores.add(key) 
+
+    # define default variables
+    init_project = False
+    platform_names = []
+    creating_ignores = []
+
+    # handle docker message
+    if init_docker:
+        platform_names.append('docker')
+
+    # handle module inits
+    if init_python:
+        pass
+    if init_node:
+        pass
+
+    # handle project inits
+    if init_jquery:
+        pass
+    if init_express:
+        init_project = True
+    if init_flask:
+        init_project = True
+
+    # add heroku configs
+    if init_heroku:
+        init_docker = True
+
+    # TODO add gae configs
+    if init_gae:
+        pass
+
+    # add ec2 configurations
+    if init_ec2:
+    
+        init_docker = True
+        init_aws = True
+
+        config_path = 'ec2.yaml'
+        if not path.exists(config_path):
+            # compile ec2 config text and save
+            from pocketlab.methods.aws import generate_ec2
+            config_text = generate_ec2(service_name)
+            with open(config_path, 'wt') as f:
+                f.write(config_text)
+                f.close()
+            _printer(config_path)
+            platform_names.append('ec2')
+
+    # add asg configurations
+    if init_asg:
+    
+        init_docker = True
+        init_aws = True
+
+        config_path = 'asg.yaml'
+        if not path.exists(config_path):
+
+            # compile schema
+            from pocketlab.methods.aws import compile_schema
+            asg_schema = compile_schema('models/asg-config.json')
+
+            # compile asg text
+            from pocketlab.methods.config import compile_yaml
+            asg_text = compile_yaml(asg_schema)
+            from labpack.records.time import labDT
+            new_dt = labDT.new()
+            dt_string = str(new_dt.date()).replace('-', '')
+            asg_text = asg_text.replace('generate-date', dt_string)
+
+            # compile ec2 text
+            from pocketlab.methods.aws import generate_ec2
+            ec2_text = generate_ec2(service_name)
+            ec2_lines = ec2_text.splitlines(keepends=True)
+            ec2_splice = []
+            for i in range(len(ec2_lines)):
+                if i != 1:
+                    ec2_splice.append(ec2_lines[i])
+            ec2_text = ''.join(ec2_splice)
+
+            # merge yaml
+            config_text = asg_text.replace("ec2:\n", 'ec2: ' + ec2_text.replace('\n', '\n  '))
+            with open(config_path, 'wt') as f:
+                f.write(config_text)
+                f.close()
+            _printer(config_path)
+            platform_names.append('asg')
+
+    # add cloud access configurations
+    if init_aws or init_heroku:
+
+        # add .lab folder
+        lab_path = '.lab'
+        if not path.exists(lab_path):
+            makedirs(lab_path)
+            _printer(lab_path, 'folder')
+
+        # add config files
+        config_map = {
+            'heroku.yaml': {
+                'toggle': init_heroku,
+                'name': 'heroku',
+                'schema_path': 'models/heroku-config.json'
+            },
+            'aws.yaml': {
+                'toggle': init_aws,
+                'name': 'aws',
+                'schema_path': 'models/aws-config.json'
+            }
+        }
+        for key, value in config_map.items():
+            if value['toggle']:
+                config_path = '.lab/%s' % key
+                if not path.exists(config_path):
+                    from pocketlab.methods.config import compile_yaml
+                    config_schema = jsonLoader(__module__, value['schema_path'])
+                    config_text = compile_yaml(config_schema)
+                    with open(config_path, 'wt') as f:
+                        f.write(config_text)
+                        f.close()
+                    _printer(config_path)
+                    platform_names.append(value['name'])
+
+    # add vcs type to ignore files
+    if vcs_service:
+        creating_ignores.append(vcs_service.lower())
+
+    # add a license file
+    if license_type:
+        pass
+
+    # add project folders
+    if init_project:
+
+        # add gitignore to projects with no vcs specified
+        if not vcs_service and existing_ignores - {'git'} == 0:
+            creating_ignores.append('git')
+
+        # add a data folder
+        data_path = 'data'
+        if not path.exists(data_path):
+            makedirs(data_path)
+            _printer(data_path, 'folder')
+
+        # add a keys folder
+        data_path = 'keys'
+        if not path.exists(data_path):
+            makedirs(data_path)
+            _printer(data_path, 'folder')
+
+        # add a credential folder
+        cred_path = 'cred'
+        notes_path = 'notes'
+        if not path.exists(cred_path):
+            makedirs(cred_path)
+            _printer(cred_path, 'folder')
+            if path.exists(notes_path):
+                if path.isdir(notes_path):
+                    src_list = []
+                    dst_list = []
+                    from os import listdir
+                    from shutil import copyfile
+                    for file_name in listdir(notes_path):
+                        file_path = path.join(notes_path, file_name)
+                        if path.isfile(file_path):
+                            if file_name.find('.json') > -1 or file_name.find('.yaml') > -1 or file_name.find(
+                                    '.yml') > -1:
+                                src_list.append(file_path)
+                                dst_list.append(path.join(cred_path, file_name))
+                    for i in range(len(src_list)):
+                        copyfile(src_list[i], dst_list[i])
+                        _printer(dst_list[i])
+
+        # add readme file
+        readme_path = 'README.md'
+        if not path.exists(readme_path):
+            from pocketlab.methods.config import retrieve_template, replace_text
+            readme_text = retrieve_template('models/service.readme.md.txt')
+            if vcs_service == 'mercurial' or 'mercurial' in existing_ignores:
+                replacement_map['.gitignore'] = '.hgignore'
+            readme_text = replace_text(readme_text, replacement_map=replacement_map)
+            with open(readme_path, 'wt', encoding='utf-8') as f:
+                f.write(readme_text)
+                f.close()
+            _printer(readme_path)
+
+        exit_msg = 'Framework for "%s" service setup in current directory.' % service_name
 
     # setup module architecture
-        if init_python or init_node or init_jquery:
+        if init_python or init_node or init_jquery or init_express:
 
         # determine module variables
             from pocketlab.methods.vcs import load_ignore
@@ -446,246 +664,69 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
                     _printer(key)
     
             exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
-    
-    # setup service architecture
-        else:
-    
-        # determine version control service
-            if not vcs_service:
-                vcs_service = 'git'
-                if path.exists('.git'):
-                    if path.isdir('.git'):
-                        vcs_service = 'git'
-                elif path.exists('.hg'):
-                    if path.isdir('.hg'):
-                        vcs_service = 'mercurial'
-            else:
-                vcs_service = vcs_service.lower()
-    
-        # add a vcs ignore file
-            from pocketlab.methods.vcs import load_ignore
-            if vcs_service == 'git':
-                vcs_path = '.gitignore'
-                vcs_type = 'git'
-            else:
-                vcs_path = '.hgignore'
-                vcs_type = 'mercurial'
-            if not path.exists(vcs_path):
-                file_text = load_ignore(vcs=vcs_type)
-                with open(vcs_path, 'wt') as f:
-                    f.write(file_text)
-                    f.close()
-                _printer(vcs_path)
 
-        # add docker ignore file
-            docker_path = '.dockerignore'
-            if not path.exists(docker_path):
-                file_text = load_ignore(vcs='docker')
-                with open(docker_path, 'wt') as f:
-                    f.write(file_text)
-                    f.close()
-                _printer(docker_path)
+    # add docker configs
+    if init_docker:
 
         # add docker compose file
-            config_path = 'docker-compose.yaml'
-            config_alt = 'docker-compose.yml'
-            if not path.exists(config_path) and not path.exists(config_alt):
-    
+        config_path = 'docker-compose.yaml'
+        config_alt = 'docker-compose.yml'
+        if not path.exists(config_path) and not path.exists(config_alt):
+
             # retrieve config schemas
-                compose_schema = jsonLoader(__module__, 'models/compose-config.json')
-                service_schema = jsonLoader(__module__, 'models/service-config.json')
-        
-            # # add default values to schemas
-                default_volume_1 = {'type': 'bind', 'source': './cred', 'target': '/opt/cred'}
+            compose_schema = jsonLoader(__module__, 'models/compose-config.json')
+            service_schema = jsonLoader(__module__, 'models/service-config.json')
+            service_schema['schema']['image'] = service_name
+
+            # add cred, data and keys folders to volumes
+            if path.exists('keys/'):
+                default_volume_3 = {'type': 'bind', 'source': './keys', 'target': '/opt/keys'}
+                service_schema['schema']['volumes'].insert(0, default_volume_3)
+            if path.exists('data/'):
                 default_volume_2 = {'type': 'bind', 'source': './data', 'target': '/opt/data'}
                 service_schema['schema']['volumes'].insert(0, default_volume_2)
+            if path.exists('cred/'):
+                default_volume_1 = {'type': 'bind', 'source': './cred', 'target': '/opt/cred'}
                 service_schema['schema']['volumes'].insert(0, default_volume_1)
-    
-            # modify config schema defaults from values in registry
-                if service_name:
-                    service_schema['schema']['image'] = service_name
-                else:
-                    from pocketlab.methods.service import retrieve_service_name
-                    service_name = retrieve_service_name('./')
-                    if service_name:
-                        service_schema['schema']['image'] = service_name
-                    else:
-                        service_name = 'server'
 
             # compile yaml
-                from pocketlab.methods.config import compile_compose
-                config_text = compile_compose(compose_schema, service_schema, service_name)
-    
+            from pocketlab.methods.config import compile_compose
+            config_text = compile_compose(compose_schema, service_schema, service_name)
+
             # save config text
-                with open(config_path, 'wt') as f:
-                    f.write(config_text)
-                    f.close()
-                _printer(config_path)
+            with open(config_path, 'wt') as f:
+                f.write(config_text)
+                f.close()
+            _printer(config_path)
 
-        # add a .lab folder
-            lab_path = '.lab'
-            if not path.exists(lab_path):
-                makedirs(lab_path)
-                _printer(lab_path, 'folder')
+        # add docker ignore file
+        creating_ignores.append('docker')
 
-        # add a data folder
-            data_path = 'data'
-            if not path.exists(data_path):
-                makedirs(data_path)
-                _printer(data_path, 'folder')
-    
-        # add a credential folder
-            cred_path = 'cred'
-            notes_path = 'notes'
-            if not path.exists(cred_path):
-                makedirs(cred_path)
-                _printer(cred_path, 'folder')
-                if path.exists(notes_path):
-                    if path.isdir(notes_path):
-                        src_list = []
-                        dst_list = []
-                        from os import listdir
-                        from shutil import copyfile
-                        for file_name in listdir(notes_path):
-                            file_path = path.join(notes_path, file_name)
-                            if path.isfile(file_path):
-                                if file_name.find('.json') > -1 or file_name.find('.yaml') > -1 or file_name.find('.yml') > -1:
-                                    src_list.append(file_path)
-                                    dst_list.append(path.join(cred_path, file_name))
-                        for i in range(len(src_list)):
-                            copyfile(src_list[i], dst_list[i])
-                            _printer(dst_list[i])
+        # add dockerfile file
+        # TODO determine dockerfile based upon project language
+        dockerfile_path = 'Dockerfile'
+        if not path.exists(dockerfile_path):
+            from pocketlab.methods.config import retrieve_template, replace_text
+            dockerfile_text = retrieve_template('models/dockerfile.flask.txt')
+            dockerfile_text = replace_text(dockerfile_text, replacement_map=replacement_map)
+            with open(dockerfile_path, 'wt') as f:
+                f.write(dockerfile_text)
+                f.close()
+            _printer(dockerfile_path)
 
-        # add readme file
-            readme_path = 'README.md'
-            if not path.exists(readme_path):
-                from pocketlab.methods.config import retrieve_template, replace_text
-                readme_text = retrieve_template('models/service.readme.md.txt')
-                if vcs_service == 'mercurial':
-                    replacement_map['.gitignore'] = '.hgignore'
-                readme_text = replace_text(readme_text, replacement_map=replacement_map)
-                with open(readme_path, 'wt', encoding='utf-8') as f:
-                    f.write(readme_text)
-                    f.close()
-                _printer(readme_path)
-    
-            exit_msg = 'Framework for "%s" service setup in current directory.' % service_name
-
-# handle platform cred files
-    platform_names = []
-    if init_aws or init_heroku:
-
-    # add lab folder
-        lab_path = '.lab'
-        if not path.exists(lab_path):
-            makedirs(lab_path)
-            _printer(lab_path, 'folder')
-
-    # add config files
-        config_map = {
-            'heroku.yaml': { 
-                'toggle': init_heroku,
-                'name': 'heroku',
-                'schema_path': 'models/heroku-config.json'
-            },
-            'aws.yaml': {
-                'toggle': init_aws,
-                'name': 'aws',
-                'schema_path': 'models/aws-config.json'
-            }
-        }
-        for key, value in config_map.items():
-            if value['toggle']:
-                config_path = '.lab/%s' % key
-                if not path.exists(config_path):
-                    from pocketlab.methods.config import compile_yaml
-                    config_schema = jsonLoader(__module__, value['schema_path'])
-                    config_text = compile_yaml(config_schema)
-                    with open(config_path, 'wt') as f:
-                        f.write(config_text)
+    # add ignore files
+    if creating_ignores:
+        from pocketlab.methods.vcs import load_ignore
+        for key, value in ignore_map.items():
+            if key in creating_ignores:
+                if not path.exists(value['path']):
+                    file_text = load_ignore(**value['kwargs'])
+                    with open(value['path'], 'wt') as f:
+                        f.write(file_text)
                         f.close()
-                    _printer(config_path)
-                    platform_names.append(value['name'])
+                    _printer(value['path'])
 
-# define ec2 yaml constructor
-    def _generate_ec2(serv_name):
-    
-    # retrieve service name
-        from pocketlab.methods.service import retrieve_service_name
-        if not serv_name:
-            serv_name = retrieve_service_name('./')
-        if not serv_name:
-            serv_name = 'server'
-        
-    # compile schema
-        from pocketlab.methods.aws import compile_schema
-        config_schema = compile_schema('models/ec2-config.json')
-    
-    # compile yaml and save
-        from pocketlab.methods.config import compile_yaml
-        config_text = compile_yaml(config_schema)
-        from labpack.records.time import labDT
-        new_dt = labDT.new()
-        dt_string = str(new_dt.date()).replace('-','')
-        config_text = config_text.replace('generate-date', dt_string)
-        config_text = config_text.replace('generate-service', serv_name)
-        for key_name in ('region_name', 'iam_profile', 'elastic_ip'):
-            key_pattern = '\n%s:' % key_name
-            if config_text.find(key_pattern) > -1:
-                config_text = config_text.replace(key_pattern, "\n# %s:" % key_name)
-
-        return config_text
-
-# handle ec2 config file
-    if init_ec2:
-
-        config_path = 'ec2.yaml'
-        if not path.exists(config_path):
-
-        # compile ec2 config text and save
-            config_text = _generate_ec2(service_name)
-            with open(config_path, 'wt') as f:
-                f.write(config_text)
-                f.close()
-            _printer(config_path)
-            platform_names.append('ec2')
-
-# handle asg config file
-    if init_asg:
-        
-        config_path = 'asg.yaml'
-        if not path.exists(config_path):
-
-        # compile schema
-            from pocketlab.methods.aws import compile_schema
-            asg_schema = compile_schema('models/asg-config.json')
-
-        # compile asg text
-            from pocketlab.methods.config import compile_yaml
-            asg_text = compile_yaml(asg_schema)
-            from labpack.records.time import labDT
-            new_dt = labDT.new()
-            dt_string = str(new_dt.date()).replace('-','')
-            asg_text = asg_text.replace('generate-date', dt_string)
-
-        # compile ec2 text
-            ec2_text = _generate_ec2(service_name)
-            ec2_lines = ec2_text.splitlines(keepends=True)
-            ec2_splice = []
-            for i in range(len(ec2_lines)):
-                if i != 1:
-                    ec2_splice.append(ec2_lines[i])
-            ec2_text = ''.join(ec2_splice)
-
-        # merge yaml
-            config_text = asg_text.replace("ec2:\n", 'ec2: ' + ec2_text.replace('\n', '\n  '))
-            with open(config_path, 'wt') as f:
-                f.write(config_text)
-                f.close()
-            _printer(config_path)
-            platform_names.append('asg')
-
-# generate message for non service creation
+    # generate message for non service creation
     if not exit_msg:
         from labpack.parsing.grammar import join_words
         platform_insert = join_words(platform_names)
@@ -693,7 +734,7 @@ def init(service_option, vcs_service='', license_type='MIT', init_python=False, 
         if len(platform_names) > -1:
             platform_plural = 's'
         exit_msg = 'Configuration file%s for %s added to working directory.' % (platform_plural, platform_insert)
-        
+
     return exit_msg
 
 if __name__ == "__main__":

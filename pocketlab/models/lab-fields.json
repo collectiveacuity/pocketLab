@@ -37,13 +37,17 @@
     "resume_routine": true,
     "all_services": true,
     "all_info": true,
+    "init_flask": true,
+    "init_express": true,
+    "init_jquery": true,
     "init_python": true,
     "init_node": true,
-    "init_jquery": true,
     "init_heroku": true,
     "init_aws": true,
     "init_ec2": true,
     "init_asg": true,
+    "init_gae": true,
+    "init_docker": true,
     "print_path": true,
     "print_terminal": true,
     "paginate": true,
@@ -245,8 +249,8 @@
     },
     ".license_type": {
       "field_description": "Type of software license terms for source code.",
-      "default_value": "MIT",
-      "discrete_values": [ "MIT", "mit" ],
+      "default_value": "",
+      "discrete_values": [ "", "MIT", "mit" ],
       "field_metadata": {
         "cli_flags": [ "--license" ],
         "cli_help": "name of software license type"
@@ -407,11 +411,27 @@
         "cli_help": "resume from prior progress point"
       }
     },
+    ".init_flask": {
+      "field_description": "Initialize a flask service framework.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--flask" ],
+        "cli_help": "create flask service framework"
+      }
+    },
+    ".init_express": {
+      "field_description": "Initialize an express service framework.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--express" ],
+        "cli_help": "create express service framework"
+      }
+    },
     ".init_python": {
       "field_description": "Initialize python module framework.",
       "default_value": false,
       "field_metadata": {
-        "cli_flags": [ "--python", "--module" ],
+        "cli_flags": [ "--pypi", "--python" ],
         "cli_help": "create python module framework"
       }
     },
@@ -419,28 +439,28 @@
       "field_description": "Initialize node module framework.",
       "default_value": false,
       "field_metadata": {
-        "cli_flags": [ "--node" ],
+        "cli_flags": [ "--npm", "--node" ],
         "cli_help": "create node module framework"
       }
     },
     ".init_jquery": {
-      "field_description": "Initialize a jquery-based node module framework.",
+      "field_description": "Initialize a jquery-webpack service framework.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--jquery" ],
-        "cli_help": "create jquery module framework"
+        "cli_help": "create jquery service framework"
       }
     },
     ".init_heroku": {
-      "field_description": "Add a heroku config file to .lab folder.",
+      "field_description": "Add Heroku config files to working dir.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--heroku" ],
-        "cli_help": "add heroku config to .lab folder"
+        "cli_help": "add heroku configs to workdir"
       }
     },
     ".init_aws": {
-      "field_description": "Add an aws config file to .lab folder.",
+      "field_description": "Add an Amazon AWS config file to .lab folder.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--aws" ],
@@ -448,19 +468,35 @@
       }
     },
     ".init_ec2": {
-      "field_description": "Add an ec2 config file to working directory.",
+      "field_description": "Add Amazon EC2 config files to working dir.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--ec2" ],
-        "cli_help": "add ec2 config to workdir"
+        "cli_help": "add ec2 configs to workdir"
+      }
+    },
+    ".init_gae": {
+      "field_description": "Add Google GAE config files to working dir.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--gae" ],
+        "cli_help": "add gae configs to workdir"
       }
     },
     ".init_asg": {
-      "field_description": "Add an asg config file to working directory.",
+      "field_description": "Add an Amazon ASG config file to working dir.",
       "default_value": false,
       "field_metadata": {
         "cli_flags": [ "--asg" ],
         "cli_help": "add asg config to workdir"
+      }
+    },
+    ".init_docker": {
+      "field_description": "Add Docker config files to working dir.",
+      "default_value": false,
+      "field_metadata": {
+        "cli_flags": [ "--docker" ],
+        "cli_help": "add docker configs to workdir"
       }
     },
     ".print_path": {

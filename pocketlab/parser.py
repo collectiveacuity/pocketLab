@@ -12,15 +12,23 @@ from pocketlab import __command__, __module__, __version__, __order__
 from pocketlab.init import fields_model
 from pocketlab.utils import compile_commands, compile_arguments
 from importlib.util import find_spec
+import textwrap
 from argparse import ArgumentParser, HelpFormatter, RawDescriptionHelpFormatter, PARSER, SUPPRESS
 
 # construct customized formatter class
 class SubcommandHelpFormatter(RawDescriptionHelpFormatter):
+    
     def _format_action(self, action):
         parts = super(RawDescriptionHelpFormatter, self)._format_action(action)
         if action.nargs == PARSER:
             parts = "\n".join(parts.split("\n")[1:])
         return parts
+
+class NewLineHelpFormatter(HelpFormatter):
+
+    def _fill_text(self, text, width, indent):
+        return "\n".join(
+            [textwrap.fill(line, width) for line in textwrap.indent(textwrap.dedent(text), indent).splitlines()])
 
 # construct argument parser
 def construct_parser(description, epilog=''):
@@ -63,7 +71,7 @@ def construct_parser(description, epilog=''):
             details = {
                 'description': command_details['description'],
                 'help': command_details['help'],
-                'formatter_class': lambda prog: HelpFormatter(prog, max_help_position=30, width=80) # adjusts column width to options
+                'formatter_class': lambda prog: NewLineHelpFormatter(prog, max_help_position=30, width=80) # adjusts column width to options
             }
             if command_details['epilog']:
                 details['epilog'] = command_details['epilog']

@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+0.11 (2020.12.30)
+-----------------
+* [UPDATE] flask framework made the default option for init command
+* [FEATURE ADDED] express framework option added to init command
+* [FEATURE ADDED] google app engine option added to init command
+* [FEATURE ADDED] docker config option added to init command
+* [UPDATE] init documentation clarified
+
 0.10 (2019.06.17)
 -----------------
 * [COMMAND ADDED] added install command to add package to instance (ec2 only)

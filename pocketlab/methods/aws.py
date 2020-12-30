@@ -177,6 +177,29 @@ def compile_schema(file_path='models/ec2-config.json'):
 
     return config_schema
 
+def generate_ec2(serv_name):
+
+    if not serv_name:
+        serv_name = 'server'
+
+    # compile schema
+    config_schema = compile_schema('models/ec2-config.json')
+
+    # compile yaml and save
+    from pocketlab.methods.config import compile_yaml
+    config_text = compile_yaml(config_schema)
+    from labpack.records.time import labDT
+    new_dt = labDT.new()
+    dt_string = str(new_dt.date()).replace('-', '')
+    config_text = config_text.replace('generate-date', dt_string)
+    config_text = config_text.replace('generate-service', serv_name)
+    for key_name in ('region_name', 'iam_profile', 'elastic_ip'):
+        key_pattern = '\n%s:' % key_name
+        if config_text.find(key_pattern) > -1:
+            config_text = config_text.replace(key_pattern, "\n# %s:" % key_name)
+
+    return config_text
+
 def initialize_clients(aws_cred, service_name, service_insert, service_root, region_name, environment_type, resource_tags, verbose):
     
 # retrieve instance details from ec2
