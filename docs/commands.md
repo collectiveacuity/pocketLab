@@ -49,7 +49,7 @@ optional arguments:
   --asg             add asg config to workdir
   -q, --quiet       turn off lab process messages
   -f, --force       overwrite the existing resource
-[0m
+
 ```
   
 
@@ -71,7 +71,7 @@ optional arguments:
   -h, --help           show this help message and exit
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
-[0m
+
 ```
   
 
@@ -108,7 +108,7 @@ optional arguments:
   --tags STRING    tags associated with resource (comma sep)
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
-[0m
+
 ```
   
 
@@ -158,7 +158,7 @@ optional arguments:
   --ruby STRING        path to folder with Ruby Procfile
   --node STRING        path to folder with package.json
   --jingo STRING       path to folder with jingo Procfile
-[0m
+
 ```
   
 
@@ -196,7 +196,7 @@ optional arguments:
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
-[0m
+
 ```
   
 
@@ -226,7 +226,7 @@ optional arguments:
   --print        prints path of service root
   --path STRING  path to service root
   -f, --force    overwrite the existing resource
-[0m
+
 ```
   
 
@@ -262,7 +262,7 @@ optional arguments:
   --tags STRING    tags associated with resource (comma sep)
   --print          prints command(s) without running
   -q, --quiet      turn off lab process messages
-[0m
+
 ```
   
 
@@ -292,7 +292,7 @@ optional arguments:
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
-[0m
+
 ```
   
 
@@ -321,7 +321,7 @@ optional arguments:
   --region STRING  name of platform region
   --more           paginate results longer than console height
   -a, --all        include all details in results
-[0m
+
 ```
   
 
@@ -359,7 +359,7 @@ optional arguments:
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
-[0m
+
 ```
   
 
@@ -382,7 +382,7 @@ positional arguments:
 
 optional arguments:
   -h, --help  show this help message and exit
-[0m
+
 ```
   
 
@@ -412,7 +412,7 @@ optional arguments:
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
   --env STRING         type of development environment (default: dev)
   --print              prints command(s) without running
-[0m
+
 ```
   
 
@@ -447,6 +447,6 @@ optional arguments:
   -a, --all        apply to all services in registry
   --ssl            turn off ssl everywhere
   -q, --quiet      turn off lab process messages
-[0m
+
 ```
   
