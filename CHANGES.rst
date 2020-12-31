@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-0.11 (2020.12.30)
+0.11 (2020.12.31)
 -----------------
 * [FEATURE ADDED] flask framework option added to init command
 * [FEATURE ADDED] express framework option added to init command

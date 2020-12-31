@@ -4,41 +4,52 @@
 _Init adds the config files for other lab commands._  
 
 **Description:**  
-Init adds a number of files to the working directory which are required for other lab processes. If not present, it will create a ```docker-compose.yaml``` file and a ```.lab``` folder in the root directory to manage various configuration options. It will also create, if missing, ```cred/``` and ```data/``` folders to store sensitive project information outside version control along with a ```.gitignore``` (or ```.hgignore```) file to escape out standard non-VCS files.
+Init adds files to the working directory which are required for lab projects.
 
-PLEASE NOTE: With the option ```--python``` (or ```--node``` or ```--jquery```), init creates instead a standard framework for publishing a python (or node or jquery) module.  
+To create a framework for a webapp project, use the option ```--flask``` for a flask service, ```--webpack``` for a client-side ES6 framework using webpack or ```--express``` for a service-side ES6 server using node.js. With the options ```--pypi```, ```--npm``` or ```--jquery```, init creates instead a standard framework for publishing a module in python, node or jquery (respectively).  The options ```--heroku```, ```--ec2``` and ```--gae``` create configuration files used by other lab processes for cloud deployment on heroku, ec2 and gae (respectively).
+
+NOTE: Init only creates files which are not already present.  
 
 **Usage:**
 ```bash
-$ lab init [-h] [--vcs STRING] [--license STRING] [--python] [--node] [--jquery] [--heroku] [--aws] [--ec2] [--asg] [-q] [-f] [SERVICE]
+$ lab init [-h] [--vcs STRING] [--license STRING] [--flask] [--webpack] [--express] [--jquery] [--pypi] [--npm] [--heroku] [--ec2] [--gae] [--docker] [--aws] [--asg] [-q] [-f] [SERVICE]
 ```
 **Help:** 
 ```bash
-Init adds a number of files to the working directory which are required for
-other lab processes. If not present, it will create a 'docker-compose.yaml' file
-and a '.lab' folder in the root directory to manage various configuration
-options. It will also create, if missing, 'cred/' and 'data/' folders to store
-sensitive project information outside version control along with a '.gitignore'
-(or '.hgignore') file to escape out standard non-VCS files. PLEASE NOTE: With
-the option '--python' (or '--node' or '--jquery'), init creates instead a
-standard framework for publishing a python (or node or jquery) module.
+Init adds files to the working directory which are required for lab projects.
+
+To create a framework for a webapp project, use the option '--flask' for a flask
+service, '--webpack' for a client-side ES6 framework using webpack or '--
+express' for a service-side ES6 server using node.js. With the options '--pypi',
+'--npm' or '--jquery', init creates instead a standard framework for publishing
+a module in python, node or jquery (respectively).  The options '--heroku', '--
+ec2' and '--gae' create configuration files used by other lab processes for
+cloud deployment on heroku, ec2 and gae (respectively).
+
+NOTE: Init only creates files which are not already present.
 
 positional arguments:
-  SERVICE             (optional) service in lab registry
+  SERVICE           (optional) service in lab registry
 
 optional arguments:
-  -h, --help          show this help message and exit
-  --vcs STRING        VCS service to generate ignore file
-  --license STRING    name of software license type
-  --python, --module  create python module framework
-  --node              create node module framework
-  --jquery            create jquery module framework
-  --heroku            add heroku config to .lab folder
-  --aws               add aws config to .lab folder
-  --ec2               add ec2 config to workdir
-  --asg               add asg config to workdir
-  -q, --quiet         turn off lab process messages
-  -f, --force         overwrite the existing resource
+  -h, --help        show this help message and exit
+  --vcs STRING      VCS service to generate ignore file
+  --license STRING  name of software license type
+  --flask           create flask service framework
+  --webpack         create webpack client framework
+  --express         create express service framework
+  --jquery          create jquery service framework
+  --pypi, --python  create python module framework
+  --npm, --node     create node module framework
+  --heroku          add heroku configs to workdir
+  --ec2             add ec2 configs to workdir
+  --gae             add gae configs to workdir
+  --docker          add docker configs to workdir
+  --aws             add aws config to .lab folder
+  --asg             add asg config to workdir
+  -q, --quiet       turn off lab process messages
+  -f, --force       overwrite the existing resource
+[0m
 ```
   
 
@@ -60,6 +71,7 @@ optional arguments:
   -h, --help           show this help message and exit
   -q, --quiet          turn off lab process messages
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
+[0m
 ```
   
 
@@ -79,11 +91,12 @@ $ lab connect [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] PLATFOR
 ```bash
 Opens up a direct ssh connection to remote host. Connect is currently only
 available to the Amazon ec2 platform and only on systems running ssh natively.
-To connect to a remote host on Windows, try using Putty instead. PLEASE NOTE:
-connect uses the service name and other tags associated with remote instances to
-determine which instance to connect to. The service name will be added as part
-of 'lab launch ec2'. Otherwise, a tag must be added to the instance with key
-"Services" and value "<service1>,<service2>".
+To connect to a remote host on Windows, try using Putty instead.
+
+PLEASE NOTE: connect uses the service name and other tags associated with remote
+instances to determine which instance to connect to. The service name will be
+added as part of 'lab launch ec2'. Otherwise, a tag must be added to the
+instance with key "Services" and value "<service1>,<service2>".
 
 positional arguments:
   PLATFORM         name of remote platform
@@ -95,6 +108,7 @@ optional arguments:
   --tags STRING    tags associated with resource (comma sep)
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
+[0m
 ```
   
 
@@ -115,11 +129,12 @@ $ lab deploy [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] [-f] [--
 Deploys a service to a remote platform. Deploy is currently only available for
 the heroku and ec2 platforms. Deploy can also deploy static html sites and apps
 using their dependencies if the root folder is added to one of the runtime type
-flags (ex. lab deploy heroku --html site/) PLEASE NOTE: deploy uses the service
-name specified in the docker-compose.yaml configuration file to determine which
-instance to connect to. The service name will be added as part of 'lab launch
-ec2'. Otherwise, a tag must be added to the instance with key "Services" and
-value "<service1>,<service2>".
+flags (ex. lab deploy heroku --html site/)
+
+PLEASE NOTE: deploy uses the service name specified in the docker-compose.yaml
+configuration file to determine which instance to connect to. The service name
+will be added as part of 'lab launch ec2'. Otherwise, a tag must be added to the
+instance with key "Services" and value "<service1>,<service2>".
 
 positional arguments:
   PLATFORM             name of remote platform
@@ -143,6 +158,7 @@ optional arguments:
   --ruby STRING        path to folder with Ruby Procfile
   --node STRING        path to folder with package.json
   --jingo STRING       path to folder with jingo Procfile
+[0m
 ```
   
 
@@ -161,11 +177,12 @@ $ lab get [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] [-f] PATH P
 **Help:** 
 ```bash
 Copies a file or folder on remote host to working directory on localhost. Get is
-currently only available for the Amazon ec2 platform. PLEASE NOTE: get uses the
-service name specified in the docker-compose.yaml configuration file to
-determine which instance to connect to. The service name will be added as part
-of 'lab launch ec2'. Otherwise, a tag must be added to the instance with key
-"Services" and value "<service1>,<service2>".
+currently only available for the Amazon ec2 platform.
+
+PLEASE NOTE: get uses the service name specified in the docker-compose.yaml
+configuration file to determine which instance to connect to. The service name
+will be added as part of 'lab launch ec2'. Otherwise, a tag must be added to the
+instance with key "Services" and value "<service1>,<service2>".
 
 positional arguments:
   PATH             path to file or folder
@@ -179,6 +196,7 @@ optional arguments:
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
+[0m
 ```
   
 
@@ -208,6 +226,7 @@ optional arguments:
   --print        prints path of service root
   --path STRING  path to service root
   -f, --force    overwrite the existing resource
+[0m
 ```
   
 
@@ -227,7 +246,9 @@ $ lab install [-h] [--env STRING] [--region STRING] [--tags STRING] [--print] [-
 ```bash
 Installs a software package on a running instance on a remote platform. Install
 is currently only available for the ec2 platform and supports the following
-packages: nginx certbot
+packages:
+nginx
+certbot
 
 positional arguments:
   PACKAGE          name of software package
@@ -241,6 +262,7 @@ optional arguments:
   --tags STRING    tags associated with resource (comma sep)
   --print          prints command(s) without running
   -q, --quiet      turn off lab process messages
+[0m
 ```
   
 
@@ -270,6 +292,7 @@ optional arguments:
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
+[0m
 ```
   
 
@@ -298,6 +321,7 @@ optional arguments:
   --region STRING  name of platform region
   --more           paginate results longer than console height
   -a, --all        include all details in results
+[0m
 ```
   
 
@@ -316,11 +340,12 @@ $ lab put [-h] [--env STRING] [--tags STRING] [--region STRING] [-q] [-f] PATH P
 **Help:** 
 ```bash
 Copies a local file or folder to user home on remote host. Put is currently only
-available for the Amazon ec2 platform. PLEASE NOTE: put uses the service name
-specified in the docker-compose.yaml configuration file to determine which
-instance to connect to. The service name will be added as part of 'lab launch
-ec2'. Otherwise, a tag must be added to the instance with key "Services" and
-value "<service1>,<service2>".
+available for the Amazon ec2 platform.
+
+PLEASE NOTE: put uses the service name specified in the docker-compose.yaml
+configuration file to determine which instance to connect to. The service name
+will be added as part of 'lab launch ec2'. Otherwise, a tag must be added to the
+instance with key "Services" and value "<service1>,<service2>".
 
 positional arguments:
   PATH             path to file or folder
@@ -334,6 +359,7 @@ optional arguments:
   --region STRING  name of platform region
   -q, --quiet      turn off lab process messages
   -f, --force      overwrite the existing resource
+[0m
 ```
   
 
@@ -356,6 +382,7 @@ positional arguments:
 
 optional arguments:
   -h, --help  show this help message and exit
+[0m
 ```
   
 
@@ -385,6 +412,7 @@ optional arguments:
   --virtualbox STRING  name of docker virtualbox on Win7/8 (default: default)
   --env STRING         type of development environment (default: dev)
   --print              prints command(s) without running
+[0m
 ```
   
 
@@ -419,5 +447,6 @@ optional arguments:
   -a, --all        apply to all services in registry
   --ssl            turn off ssl everywhere
   -q, --quiet      turn off lab process messages
+[0m
 ```
   

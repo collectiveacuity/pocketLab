@@ -26,10 +26,10 @@
 <tr><td>remove    </td><td>removes a service from the registry                   </td><td>available                                </td></tr>
 <tr><td>clean     </td><td>cleans registries of broken resources                 </td><td>available                                </td></tr>
 <tr><td>home      </td><td>creates a quicklink to workdir                        </td><td>available                                </td></tr>
-<tr><td>build     </td><td>creates a new image from Dockerfile for service       </td><td><sup>use <i><b>docker build</b></i></sup></td></tr>
+<tr><td>build     </td><td>creates a new image from Dockerfile for service       </td><td>&lt;sup&gt;use &lt;i&gt;&lt;b&gt;docker build&lt;/b&gt;&lt;/i&gt;&lt;/sup&gt;</td></tr>
 <tr><td>start     </td><td>initiates Docker containers for services              </td><td>available                                </td></tr>
-<tr><td>stop      </td><td>terminates a running container for a service          </td><td><sup>use <i><b>docker stop</b></i></sup> </td></tr>
-<tr><td>enter     </td><td>opens up a shell cli inside a running container       </td><td><sup>use <i><b>docker exec</b></i></sup> </td></tr>
+<tr><td>stop      </td><td>terminates a running container for a service          </td><td>&lt;sup&gt;use &lt;i&gt;&lt;b&gt;docker stop&lt;/b&gt;&lt;/i&gt;&lt;/sup&gt; </td></tr>
+<tr><td>enter     </td><td>opens up a shell cli inside a running container       </td><td>&lt;sup&gt;use &lt;i&gt;&lt;b&gt;docker exec&lt;/b&gt;&lt;/i&gt;&lt;/sup&gt; </td></tr>
 <tr><td>launch    </td><td>starts instances on remote platform                   </td><td>available                                </td></tr>
 <tr><td>terminate </td><td>removes an instance from a remote platform            </td><td>                                         </td></tr>
 <tr><td>connect   </td><td>connects to remote host through ssh                   </td><td>available                                </td></tr>
