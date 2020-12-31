@@ -1,0 +1,143 @@
+#!/usr/bin/env node
+import express from 'express';
+import nunjucks from 'nunjucks';
+import d12 from 'd12';
+
+// construct app and config settings
+const app = express();
+let system = {
+  environment: process.env.SYSTEM_ENVIRONMENT ? process.env.SYSTEM_ENVIRONMENT : 'dev',
+  platform: process.env.SYSTEM_PLATFORM ? process.env.SYSTEM_PLATFORM : 'localhost',
+  port: process.env.PORT ? parseInt(process.env.PORT) : 8080
+}
+if (system.platform === 'localhost'){
+  system.url = 'http://localhost:' + system.port
+} else {
+  system.url = 'https://' + system.platform
+}
+const details = { 
+  about: { 
+    title: 'pocketlab',
+    description: '<service-description>'
+  }, 
+  system: system 
+}
+app.use(express.static('public'))
+app.use(express.json())
+nunjucks.configure('views', {
+    autoescape: true,
+    express: app
+});
+
+app.get('/', async (req, res, next) => { 
+  return res.status(200).render('landing.html', details)
+})
+
+app.post('/news', async (req, res, next) => {
+
+  /* a route to create a new article */
+
+  // parse request fields
+  const body = d12.isObjectLike(req.body) ? req.body : {}
+  console.log(body)
+  const defaults = {
+    // token: '',
+    url: '',
+    publisher: '',
+    pubDate: 0.0,
+    author: ''
+    title: '',
+    cover: '',
+    keywords: [ '' ]
+  }
+  let fields = d12.ingestOptions(body, defaults)
+  
+  // validate inputs
+  let parsed;
+  let error = ''
+  // const auth = SERVER_CONFIG.auth_token ? SERVER_CONFIG.auth_token : ''
+  // if (auth && fields.token !== auth){
+  //   error = 'Sorry, not authorized for that request.'
+  // }
+  if (!fields.url){
+    error = 'Request requires a url field.'
+  } else {
+    parsed = d12.parseURL(fields.url);
+    if (!parsed.valid){
+      error = JSON.stringify(parsed.errors)
+    }
+  }
+  if (error){
+    return res.status(403).json({error: error})
+  }
+  
+  // save news to database ...
+  
+  // return 200 status
+  response = { status: 'ok' }
+  console.log(response)
+  return res.status(200).json(response)
+  
+})
+
+app.get('/news', async (req, res, next) => {
+  
+  /* a route to request the latest news */
+  
+  // parse request fields
+  const query = d12.isObjectLike(req.query) ? req.query : {}
+  console.log(query)
+  const defaults = {
+    // token: '',
+    endDate: 0.0
+  }
+  let fields = d12.ingestOptions(query, defaults)
+  
+  // validate inputs
+  let error = ''
+  // const auth = SERVER_CONFIG.auth_token ? SERVER_CONFIG.auth_token : ''
+  // if (auth && fields.token !== auth){
+  //   error = 'Sorry, not authorized for that request.'
+  // }
+  if (error){
+    return res.status(403).json({error: error})
+  }
+  
+  // search database for articles...
+  let articles = []
+  
+  // return results
+  const response = { results: articles }
+  console.log(response)
+  return res.status(200).json(response)
+  
+})
+
+app.get('/news/:articleID', async (req, res, next) => {
+  
+  /* route to retrieve an article */
+ 
+  // parse request fields
+  const params = d12.isObjectLike(req.params) ? req.params : {}
+  console.log(params)
+  let fields = d12.ingestOptions(params, { articleID: '' })
+  
+  // validate inputs
+  let error = ''
+  
+  // retrieve article from database ...
+  const article = {}
+  
+  // report error
+  if (error){
+    return res.status(403).json({error: error})
+  }
+  
+  // return results
+  response = { result: article }
+  console.log(response)
+  return res.status(200).json(response)
+  
+})
+
+app.listen(system.port, () => console.log(`Server started in ${system.environment} mode. Press Ctrl+C to quit`));

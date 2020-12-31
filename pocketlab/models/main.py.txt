@@ -1,0 +1,181 @@
+__author__ = '<user-name>'
+__created__ = '<creation-month>'
+__license__ = '©<creation-date> <org-title>'
+
+# construct flask app object
+from flask import Flask, request, jsonify, render_template, Response
+flask_kwargs = {
+    'import_name': __name__,
+    'static_folder': 'public',
+    'template_folder': 'html'
+}
+app = Flask(**flask_kwargs)
+
+# add cross origin support
+from flask_cors import CORS
+CORS(app)
+
+# retrieve system variables
+from os import environ
+system_kwargs = {
+    'environment': environ.get('SYSTEM_ENVIRONMENT', 'dev'),
+    'platform': environ.get('SYSTEM_PLATFORM', 'localhost'),
+    'port': int(environ.get('PORT', '5000')),
+    'url': environ.get('URL')
+}
+if system_kwargs['platform'] == 'localhost':
+    system_kwargs['url'] = 'http://localhost:%s' % system_kwargs['port'] 
+
+# initialize logging and debugging
+import sys
+import logging
+app.logger.addHandler(logging.StreamHandler(sys.stdout))
+app.logger.setLevel(logging.DEBUG)
+app.config['ASSETS_DEBUG'] = False
+
+# retrieve website data
+app_details = {
+    'title': 'pocketlab',
+    'description': '<service-description>'
+}
+
+# define template fields
+fields = {
+    'system': system_kwargs,
+    'about': app_details
+}
+
+# import route dependencies
+import json
+from jsonmodel.validators import jsonModel
+from jsonmodel.exceptions import InputValidationError
+from labpack.parsing.flask import extract_request_details
+
+@app.route('/')
+def landing_page():
+    ''' landing page route '''
+    return render_template('landing.html', **fields), 200
+
+@app.route('/news', methods=['POST])
+def news_post_route():
+    
+    # ingest request
+    request_details = extract_request_details(request)
+    app.logger.debug(request_details)
+    
+    # define valid input schema
+    defaults = {
+        'schema': {
+            # 'token': 'abc123',
+            'url': 'https://sub.domain.com/path/to.html',
+            'publisher': '',
+            'pubDate': 0.0,
+            'author': ''
+            'title': '',
+            'cover': '',
+            'keywords': [ '' ]
+          }
+        }
+    }
+    model = jsonModel(defaults)
+    
+    # validate request details
+    error = ''
+    try:
+        model.validate(request_details['json'])
+    except InputValidationError as err:
+        error = err.explain()
+    
+    # # validate authorization
+    # if system_config['auth_token'] and token != system_config['auth_token']:
+    #     error = 'Sorry, not authorized for that request.'
+        
+    # return errors
+    if error:
+        return jsonify({ 'error': error }), 400
+        
+    # save news to database ...
+    
+    # log and return response
+    response_details = { 'status': 'ok' }
+    app.logger.debug(response_details)
+    return jsonify(response_details), 200
+    
+
+@app.route('/news')
+def news_route():
+    
+    # ingest request
+    request_details = extract_request_details(request)
+    app.logger.debug(request_details)
+    
+    # define valid input schema
+    defaults = {
+        'schema': {
+            # 'token': 'abc123',
+            'endDate': 0.0
+        }
+    }
+    model = jsonModel(defaults)
+    
+    # validate request details
+    error = ''
+    try:
+        model.validate(request_details['params'])
+    except InputValidationError as err:
+        error = err.explain()
+    
+    # # validate authorization
+    # if system_config['auth_token'] and token != system_config['auth_token']:
+    #     error = 'Sorry, not authorized for that request.'
+    
+    # return errors
+    if error:
+        return jsonify({ 'error': error }), 400
+        
+    # search database for articles ...
+    articles = [] 
+    
+    # log and return response
+    response_details = { 'results': articles }
+    app.logger.debug(response_details)
+    return jsonify(response_details), 200
+    
+@app.route('/news/<article_id>')
+def news_id_route(article_id=''):
+    
+    # retrieve article from database...
+    error = ''
+    article = {}
+    
+    # return errors
+    if error:
+        return jsonify({ 'error': error }), 400
+    
+    # define post-response callable
+    def call_on_close():
+        pass
+
+    # return response (and post-response callable)
+    response_details = {
+        'result': article
+    }
+    response_kwargs = {
+        'response': json.dumps(response_details),
+        'status': 200,
+        'mimetype': 'application/json'
+    }
+    response_object = Response(**response_kwargs)
+    response_object.call_on_close(call_on_close)
+    app.logger.debug(response_details)
+    return response_object
+
+@app.errorhandler(404)
+def page_not_found(error):
+    ''' catchall error route '''
+    return render_template('landing.html', **fields), 404
+
+if __name__ == '__main__':
+
+    app.run(host='127.0.0.1', port=system_kwargs['port'], debug=True)
+

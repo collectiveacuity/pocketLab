@@ -37,6 +37,9 @@ def load_ignore(vcs='git', type='service'):
     elif vcs.lower() == 'docker':
         file_path = path.join(module_path, 'models/dockerignore.txt')
         file_text = open(file_path).read()
+    elif vcs.lower() == 'gcloud':
+        file_path = path.join(module_path, 'models/gcloudignore.txt')
+        file_text = open(file_path).read()
 
     return file_text
 

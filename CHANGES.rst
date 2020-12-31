@@ -3,11 +3,12 @@ ChangeLog
 
 0.11 (2020.12.30)
 -----------------
-* [UPDATE] flask framework made the default option for init command
+* [FEATURE ADDED] flask framework option added to init command
 * [FEATURE ADDED] express framework option added to init command
 * [FEATURE ADDED] google app engine option added to init command
+* [FEATURE ADDED] webpack framework option added to init command
 * [FEATURE ADDED] docker config option added to init command
-* [UPDATE] init documentation clarified
+* [UPDATE] init command documentation clarified
 
 0.10 (2019.06.17)
 -----------------

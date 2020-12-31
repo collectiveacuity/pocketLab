@@ -1,0 +1,22 @@
+# https://cloud.google.com/appengine/docs/standard/python/getting-started/hosting-a-static-website
+# https://themewagon.com/themes/free-html5-css3-personal-portfolio-website-template-epitome/
+
+### NOTE: callable python file must be called "main.py" with "app" method to be instantiated by gae
+
+runtime: python37
+# api_version: 1
+# threadsafe: true
+instance_class: F1
+
+env_variables:
+  SYSTEM_ENVIRONMENT: "prod"
+  SYSTEM_PLATFORM: "gae"
+  
+handlers:
+- url: /.*
+  script: auto
+  secure: always
+  
+automatic_scaling:
+  max_instances: 1
+  min_pending_latency: 1000ms

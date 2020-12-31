@@ -96,12 +96,28 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
     # handle service name requirement
     named_active = False
-    named_files = [ init_flask, init_express, init_jquery, init_python, init_node, init_heroku, init_ec2, init_gae, init_docker, init_asg ]
+    named_files = [ init_flask, init_express, init_webpack, init_jquery, init_python, init_node, init_heroku, init_ec2, init_gae, init_docker, init_asg ]
     for toggle in named_files:
         if toggle:
             named_active = True
     if named_active and not service_name:
         raise ValueError('Lab init option requires a name for the service framework.\nTry: lab init <service>')
+
+    # handle no flags (default action)
+    flags_active = False
+    all_flags = [ init_aws, vcs_service, license_type ]
+    all_flags.extend(named_files)
+    for toggle in all_flags:
+        if toggle:
+            flags_active = True
+            break
+    if not flags_active:
+        # add basic project folders
+        project_folders = ['cred', 'data', 'keys', 'notes']
+        for folder in project_folders:
+            if not path.exists(folder):
+                makedirs(folder)
+                _printer(folder, 'folder')
 
     # create service name if specified
     if service_name:
@@ -137,6 +153,10 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     # retrieve current datetime
     from labpack.records.time import labDT
     current_datetime = labDT.new()
+
+    # TODO retrieve latest version of each dependency from system
+    
+    # TODO add handlebars flag
     
     # define default documentation values
     replacement_map = {
@@ -148,7 +168,8 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         '<org-email>': 'user@domain.com',
         '<org-url>': '',
         '<user-email>': 'user@domain.com',
-        '<creation-date>': '%s' % current_datetime.year
+        '<creation-date>': '%s' % current_datetime.year,
+        '<creation-month>': '%s.%02d' % (current_datetime.year, current_datetime.month)
     }
     if username == 'rcj1492':
         replacement_map['<org-name>'] = 'collectiveacuity'
@@ -173,6 +194,11 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
             'type': 'deploy',
             'path': '.dockerignore',
             'kwargs': {'vcs': 'docker'}
+        },
+        'gcloud': {
+            'type': 'deploy',
+            'path': '.gcloudignore',
+            'kwargs': {'vcs': 'gcloud'}
         },
         'npm': {
             'type': 'module',
@@ -203,6 +229,10 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     platform_names = []
     creating_ignores = []
 
+    # add gitignore to default command
+    if not flags_active:
+        creating_ignores.append('git')
+        
     # handle docker message
     if init_docker:
         platform_names.append('docker')
@@ -454,19 +484,42 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         exit_msg = 'Framework for "%s" module setup in current directory.' % service_name
 
     # define project variables
+    app_path = ''
+    app_model = ''
     if init_express:
         init_project = True
+        replacement_map['<service-description>'] = 'A Streamlined Express Webapp'
+        app_path = 'main.mjs'
+        app_model = 'models/main.mjs.txt'
     if init_flask:
         init_project = True
+        replacement_map['<service-description>'] = 'A Slick Flask Webapp'
+        app_path = 'main.py'
+        app_model = 'models/main.py.txt'
 
     # add heroku configs
     if init_heroku:
         init_docker = True
 
-    # TODO add gae configs
+    # add gae configurations
     if init_gae:
+
+        # add .gcloudignore
         creating_ignores.append('gcloud')
-        pass
+
+        # add requirements and app configs
+        from pocketlab.methods.config import retrieve_template
+        gae_files = {
+            'requirements.txt': 'models/gae.requirements.txt',
+            'app.yaml': 'models/gae.app.yaml.txt'
+        }
+        for key, value in gae_files.items():
+            if not path.exists(key):
+                source_text = retrieve_template(value)
+                with open(key, 'wt', encoding='utf-8') as f:
+                    f.write(source_text)
+                    f.close()
+                _printer(key)
 
     # add ec2 configurations
     if init_ec2:
@@ -584,8 +637,8 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         if not vcs_service and not existing_vcs:
             creating_ignores.append('git')
 
-        # define project folders
-        project_folders = [ 'data', 'keys', 'scripts', 'styles' ]
+        # add project folders
+        project_folders = [ 'data', 'keys', 'scripts', 'styles', 'public' ]
         for folder in project_folders:
             if not path.exists(folder):
                 makedirs(folder)
@@ -613,6 +666,79 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                     for i in range(len(src_list)):
                         copyfile(src_list[i], dst_list[i])
                         _printer(dst_list[i])
+
+        # add framework specific project folders
+        other_folders = ['src', 'views']
+        if init_flask:
+            other_folders = ['methods', 'html']
+        for folder in other_folders:
+            if not path.exists(folder):
+                makedirs(folder)
+                _printer(folder, 'folder')
+
+        # add ninja/nunjucks templates to html or views
+        html_path = 'html'
+        if init_express:
+            html_path = 'views'
+        ninja_files = [ 'wrapper.html', 'header.html', 'landing.html', 'content.html', 'footer.html' ]
+        for file in ninja_files:
+            template_path = path.join(html_path, file)
+            if not path.exists(template_path):
+                from pocketlab.methods.config import retrieve_template
+                model_path = path.join('models', file)
+                template_text = retrieve_template(model_path)
+                with open(template_path, 'wt', encoding='utf-8') as f:
+                    f.write(template_text)
+                    f.close()
+                _printer(template_path)
+
+        # add public folders
+        public_folders = ['fonts', 'images', 'styles', 'scripts']
+        for folder in public_folders:
+            public_folder = path.join('public', folder)
+            if not path.exists(public_folder):
+                makedirs(public_folder)
+                _printer(public_folder, 'folder')
+
+        # add files to public folder
+        manifest_path = path.join('public', 'manifest.json')
+        model_path = 'models/site.manifest.json'
+        fields_map = {}
+        from pocketlab.methods.node import generate_json
+        generate_json(manifest_path, model_path, fields_map, replacement_map, _printer)
+
+        # TODO add placeholder icons to public folder
+
+        # add main file
+        if app_path and not path.exists(app_path):
+            from pocketlab.methods.config import retrieve_template, replace_text
+            app_text = retrieve_template(app_model)
+            app_text = replace_text(app_text, replacement_map=replacement_map)
+            with open(app_path, 'wt', encoding='utf-8') as f:
+                f.write(app_text)
+                f.close()
+            _printer(app_path)
+
+        # add package.json and gulpfile.js to express
+        if init_express:
+
+            # create package.json
+            from pocketlab.methods.node import generate_package
+            from pocketlab.methods.config import retrieve_template
+            package_path = 'package.json'
+            package_text = retrieve_template('models/express.package.json')
+            dependency_text = retrieve_template('models/webpack.global.dependencies.json')
+            generate_package(package_path, package_text, dependency_text, replacement_map, _printer)
+
+            # add gulpfile
+            gulp_path = 'gulpfile.js'
+            if not path.exists(gulp_path):
+                from pocketlab.methods.config import retrieve_template
+                gulp_text = retrieve_template('models/express.gulpfile.js.txt')
+                with open(gulp_path, 'wt', encoding='utf-8') as f:
+                    f.write(gulp_text)
+                    f.close()
+                _printer(gulp_path)
 
         # add readme file
         readme_path = 'README.md'

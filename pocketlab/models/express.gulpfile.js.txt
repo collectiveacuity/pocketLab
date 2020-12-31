@@ -12,10 +12,10 @@ const webpackConfig = require('./webpack.config.js')
 gulp.task('nodemon', function (cb) {
     var started = false;
     return nodemon({
-        script: 'server.mjs',
+        script: 'main.mjs',
         nodeArgs: [ '--experimental-modules', '--experimental-json-modules' ],
         ignore: [ 'node_modules/' ],
-        watch: [ 'src', 'views', 'cred', 'server.mjs', 'public/scripts/' ],
+        watch: [ 'src', 'views', 'cred', 'main.mjs', 'public/scripts/' ],
         ext: "html,js,mjs,json",
         env: {
             'SYSTEM_ENVIRONMENT': 'dev',

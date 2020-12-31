@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>{{ about.title }}</title>
+{#  <link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico">#}
+{#  <link rel="icon" sizes="192x192" href="images/logo-192x192.png">#}
+{#  <link rel="icon" sizes="128x128" href="images/logo-128x128.png">#}
+{#  <link rel="apple-touch-icon" sizes="128x128" href="images/logo-128x128.png">#}
+  <link rel="manifest" href="manifest.json">
+  {% block links %}{% endblock %}
+{#  <link rel="stylesheet" href="styles/bootstrap.css">#}
+  <link rel="stylesheet" href="styles/bundle.min.css">
+  {% block css %}{% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="system_environment" content="{{ system.environment }}">
+  <meta name="description" content="{{ about.description }}">
+  {% block meta %}{% endblock %}
+  {% block javascript_preload %}{% endblock %}
+</head>
+<body>
+  {% block body %}
+  {% endblock %}
+</body>
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+{#<script type="text/javascript" src="scripts/handlebars.min.js"></script>#}
+{#<script type="text/javascript" src="scripts/jquery-autobars.js"></script>#}
+<script type="text/javascript" src="scripts/bundle.min.js"></script>
+{% block javascript %}{% endblock %}
+</html>
