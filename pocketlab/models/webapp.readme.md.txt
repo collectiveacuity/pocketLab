@@ -1,0 +1,28 @@
+# pocketlab
+_<service-description>_  
+**by [<org-title>](<org-url>)**
+
+## Introduction
+<service-description>...
+
+## Benefits
+- Endless fascination
+- Countless friends
+- Immense power
+-
+
+## Features
+- Responds to input
+- Operates automatically
+- Calls a process
+- 
+
+## Requirements
+- Dependencies listed in <dependency-manifest>
+- Credentials from third-party services
+-
+
+## Collaboration Notes
+The ```<dependency-manifest>``` contains all the configuration information required for collaboration except for access tokens. *THIS IS INTENTIONAL*. To synchronize access tokens across multiple devices, platforms and users without losing local control, you can use LastPass, an encrypted email platform such as ProtonMail or smoke signals. If you use any AWS services, use AWS IAM to assign user permissions and create keys for each collaborator individually. GCP also provides a [similar tool](https://console.developers.google.com/apis/credentials) for assigning unique keys to users and services.
+
+Collaborators are required to install all service dependencies on their local device if they wish to test code on their localhost. A collaborate should always **FORK** the repo from the main master and fetch changes from the upstream repo so reality is controlled by one admin responsible for approving all changes. New dependencies should be added to the ```<dependency-manifest>``` and tested before making a pull request to merge.

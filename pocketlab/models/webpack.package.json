@@ -23,7 +23,7 @@
   "scripts": {
     "dev": "gulp dev; gulp watch",
     "build": "gulp prod",
-    "setup": "npm link gulp gulp-sass gulp-concat gulp-postcss gulp-sourcemaps gulp-nodemon cssnano autoprefixer webpack"
+    "setup": "npm link gulp gulp-sass gulp-concat gulp-postcss gulp-sourcemaps gulp-nodemon postcss cssnano autoprefixer webpack"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",

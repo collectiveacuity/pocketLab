@@ -1,0 +1,10 @@
+
+
+## Dockerfiles
+The ```Dockerfile``` and ```docker-compose.yaml``` files contain all the information required to run the service in a container. To maintain local control of credentials and avoid the leak of credentials into docker images in remote registries, the pocketlab command line tool provides a number of methods to compile a complete docker image from the ```Dockerfile``` and ```docker-compose.yaml``` files at deploy time. Try: ```lab start``` to run a docker container locally and ```lab deploy <platform>``` to deploy the service as a docker container on a remote platform.
+
+If this service will be deployed using a docker container, then all new dependencies should be added to the ```Dockerfile``` and any new folders should be added to the ```docker-compose.yaml``` file. Collaborators should test changes to Dockerfile locally before making a pull request to merge any new dependencies:
+
+```shell
+docker build -t test-image .
+```

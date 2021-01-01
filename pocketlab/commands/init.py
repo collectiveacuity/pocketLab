@@ -169,7 +169,8 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         '<org-url>': '',
         '<user-email>': 'user@domain.com',
         '<creation-date>': '%s' % current_datetime.year,
-        '<creation-month>': '%s.%02d' % (current_datetime.year, current_datetime.month)
+        '<creation-month>': '%s.%02d' % (current_datetime.year, current_datetime.month),
+        '<dependency-manifest>': 'requirements.txt'
     }
     if username == 'rcj1492':
         replacement_map['<org-name>'] = 'collectiveacuity'
@@ -225,14 +226,14 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
     # define default variables
     init_module = False
-    init_project = False
+    init_webapp = False
     platform_names = []
     creating_ignores = []
 
     # add gitignore to default command
     if not flags_active:
         creating_ignores.append('git')
-        
+
     # handle docker message
     if init_docker:
         platform_names.append('docker')
@@ -254,6 +255,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         module_type = 'node'
         test_folder = 'test'
         replacement_map['<service-description>'] = 'A Powerful Javascript Tool for NodeJS'
+        replacement_map['<dependency-manifest>'] = 'package.json'
         creating_ignores.append('npm')
         init_module = True
     if init_jquery:
@@ -262,6 +264,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         module_type = 'node'
         test_folder = 'test'
         replacement_map['<service-description>'] = 'A Brilliant Javascript Module For The Browser'
+        replacement_map['<dependency-manifest>'] = 'package.json'
         creating_ignores.append('npm')
         init_module = True
 
@@ -487,12 +490,12 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     app_path = ''
     app_model = ''
     if init_express:
-        init_project = True
+        init_webapp = True
         replacement_map['<service-description>'] = 'A Streamlined Express Webapp'
         app_path = 'main.mjs'
         app_model = 'models/main.mjs.txt'
     if init_flask:
-        init_project = True
+        init_webapp = True
         replacement_map['<service-description>'] = 'A Slick Flask Webapp'
         app_path = 'main.py'
         app_model = 'models/main.py.txt'
@@ -628,10 +631,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
             _printer(license_path)
 
     # add project folders
-    if init_project:
-
-        # add a client side controller to project
-        init_webpack = True
+    if init_webapp:
 
         # add gitignore to projects with no vcs specified
         if not vcs_service and not existing_vcs:
@@ -744,7 +744,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         readme_path = 'README.md'
         if not path.exists(readme_path):
             from pocketlab.methods.config import retrieve_template, replace_text
-            readme_text = retrieve_template('models/service.readme.md.txt')
+            readme_text = retrieve_template('models/webapp.readme.md.txt')
             if vcs_service == 'mercurial' or 'mercurial' in existing_ignores:
                 replacement_map['.gitignore'] = '.hgignore'
             readme_text = replace_text(readme_text, replacement_map=replacement_map)
@@ -818,9 +818,9 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                     f.close()
                 _printer(key)
 
-        if not init_project:
+        if not init_webapp:
             exit_msg = 'Framework for "%s" client-side controller setup in current directory.' % service_name
-    
+
     # add docker configs
     if init_docker:
 
@@ -863,12 +863,24 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         dockerfile_path = 'Dockerfile'
         if not path.exists(dockerfile_path):
             from pocketlab.methods.config import retrieve_template, replace_text
-            dockerfile_text = retrieve_template('models/dockerfile.flask.txt')
+            dockerfile_text = retrieve_template('models/flask.dockerfile.txt')
             dockerfile_text = replace_text(dockerfile_text, replacement_map=replacement_map)
             with open(dockerfile_path, 'wt') as f:
                 f.write(dockerfile_text)
                 f.close()
             _printer(dockerfile_path)
+
+        # add docker documentation to README.md
+        if path.exists('README.md'):
+            import re
+            docker_pattern = re.compile('\n##\sDockerfiles')
+            readme_text = open('README.md').read()
+            if not docker_pattern.findall(readme_text):
+                from pocketlab.methods.config import retrieve_template
+                docker_text = retrieve_template('models/docker.readme.md.txt')
+                with open('README.md', 'a') as f:
+                    f.write(docker_text)
+                    f.close()
 
     # add ignore files
     if creating_ignores:

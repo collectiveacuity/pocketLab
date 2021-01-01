@@ -7,6 +7,7 @@ from flask import Flask, request, jsonify, render_template, Response
 flask_kwargs = {
     'import_name': __name__,
     'static_folder': 'public',
+    'static_url_path': '',
     'template_folder': 'html'
 }
 app = Flask(**flask_kwargs)
@@ -56,7 +57,7 @@ def landing_page():
     ''' landing page route '''
     return render_template('landing.html', **fields), 200
 
-@app.route('/news', methods=['POST])
+@app.route('/news', methods=['POST'])
 def news_post_route():
     
     # ingest request
@@ -70,11 +71,10 @@ def news_post_route():
             'url': 'https://sub.domain.com/path/to.html',
             'publisher': '',
             'pubDate': 0.0,
-            'author': ''
+            'author': '',
             'title': '',
             'cover': '',
             'keywords': [ '' ]
-          }
         }
     }
     model = jsonModel(defaults)

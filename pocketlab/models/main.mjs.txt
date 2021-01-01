@@ -45,7 +45,7 @@ app.post('/news', async (req, res, next) => {
     url: '',
     publisher: '',
     pubDate: 0.0,
-    author: ''
+    author: '',
     title: '',
     cover: '',
     keywords: [ '' ]
@@ -140,4 +140,4 @@ app.get('/news/:articleID', async (req, res, next) => {
   
 })
 
-app.listen(system.port, () => console.log(`Server started in ${system.environment} mode. Press Ctrl+C to quit`));
+app.listen(system.port, () => console.log(`Server started in ${system.environment} mode on port ${system.port}. Press Ctrl+C to quit`));
