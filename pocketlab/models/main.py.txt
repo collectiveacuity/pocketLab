@@ -1,6 +1,6 @@
 __author__ = '<user-name>'
 __created__ = '<creation-month>'
-__license__ = '©<creation-date> <org-title>'
+__license__ = '©<creation-year> <org-title>'
 
 # construct flask app object
 from flask import Flask, request, jsonify, render_template, Response

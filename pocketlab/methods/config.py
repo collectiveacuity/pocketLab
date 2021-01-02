@@ -20,6 +20,35 @@ def retrieve_template(file_path):
 
     return file_text
 
+def copy_template(source_path, destination_path, printer=None, overwrite=False):
+    
+    '''
+            a method to copy a template file to a destination
+
+        :param source_path: string with relative path of source file
+        :param destination_path: string with relative path of destination file
+        :param printer: function to run on destination path
+        :param overwrite: boolean to enable file overwrite
+        :return: 0 (success) or 1 (fail)
+        '''
+
+    from shutil import copyfile
+    from os import path, makedirs
+    from pocketlab import __module__
+    from importlib.util import find_spec
+    module_path = find_spec(__module__).submodule_search_locations[0]
+    absolute_path = path.join(module_path, source_path)
+    if path.exists(destination_path):
+        if not overwrite:
+            return 1
+    try:
+        makedirs(path.dirname(path.abspath(destination_path)), exist_ok=True)
+        copyfile(absolute_path, destination_path)
+        printer(destination_path)
+    except:
+        return 1
+    return 0
+
 def retrieve_scripts(package_name, os_identifier):
 
     # retrieve list of scripts for package

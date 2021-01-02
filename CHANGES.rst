@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+0.12 (2020.01.02)
+-----------------
+* [UPDATE] added smart requirements.txt and Dockerfile generation
+* [FEATURE ADDED] placeholder logo and favicon added to webapp options
+* [BUG FIX] syntax in main.mjs and main.py fixed to allow run
+* [BUG FIX] postcss added to package.json to fix sass compiling error
+
 0.11 (2020.12.31)
 -----------------
 * [FEATURE ADDED] flask framework option added to init command

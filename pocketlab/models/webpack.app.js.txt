@@ -2,7 +2,7 @@
 * @name pocketlab
 * @description <service-description>
 * @author <user-name>
-* @license <creation-date> <org-title>
+* @license <creation-year> <org-title>
 * @email <org-email>
 **/
 

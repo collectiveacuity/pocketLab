@@ -152,7 +152,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
     # retrieve current datetime
     from labpack.records.time import labDT
-    current_datetime = labDT.new()
+    current_dt = labDT.new()
 
     # TODO retrieve latest version of each dependency from system
     
@@ -168,8 +168,9 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         '<org-email>': 'user@domain.com',
         '<org-url>': '',
         '<user-email>': 'user@domain.com',
-        '<creation-date>': '%s' % current_datetime.year,
-        '<creation-month>': '%s.%02d' % (current_datetime.year, current_datetime.month),
+        '<creation-year>': '%s' % current_dt.year,
+        '<creation-month>': '%s.%02d' % (current_dt.year, current_dt.month),
+        '<creation-date>': '%s%02d%02d' % (current_dt.year, current_dt.month, current_dt.day),
         '<dependency-manifest>': 'requirements.txt'
     }
     if username == 'rcj1492':
@@ -227,6 +228,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
     # define default variables
     init_module = False
     init_webapp = False
+    project_flag = ''
     platform_names = []
     creating_ignores = []
 
@@ -500,6 +502,17 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         app_path = 'main.py'
         app_model = 'models/main.py.txt'
 
+    # determine pre-existing project language
+    project_flag = ''
+    if init_flask:
+        project_flag = 'flask'
+    elif init_express:
+        project_flag = 'express'
+    elif path.exists('requirements.txt'):
+        project_flag = 'flask'
+    elif path.exists('package.json'):
+        project_flag = 'express'
+
     # add heroku configs
     if init_heroku:
         init_docker = True
@@ -511,22 +524,21 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         creating_ignores.append('gcloud')
 
         # add requirements and app configs
-        from pocketlab.methods.config import retrieve_template
-        gae_files = {
-            'requirements.txt': 'models/gae.requirements.txt',
-            'app.yaml': 'models/gae.app.yaml.txt'
-        }
+        from pocketlab.methods.config import copy_template
+        gae_files = {}
+        if not project_flag or project_flag == 'flask':
+            gae_files['app.yaml'] = 'models/gae.app.yaml.txt'
+        elif project_flag == 'express':
+            # TODO add app.yaml configuration for node
+            pass
+        if not project_flag:
+            gae_files['requirements.txt'] = 'models/gae.requirements.txt'
         for key, value in gae_files.items():
-            if not path.exists(key):
-                source_text = retrieve_template(value)
-                with open(key, 'wt', encoding='utf-8') as f:
-                    f.write(source_text)
-                    f.close()
-                _printer(key)
+            copy_template(value, key, printer=_printer)
 
     # add ec2 configurations
     if init_ec2:
-    
+
         init_docker = True
         init_aws = True
 
@@ -543,7 +555,7 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
 
     # add asg configurations
     if init_asg:
-    
+
         init_docker = True
         init_aws = True
 
@@ -707,7 +719,14 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         from pocketlab.methods.node import generate_json
         generate_json(manifest_path, model_path, fields_map, replacement_map, _printer)
 
-        # TODO add placeholder icons to public folder
+        # add lab icons to public images
+        project_images = {
+            'public/images/logo-128x128.png': 'models/logo-128x128.png',
+            'public/images/favicon.ico': 'models/favicon.ico'
+        }
+        from pocketlab.methods.config import copy_template
+        for key, value in project_images.items():
+            copy_template(value, key, printer=_printer)
 
         # add main file
         if app_path and not path.exists(app_path):
@@ -739,6 +758,17 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
                     f.write(gulp_text)
                     f.close()
                 _printer(gulp_path)
+
+        # add requirements.txt to flask
+        if init_flask:
+            requirements_path = 'requirements.txt'
+            if not path.exists(requirements_path):
+                from pocketlab.methods.config import retrieve_template
+                requirements_text = retrieve_template('models/flask.requirements.txt')
+                with open(requirements_path, 'wt', encoding='utf-8') as f:
+                    f.write(requirements_text)
+                    f.close()
+                _printer(requirements_path)
 
         # add readme file
         readme_path = 'README.md'
@@ -859,22 +889,29 @@ def init(service_option, vcs_service='', license_type='', init_flask=False, init
         # creating_ignores.append('docker')
 
         # add dockerfile file
-        # TODO determine dockerfile based upon project language
         dockerfile_path = 'Dockerfile'
         if not path.exists(dockerfile_path):
             from pocketlab.methods.config import retrieve_template, replace_text
-            dockerfile_text = retrieve_template('models/flask.dockerfile.txt')
-            dockerfile_text = replace_text(dockerfile_text, replacement_map=replacement_map)
-            with open(dockerfile_path, 'wt') as f:
-                f.write(dockerfile_text)
-                f.close()
-            _printer(dockerfile_path)
+            if project_flag == 'flask' or not project_flag:
+                dockerfile_text = retrieve_template('models/flask.dockerfile.txt')
+                dockerfile_text = replace_text(dockerfile_text, replacement_map=replacement_map)
+                with open(dockerfile_path, 'wt') as f:
+                    f.write(dockerfile_text)
+                    f.close()
+                _printer(dockerfile_path)
+            elif project_flag == 'express':
+                dockerfile_text = retrieve_template('models/express.dockerfile.txt')
+                dockerfile_text = replace_text(dockerfile_text, replacement_map=replacement_map)
+                with open(dockerfile_path, 'wt') as f:
+                    f.write(dockerfile_text)
+                    f.close()
+                _printer(dockerfile_path)
 
         # add docker documentation to README.md
         if path.exists('README.md'):
             import re
             docker_pattern = re.compile('\n##\sDockerfiles')
-            readme_text = open('README.md').read()
+            readme_text = open('README.md', 'rt').read()
             if not docker_pattern.findall(readme_text):
                 from pocketlab.methods.config import retrieve_template
                 docker_text = retrieve_template('models/docker.readme.md.txt')

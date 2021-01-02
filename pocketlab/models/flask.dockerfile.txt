@@ -1,7 +1,7 @@
 FROM alpine:edge
 
 MAINTAINER <<org-email>>
-# Built 20200428
+# Built <creation-date>
 
 # Update Alpine environment
 RUN echo '@edge http://nl.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories
@@ -32,6 +32,12 @@ RUN pip3 install gunicorn
 RUN pip3 install flask-cors
 RUN pip3 install labpack
 
+## Install Google Cloud Dependencies
+#RUN pip3 install google-api-python-client
+#RUN pip3 install google-cloud-datastore
+#RUN pip3 install google-cloud-firestore
+#RUN pip3 install protobuf==3.11.3
+
 ## Install Database Dependencies
 #RUN pip3 install SQLAlchemy
 #RUN apk add postgresql-dev
@@ -40,6 +46,8 @@ RUN pip3 install labpack
 ## Install Scheduler & Socket Support
 #RUN pip3 install apscheduler
 #RUN pip3 install Flask-APScheduler
+#RUN pip3 install gevent-websocket
+#RUN pip3 install python-socketio
 #RUN pip3 install paho-mqtt
 
 # Clean APK cache

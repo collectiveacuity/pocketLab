@@ -1,1 +1,1 @@
-{"name":"pocketlab","short_name":"pocketlab","description":"<service-description>","icons":[],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
+{"name":"pocketlab","short_name":"pocketlab","description":"<service-description>","icons":[{"src":"/images/logo-128x128.png","sizes":"128x128","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}

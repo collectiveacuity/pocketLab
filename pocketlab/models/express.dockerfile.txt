@@ -1,0 +1,33 @@
+FROM alpine:edge
+
+MAINTAINER <<org-email>>
+# Built <creation-date>
+
+# Update Alpine environment
+RUN echo '@edge http://nl.alpinelinux.org/alpine/edge/main' >> /etc/apk/repositories
+RUN echo '@community http://nl.alpinelinux.org/alpine/edge/community' >> /etc/apk/repositories
+RUN echo '@testing http://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories
+RUN apk update
+RUN apk upgrade
+RUN apk add ca-certificates
+
+# Add NodeJS & NPM
+RUN apk add nodejs@community
+RUN apk add nodejs-npm
+RUN npm install -g npm
+
+# Copy Server Dependencies
+COPY /package.json /opt/package.json
+
+# Install Server dependencies
+WORKDIR /opt
+RUN npm install
+
+# Expose Internal Port
+EXPOSE 8080
+
+# Define ENTRYPOINT
+# ENTRYPOINT [ "node", "server.js" ]
+
+# Clean APK cache
+RUN rm -rf /var/cache/apk/*
