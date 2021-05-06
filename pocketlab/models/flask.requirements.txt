@@ -1,6 +1,6 @@
 # packages required by main.py
 flask==1.1.2
-flask-cors==3.0.8
+flask-cors==3.0.9
 labpack==0.22
 # google-api-python-client==1.7.4
 # google-cloud-datastore==1.12.0
